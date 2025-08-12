@@ -6,6 +6,7 @@ import Cassete from "./components/Cassete.vue";
 import SaveStation from "./components/SaveStation.vue";
 
 const cassettePlayer = ref();
+const video = ref();
 
 const volume = ref(1);
 
@@ -40,10 +41,28 @@ const togglePlayer = (toggle: boolean) => {
   }
 }
 
+const backgroundVideo = ref('/videos/lofi-1.mp4');
+const changeVideo = () => {
+  if(backgroundVideo.value === '/videos/lofi-1.mp4'){
+    backgroundVideo.value = '/videos/lofi-2.mp4'
+    video.value.load();
+    video.value.play();
+  }else{
+    backgroundVideo.value = '/videos/lofi-1.mp4'
+    video.value.load();
+    video.value.play();
+  }
+}
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.code === "Space") {
     event.preventDefault();
     cassettePlayer.value.toggleIsRunning()
+    return
+  }
+
+  if (event.code === 'KeyG') {
+    console.log('G je?');
+    changeVideo();
   }
 }
 const onWheel = (event: WheelEvent) => {
@@ -70,13 +89,14 @@ onMounted(() => {
 <template>
   <div class="flex flex-col min-h-screen">
     <video
+        ref="video"
         autoplay
         muted
         loop
         playsinline
         class="fixed top-0 left-0 w-full h-full object-cover -z-10"
     >
-      <source src="/videos/lofi-1.mp4" type="video/mp4"/>
+      <source :src="backgroundVideo" type="video/mp4"/>
       Your browser does not support the video tag.
     </video>
     <div class="flex justify-between p-5 font-press-start">

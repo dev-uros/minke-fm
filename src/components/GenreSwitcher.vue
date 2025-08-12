@@ -19,11 +19,13 @@ const setGenre = (genre: string) => {
     <div class="card" @click.stop>
       <div class="head">Select Genre</div>
       <div class="content flex flex-col gap-3">
-        <button class="button" @click="setGenre('lofi')">Lofi</button>
-        <button class="button" @click="setGenre('chillhop')">Chillhop</button>
-        <button class="button" @click="setGenre('synthwave')">Synthwave</button>
-        <button class="button" @click="setGenre('jazzhop')">Jazzhop</button>
-        <button class="button" @click="setGenre('vaporwave')">Vaporwave</button>
+        <button class="button" @click="setGenre('lofi')">LoFi</button>
+        <button class="button" @click="setGenre('chillhop')">ChillHop</button>
+        <button class="button" @click="setGenre('synthwave')">SynthWave</button>
+        <button class="button" @click="setGenre('jazzhop')">JazzHop</button>
+        <button class="button" @click="setGenre('vaporwave')">VaporWave</button>
+        <button class="button" @click="setGenre('retrowave')">RetroWave</button>
+        <button class="button" @click="setGenre('classical')">Classical</button>
 
       </div>
     </div>

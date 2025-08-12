@@ -71,7 +71,7 @@ const closeGenreSwitcherModal = () => {
         <div class="line1">
         </div>
         <div class="line2" @click="toggleSwitchGenreModal">
-          <span class="line2-text text-2xl font-lofi" style="color: red">CHILLHOP</span>
+          <span class="line2-text text-2xl font-lofi" style="color: red">LOFI</span>
         </div>
 
         <div class="yl">

@@ -8,6 +8,7 @@ import {getRandomLofiVideoNoRepeat} from "./services/useLofiVideo.ts";
 
 import {useStream} from "./services/useStream.ts";
 import {StreamTypeEnum} from "./types";
+import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 
 const {
   currentlyPlaying,
@@ -28,21 +29,49 @@ const togglePlayer = () => {
 }
 
 const setGenre = (genre: StreamTypeEnum) => {
-  changeGenre(genre)
+  changeGenre(genre);
+
+  if([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(genre)){
+    backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
+
+
+  if([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(genre)){
+    backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
 }
 const video = ref();
 
 
 const backgroundVideo = ref('/videos/lofi-1.mp4');
 const changeVideo = () => {
-  backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
-  video.value.load();
-  video.value.play();
+  if([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(currentlyPlaying.value!.type)){
+    backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
+
+
+  if([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(currentlyPlaying.value!.type)){
+    backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
 }
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.code === "Space") {
     event.preventDefault();
-    cassettePlayer.value.toggleIsRunning()
+    if(!streamLoading.value){
+      cassettePlayer.value.toggleIsRunning()
+    }
     return
   }
 
@@ -52,7 +81,9 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
 
   if (event.code === 'KeyH') {
-    playNextStation();
+    if(!streamLoading.value){
+      playNextStation();
+    }
   }
 }
 const onWheel = (event: WheelEvent) => {

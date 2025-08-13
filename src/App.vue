@@ -16,11 +16,13 @@ const {
   streamVolume,
   stationsCount,
   streamLoading,
+  shuffle,
   getStations,
   toggleStream,
   unload,
   playNextStation,
-  changeGenre
+  changeGenre,
+  toggleShuffle
 } = useStream();
 
 
@@ -84,6 +86,11 @@ const onKeyDown = (event: KeyboardEvent) => {
   if (event.code === 'KeyH') {
     if(!streamLoading.value){
       playNextStation();
+    }
+  }
+  if (event.code === 'KeyJ') {
+    if(!streamLoading.value){
+      toggleShuffle()
     }
   }
 }
@@ -172,7 +179,7 @@ const setFavorite = () => {
     </div>
 
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
-      <Cassete @set-genre="setGenre" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
+      <Cassete @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
     </div>
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
       <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
@@ -186,7 +193,7 @@ const setFavorite = () => {
       <div :class="streamVolume < 0.2 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
       <div :class="streamVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
     </div>
-    <ToastMessage @close-toast="closeToast" :toast-message="toastMessage" :toast-title="toastTitle"/>
+    <ToastMessage @close-toast="closeToast"  :toast-message="toastMessage" :toast-title="toastTitle"/>
 
   </div>
 </template>

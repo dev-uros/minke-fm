@@ -5,12 +5,14 @@ import {FormattedStation, StreamTypeEnum} from "../types";
 
 const emit = defineEmits<{
   togglePlayer: [toggle: boolean],
-  setGenre: [genre: StreamTypeEnum]
+  setGenre: [genre: StreamTypeEnum],
+  toggleShuffle: []
 }>()
 
 interface Props {
   currentlyPlaying: FormattedStation | null
-  stationCount: number
+  stationCount: number,
+  shuffle: boolean
 }
 
 defineProps<Props>()
@@ -40,7 +42,10 @@ const closeGenreSwitcherModal = () => {
 const setGenre = (genre: StreamTypeEnum) => {
   switchGenreModal.value = false;
   emit("setGenre", genre)
+}
 
+const toggleShuffle = () => {
+  emit('toggleShuffle');
 }
 </script>
 
@@ -79,12 +84,28 @@ const setGenre = (genre: StreamTypeEnum) => {
                     d="M2 5v14c0 .86 1.012 1.318 1.659.753l8-7a1 1 0 0 0 0-1.506l-8-7C3.012 3.682 2 4.141 2 5m11 0v14c0 .86 1.012 1.318 1.659.753l8-7a1 1 0 0 0 0-1.506l-8-7C14.012 3.682 13 4.141 13 5"/>
             </svg>
           </button>
+          <button class="btn btn-circle" @click="toggleShuffle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 48 48" v-if="shuffle">
+              <!-- Icon from IconPark Outline by ByteDance - https://github.com/bytedance/IconPark/blob/master/LICENSE -->
+              <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="4">
+                <path stroke-linejoin="round" d="m40 33l4 4l-4 4m0-34l4 4l-4 4"/>
+                <path d="M44 11h-7c-7.18 0-13 5.82-13 13s5.82 13 13 13h7M4 37h7c7.18 0 13-5.82 13-13s-5.82-13-13-13H4"/>
+              </g>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16" v-else>
+              <!-- Icon from Fluent UI System Icons by Microsoft Corporation - https://github.com/microsoft/fluentui-system-icons/blob/main/LICENSE -->
+              <path fill="currentColor"
+                    d="m12 12.707l2.146 2.147a.5.5 0 0 0 .708-.708l-13-13a.5.5 0 1 0-.708.708l3.071 3.07A6 6 0 0 0 2.75 4.75a.75.75 0 0 0 0 1.5c1.243 0 2.122.432 2.932 1.082q.228-.217.477-.466l.707.707C5.65 8.786 4.606 9.75 2.75 9.75a.75.75 0 0 0 0 1.5c2.52 0 3.96-1.4 5.177-2.616l.707.707l-.39.387c.556.463 1.186.882 1.94 1.162l.859.86a.75.75 0 0 0 .957.957m-.992-3.82l2.458 2.458l.314-.315a.75.75 0 0 0 0-1.06l-1.5-1.5a.75.75 0 0 0-1.271.417M8.326 6.204l1.069 1.068c.58-.452 1.198-.791 1.963-.94l-.137.138a.75.75 0 0 0 1.06 1.06l1.5-1.5a.75.75 0 0 0 0-1.06l-1.5-1.5a.75.75 0 1 0-1.06 1.06l.265.265c-1.328.161-2.326.732-3.16 1.41"/>
+            </svg>
+          </button>
         </div>
 
         <div class="line1">
         </div>
         <div class="line2" @click="toggleSwitchGenreModal">
-          <span class="line2-text text-2xl font-lofi" style="color: red">{{currentlyPlaying?.type}} ({{ stationCount }})</span>
+          <span class="line2-text text-2xl font-lofi" style="color: red">{{ currentlyPlaying?.type }} ({{
+              stationCount
+            }})</span>
         </div>
 
         <div class="yl">

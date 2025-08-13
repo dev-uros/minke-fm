@@ -56,8 +56,11 @@ export function useStream() {
 
     const streamVolume = ref(1);
 
-    const shuffle = ref(true);
+    const shuffle = ref(false);
 
+    const toggleShuffle = () => {
+        shuffle.value = !shuffle.value
+    }
 
     const getStations = async () => {
         const [
@@ -491,10 +494,12 @@ export function useStream() {
         streamVolume,
         stationsCount,
         streamLoading,
+        shuffle,
         getStations,
         toggleStream,
         unload,
         playNextStation,
-        changeGenre
+        changeGenre,
+        toggleShuffle
     }
 }

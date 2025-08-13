@@ -24,6 +24,7 @@ export function useStream() {
     const chillwaveStreams: Ref<FormattedStation[]> = ref([]);
     const retrowaveStreams: Ref<FormattedStation[]> = ref([]);
 
+    const streamLoading = ref(false);
     const currentlyPlaying: Ref<FormattedStation | null> = ref(null);
 
     const stationsCount = computed(() => {
@@ -91,6 +92,7 @@ export function useStream() {
     }
 
     const createStream = (station: FormattedStation) => {
+        streamLoading.value = true;
         if (stream) {
             stream.unload();
         }
@@ -104,6 +106,8 @@ export function useStream() {
 
         stream.on('play', () => {
             currentlyPlaying.value = station;
+            streamLoading.value = false;
+
         })
 
 
@@ -486,6 +490,7 @@ export function useStream() {
         currentlyPlaying,
         streamVolume,
         stationsCount,
+        streamLoading,
         getStations,
         toggleStream,
         unload,

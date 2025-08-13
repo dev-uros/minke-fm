@@ -2,6 +2,7 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import Clock from "./components/Clock.vue";
 import Cassete from "./components/Cassete.vue";
+import StreamLoading from "./components/StreamLoading.vue";
 import SaveStation from "./components/SaveStation.vue";
 import {getRandomLofiVideoNoRepeat} from "./services/useLofiVideo.ts";
 
@@ -12,6 +13,7 @@ const {
   currentlyPlaying,
   streamVolume,
   stationsCount,
+  streamLoading,
   getStations,
   toggleStream,
   unload,
@@ -93,14 +95,16 @@ onMounted(async () => {
       Your browser does not support the video tag.
     </video>
     <div class="flex justify-between p-5 font-press-start">
-      <div class="flex flex-col gap-5">
-        <h1 class="flex items-center gap-3">
+      <div class="flex flex-col gap-5" >
+        <h1 v-if="!streamLoading" class="flex items-center gap-3">
           Current station: {{ currentlyPlaying?.name }}
           <SaveStation/>
         </h1>
-        <h2>
+        <h2 v-if="!streamLoading">
           Coming to you from: {{ currentlyPlaying?.country }}, {{ currentlyPlaying?.state }}
         </h2>
+
+        <StreamLoading v-if="streamLoading"/>
       </div>
       <div>
         <Clock/>

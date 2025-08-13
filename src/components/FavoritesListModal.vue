@@ -27,7 +27,7 @@ const removeStation = (station: FormattedStation) => {
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
       <div class="head flex justify-between items-center">
-        <span>Hotkeys</span>
+        <span>Favorite stations</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
       <div class="content flex flex-col gap-3">

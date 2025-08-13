@@ -58,6 +58,8 @@ export function useStream() {
 
     const shuffle = ref(false);
 
+    const previousStation: Ref<FormattedStation | null> = ref(null);
+
     const toggleShuffle = () => {
         shuffle.value = !shuffle.value
     }
@@ -108,9 +110,9 @@ export function useStream() {
         play()
 
         stream.on('play', () => {
+            previousStation.value = currentlyPlaying.value;
             currentlyPlaying.value = station;
             streamLoading.value = false;
-
         })
 
 
@@ -160,6 +162,12 @@ export function useStream() {
 
         }
 
+    }
+
+    const playPreviousStation = () => {
+        if(previousStation.value){
+            createStream(previousStation.value)
+        }
     }
     const playNextStation = () => {
         switch (currentlyPlaying.value!.type) {
@@ -500,6 +508,7 @@ export function useStream() {
         unload,
         playNextStation,
         changeGenre,
-        toggleShuffle
+        toggleShuffle,
+        playPreviousStation
     }
 }

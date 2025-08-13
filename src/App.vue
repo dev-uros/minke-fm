@@ -22,7 +22,8 @@ const {
   unload,
   playNextStation,
   changeGenre,
-  toggleShuffle
+  toggleShuffle,
+  playPreviousStation
 } = useStream();
 
 
@@ -82,13 +83,17 @@ const onKeyDown = (event: KeyboardEvent) => {
     changeVideo();
     return;
   }
-
   if (event.code === 'KeyH') {
+    if(!streamLoading.value){
+      playPreviousStation();
+    }
+  }
+  if (event.code === 'KeyJ') {
     if(!streamLoading.value){
       playNextStation();
     }
   }
-  if (event.code === 'KeyJ') {
+  if (event.code === 'KeyK') {
     if(!streamLoading.value){
       toggleShuffle()
     }

@@ -497,6 +497,9 @@ export function useStream() {
         setVolume(value)
     })
 
+    const streamStation = (station: FormattedStation) => {
+        createStream(station)
+    }
     return {
         currentlyPlaying,
         streamVolume,
@@ -509,6 +512,7 @@ export function useStream() {
         playNextStation,
         changeGenre,
         toggleShuffle,
-        playPreviousStation
+        playPreviousStation,
+        streamStation
     }
 }

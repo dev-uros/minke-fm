@@ -9,6 +9,7 @@ import {useStream} from "./services/useStream.ts";
 import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
+import FavoritesListModal from "./components/FavoritesListModal.vue";
 
 const {
   currentlyPlaying,
@@ -22,7 +23,8 @@ const {
   playNextStation,
   changeGenre,
   toggleShuffle,
-  playPreviousStation
+  playPreviousStation,
+  streamStation
 } = useStream();
 
 
@@ -99,6 +101,7 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
 }
 const onWheel = (event: WheelEvent) => {
+  if(favoritesModalShown.value) return
   if (event.deltaY < 0) {
     streamVolume.value = Math.min(1, streamVolume.value + 0.1);
   } else if (event.deltaY > 0) {
@@ -150,6 +153,22 @@ const setFavorite = () => {
 
   }
 }
+
+const favoritesModalShown = ref(false);
+
+const playStation = (station: FormattedStation) => {
+  favoritesModalShown.value = false;
+  streamStation(station);
+}
+
+const removeStationFromFavorites = (station: FormattedStation) => {
+  favoritesModalShown.value = false;
+  const favoriteExistsIndex = favorites.value.findIndex(fav => fav.id === station.id)
+  favorites.value.splice(favoriteExistsIndex, 1);
+  toastMessage.value = `${station.name} removed from favorites!`
+  toastTitle.value = 'Station removed from favorites!'
+  localStorage.setItem('favorites', JSON.stringify(favorites.value));
+}
 </script>
 
 <template>
@@ -183,7 +202,7 @@ const setFavorite = () => {
     </div>
 
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
-      <Cassete @play-next="playNextStation" @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
+      <Cassete @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation" @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
     </div>
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
       <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
@@ -198,6 +217,7 @@ const setFavorite = () => {
       <div :class="streamVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
     </div>
     <ToastMessage @close-toast="closeToast"  :toast-message="toastMessage" :toast-title="toastTitle"/>
+    <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation" @close-modal="favoritesModalShown = false" v-if="favoritesModalShown" :favorite-stations="favorites"/>
 
   </div>
 </template>

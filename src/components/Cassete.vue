@@ -5,10 +5,11 @@ import {FormattedStation, StreamTypeEnum} from "../types";
 
 const emit = defineEmits<{
   togglePlayer: [toggle: boolean],
-  playNext:[],
-  playPrevious:[],
+  playNext: [],
+  playPrevious: [],
   setGenre: [genre: StreamTypeEnum],
-  toggleShuffle: []
+  toggleShuffle: [],
+  toggleFavoritesModal: []
 }>()
 
 interface Props {
@@ -60,6 +61,10 @@ const playNext = () => {
 
   emit('playNext')
 }
+
+const toggleFavoritesModal = () => {
+  emit('toggleFavoritesModal')
+}
 </script>
 
 <template>
@@ -68,7 +73,13 @@ const playNext = () => {
 
       <div class="ups">
         <div class="screw1">+</div>
-        <div class="screw2">+</div>
+        <div class="screw2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" @click="toggleFavoritesModal">
+            <!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
+            <path fill="currentColor"
+                  d="M11.997 15.462q1.01 0 1.804-.617q.793-.616 1.16-1.549H9.04q.367.933 1.157 1.55q.79.615 1.8.615M9.89 11.924q.467 0 .789-.326q.322-.327.322-.794t-.327-.789t-.793-.322t-.789.327t-.322.793t.327.789t.793.322m4.231 0q.466 0 .789-.326q.322-.327.322-.794q0-.466-.327-.788q-.327-.323-.793-.323q-.467 0-.789.327t-.322.793t.327.789t.793.322m-5.995-4.83l2.608-3.472q.238-.32.566-.47Q11.627 3 12 3t.701.15t.566.471l2.608 3.471l4.02 1.368q.534.18.822.605q.289.426.289.94q0 .237-.07.471t-.228.449l-2.635 3.573l.1 3.83q.025.706-.466 1.189T16.564 20l-.454-.056L12 18.733l-4.11 1.211q-.124.05-.24.053q-.117.003-.214.003q-.665 0-1.15-.483t-.459-1.188l.1-3.856l-2.629-3.548q-.159-.217-.229-.453Q3 10.236 3 10q0-.506.297-.942q.296-.435.828-.618z"/>
+          </svg>
+        </div>
       </div>
 
       <div class="card1">
@@ -178,16 +189,18 @@ const playNext = () => {
 
 .screw2 {
   display: flex;
-  color: black;
+  color: yellow;
   border: 1px solid black;
-  background-color: lightgrey;
-  height: 0.75em;
-  width: 0.7em;
+  background-color: black;
+  height: 2em;
+  width: 2em;
   margin-top: 0.5em;
-  margin-left: 15.8em;
+  margin-left: 14.5em;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+
 }
 
 .downs {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, onUnmounted, ref} from "vue";
+import {onMounted, onUnmounted, Ref, ref} from "vue";
 import Clock from "./components/Clock.vue";
 import Cassete from "./components/Cassete.vue";
 import StreamLoading from "./components/StreamLoading.vue";
@@ -7,8 +7,9 @@ import SaveStation from "./components/SaveStation.vue";
 import {getRandomLofiVideoNoRepeat} from "./services/useLofiVideo.ts";
 
 import {useStream} from "./services/useStream.ts";
-import {StreamTypeEnum} from "./types";
+import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
+import ToastMessage from "./components/ToastMessage.vue";
 
 const {
   currentlyPlaying,
@@ -103,6 +104,10 @@ onMounted(async () => {
 
   try {
     await getStations();
+    const localStorageFavorites = localStorage.getItem('favorites');
+    if(localStorageFavorites){
+      favorites.value = JSON.parse(localStorageFavorites);
+    }
   } catch (error) {
     stationsLoadingError.value = true;
   }
@@ -110,6 +115,30 @@ onMounted(async () => {
   window.addEventListener("wheel", onWheel);
 })
 
+const favorites: Ref<FormattedStation[]> = ref([]);
+const toastMessage = ref('');
+const toastTitle = ref('');
+const closeToast = () => {
+  toastMessage.value = '';
+  toastTitle.value = '';
+}
+const setFavorite = () => {
+  if(currentlyPlaying.value){
+    const favoriteExistsIndex = favorites.value.findIndex(fav => fav.id === currentlyPlaying.value!.id)
+    if(favoriteExistsIndex === -1) {
+      favorites.value.unshift(currentlyPlaying.value);
+      toastMessage.value = `${currentlyPlaying.value.name} added to favorites!`
+      toastTitle.value = 'New favorite station!'
+      localStorage.setItem('favorites', JSON.stringify(favorites.value));
+    }else{
+      favorites.value.splice(favoriteExistsIndex, 1);
+      toastMessage.value = `${currentlyPlaying.value.name} removed from favorites!`
+      toastTitle.value = 'Station removed from favorites!'
+      localStorage.setItem('favorites', JSON.stringify(favorites.value));
+    }
+
+  }
+}
 </script>
 
 <template>
@@ -129,7 +158,7 @@ onMounted(async () => {
       <div class="flex flex-col gap-5" >
         <h1 v-if="!streamLoading" class="flex items-center gap-3">
           Current station: {{ currentlyPlaying?.name }}
-          <SaveStation/>
+          <SaveStation @click="setFavorite"/>
         </h1>
         <h2 v-if="!streamLoading">
           Coming to you from: {{ currentlyPlaying?.country }}, {{ currentlyPlaying?.state }}
@@ -157,6 +186,7 @@ onMounted(async () => {
       <div :class="streamVolume < 0.2 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
       <div :class="streamVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
     </div>
+    <ToastMessage @close-toast="closeToast" :toast-message="toastMessage" :toast-title="toastTitle"/>
 
   </div>
 </template>

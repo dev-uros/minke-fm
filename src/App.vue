@@ -5,7 +5,6 @@ import Cassete from "./components/Cassete.vue";
 import StreamLoading from "./components/StreamLoading.vue";
 import SaveStation from "./components/SaveStation.vue";
 import {getRandomLofiVideoNoRepeat} from "./services/useLofiVideo.ts";
-
 import {useStream} from "./services/useStream.ts";
 import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
@@ -184,7 +183,7 @@ const setFavorite = () => {
     </div>
 
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
-      <Cassete @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
+      <Cassete @play-next="playNextStation" @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
     </div>
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
       <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>

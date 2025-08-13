@@ -5,6 +5,8 @@ import {FormattedStation, StreamTypeEnum} from "../types";
 
 const emit = defineEmits<{
   togglePlayer: [toggle: boolean],
+  playNext:[],
+  playPrevious:[],
   setGenre: [genre: StreamTypeEnum],
   toggleShuffle: []
 }>()
@@ -47,6 +49,17 @@ const setGenre = (genre: StreamTypeEnum) => {
 const toggleShuffle = () => {
   emit('toggleShuffle');
 }
+
+const playPrevious = () => {
+  isRunning.value = true
+  emit('playPrevious')
+}
+
+const playNext = () => {
+  isRunning.value = true
+
+  emit('playNext')
+}
 </script>
 
 <template>
@@ -60,7 +73,7 @@ const toggleShuffle = () => {
 
       <div class="card1">
         <div class="flex flex-row gap-3 mt-1 justify-center">
-          <button class="btn btn-circle">
+          <button @click="playPrevious" class="btn btn-circle">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
               <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
               <path fill="currentColor"
@@ -77,7 +90,7 @@ const toggleShuffle = () => {
               <path fill="currentColor" d="M6 4v16a1 1 0 0 0 1.524.852l13-8a1 1 0 0 0 0-1.704l-13-8A1 1 0 0 0 6 4"/>
             </svg>
           </button>
-          <button class="btn btn-circle">
+          <button @click="playNext" class="btn btn-circle">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
               <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
               <path fill="currentColor"

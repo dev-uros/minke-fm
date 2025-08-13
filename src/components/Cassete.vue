@@ -9,7 +9,8 @@ const emit = defineEmits<{
   playPrevious: [],
   setGenre: [genre: StreamTypeEnum],
   toggleShuffle: [],
-  toggleFavoritesModal: []
+  toggleFavoritesModal: [],
+  reloadStations: []
 }>()
 
 interface Props {
@@ -65,6 +66,9 @@ const playNext = () => {
 const toggleFavoritesModal = () => {
   emit('toggleFavoritesModal')
 }
+const reloadStations = () => {
+  emit('reloadStations');
+}
 </script>
 
 <template>
@@ -72,9 +76,16 @@ const toggleFavoritesModal = () => {
     <div class="card">
 
       <div class="ups">
-        <div class="screw1">+</div>
+        <div class="screw1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" @click="reloadStations">
+            <!-- Icon from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE -->
+            <path fill="currentColor"
+                  d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44c-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z"/>
+          </svg>
+        </div>
         <div class="screw2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" @click="toggleFavoritesModal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+               @click="toggleFavoritesModal">
             <!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE -->
             <path fill="currentColor"
                   d="M11.997 15.462q1.01 0 1.804-.617q.793-.616 1.16-1.549H9.04q.367.933 1.157 1.55q.79.615 1.8.615M9.89 11.924q.467 0 .789-.326q.322-.327.322-.794t-.327-.789t-.793-.322t-.789.327t-.322.793t.327.789t.793.322m4.231 0q.466 0 .789-.326q.322-.327.322-.794q0-.466-.327-.788q-.327-.323-.793-.323q-.467 0-.789.327t-.322.793t.327.789t.793.322m-5.995-4.83l2.608-3.472q.238-.32.566-.47Q11.627 3 12 3t.701.15t.566.471l2.608 3.471l4.02 1.368q.534.18.822.605q.289.426.289.94q0 .237-.07.471t-.228.449l-2.635 3.573l.1 3.83q.025.706-.466 1.189T16.564 20l-.454-.056L12 18.733l-4.11 1.211q-.124.05-.24.053q-.117.003-.214.003q-.665 0-1.15-.483t-.459-1.188l.1-3.856l-2.629-3.548q-.159-.217-.229-.453Q3 10.236 3 10q0-.506.297-.942q.296-.435.828-.618z"/>
@@ -179,23 +190,25 @@ const toggleFavoritesModal = () => {
   color: black;
   border: 1px solid black;
   background-color: lightgrey;
-  height: 0.75em;
-  width: 0.75em;
+  height: 2em;
+  width: 2em;
   margin: 0.5em;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+
 }
 
 .screw2 {
   display: flex;
   color: yellow;
   border: 1px solid black;
-  background-color: black;
+  background-color: #1ac2ff;
   height: 2em;
   width: 2em;
   margin-top: 0.5em;
-  margin-left: 14.5em;
+  margin-left: 13.5em;
   border-radius: 50%;
   align-items: center;
   justify-content: center;

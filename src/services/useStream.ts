@@ -3,8 +3,11 @@ import {FormattedStation, Station, StreamTypeEnum} from "../types";
 import {Howl} from "howler";
 import {formatStations} from "./useStationFormat.ts";
 import {getRandomStation} from "./useRandomStation.ts";
+import {useOnline} from "@vueuse/core";
 
 export function useStream() {
+
+    const online = useOnline()
 
     const urls = {
         lofUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/lofi',
@@ -97,6 +100,7 @@ export function useStream() {
     }
 
     const createStream = (station: FormattedStation) => {
+        if(!online.value) return
         streamLoading.value = true;
         if (stream) {
             stream.unload();
@@ -129,6 +133,7 @@ export function useStream() {
     }
 
     const changeGenre = (genre: StreamTypeEnum) => {
+        if(!online.value) return
 
         if (currentlyPlaying.value!.type === genre) return
 
@@ -165,11 +170,15 @@ export function useStream() {
     }
 
     const playPreviousStation = () => {
+        if(!online.value) return
+
         if(previousStation.value){
             createStream(previousStation.value)
         }
     }
     const playNextStation = () => {
+        if(!online.value) return
+
         switch (currentlyPlaying.value!.type) {
             case StreamTypeEnum.LOFI:
                 const lofiStationIndex = lofiStreams.value.findIndex(lofiStation => lofiStation.id === currentlyPlaying.value!.id)
@@ -317,6 +326,7 @@ export function useStream() {
 
     }
     const streamBrokenGetNextStation = (station: FormattedStation) => {
+        if(!online.value) return
 
         switch (station.type) {
             case StreamTypeEnum.LOFI:
@@ -500,6 +510,12 @@ export function useStream() {
     const streamStation = (station: FormattedStation) => {
         createStream(station)
     }
+
+    const reloadStream = () => {
+        if(currentlyPlaying.value){
+            createStream(currentlyPlaying.value);
+        }
+    }
     return {
         currentlyPlaying,
         streamVolume,
@@ -513,6 +529,8 @@ export function useStream() {
         changeGenre,
         toggleShuffle,
         playPreviousStation,
-        streamStation
+        streamStation,
+        reloadStream,
+        online
     }
 }

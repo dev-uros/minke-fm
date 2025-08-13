@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onMounted, onUnmounted, Ref, ref} from "vue";
+import {computed, onMounted, onUnmounted, Ref, ref, watch} from "vue";
 import Clock from "./components/Clock.vue";
 import Cassete from "./components/Cassete.vue";
 import StreamLoading from "./components/StreamLoading.vue";
@@ -10,6 +10,7 @@ import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
+import {useOnline} from "@vueuse/core";
 
 const {
   currentlyPlaying,
@@ -24,8 +25,20 @@ const {
   changeGenre,
   toggleShuffle,
   playPreviousStation,
-  streamStation
+  streamStation,
+  reloadStream,
+  online
 } = useStream();
+
+
+watch(online, (value) => {
+  if (value) {
+    reloadStream();
+  }
+})
+const internetStatus = computed(() => {
+  return online.value ? 'Online' : 'Offline';
+})
 
 
 const cassettePlayer = ref();
@@ -36,7 +49,7 @@ const togglePlayer = () => {
 const setGenre = (genre: StreamTypeEnum) => {
   changeGenre(genre);
 
-  if([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(genre)){
+  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(genre)) {
     backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -44,7 +57,7 @@ const setGenre = (genre: StreamTypeEnum) => {
   }
 
 
-  if([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(genre)){
+  if ([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(genre)) {
     backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -56,7 +69,7 @@ const video = ref();
 
 const backgroundVideo = ref('/videos/lofi-1.mp4');
 const changeVideo = () => {
-  if([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(currentlyPlaying.value!.type)){
+  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(currentlyPlaying.value!.type)) {
     backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -64,7 +77,7 @@ const changeVideo = () => {
   }
 
 
-  if([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(currentlyPlaying.value!.type)){
+  if ([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(currentlyPlaying.value!.type)) {
     backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -74,7 +87,7 @@ const changeVideo = () => {
 const onKeyDown = (event: KeyboardEvent) => {
   if (event.code === "Space") {
     event.preventDefault();
-    if(!streamLoading.value){
+    if (!streamLoading.value) {
       cassettePlayer.value.toggleIsRunning()
     }
     return
@@ -85,23 +98,23 @@ const onKeyDown = (event: KeyboardEvent) => {
     return;
   }
   if (event.code === 'KeyH') {
-    if(!streamLoading.value){
+    if (!streamLoading.value) {
       playPreviousStation();
     }
   }
   if (event.code === 'KeyJ') {
-    if(!streamLoading.value){
+    if (!streamLoading.value) {
       playNextStation();
     }
   }
   if (event.code === 'KeyK') {
-    if(!streamLoading.value){
+    if (!streamLoading.value) {
       toggleShuffle()
     }
   }
 }
 const onWheel = (event: WheelEvent) => {
-  if(favoritesModalShown.value) return
+  if (favoritesModalShown.value) return
   if (event.deltaY < 0) {
     streamVolume.value = Math.min(1, streamVolume.value + 0.1);
   } else if (event.deltaY > 0) {
@@ -112,16 +125,18 @@ onUnmounted(() => {
   unload();
   window.removeEventListener("keydown", onKeyDown);
   window.removeEventListener("wheel", onWheel);
+
 });
 const stationsLoadingError = ref(false);
 onMounted(async () => {
 
+  const localStorageFavorites = localStorage.getItem('favorites');
+  if (localStorageFavorites) {
+    favorites.value = JSON.parse(localStorageFavorites);
+  }
   try {
     await getStations();
-    const localStorageFavorites = localStorage.getItem('favorites');
-    if(localStorageFavorites){
-      favorites.value = JSON.parse(localStorageFavorites);
-    }
+
   } catch (error) {
     stationsLoadingError.value = true;
   }
@@ -137,14 +152,14 @@ const closeToast = () => {
   toastTitle.value = '';
 }
 const setFavorite = () => {
-  if(currentlyPlaying.value){
+  if (currentlyPlaying.value) {
     const favoriteExistsIndex = favorites.value.findIndex(fav => fav.id === currentlyPlaying.value!.id)
-    if(favoriteExistsIndex === -1) {
+    if (favoriteExistsIndex === -1) {
       favorites.value.unshift(currentlyPlaying.value);
       toastMessage.value = `${currentlyPlaying.value.name} added to favorites!`
       toastTitle.value = 'New favorite station!'
       localStorage.setItem('favorites', JSON.stringify(favorites.value));
-    }else{
+    } else {
       favorites.value.splice(favoriteExistsIndex, 1);
       toastMessage.value = `${currentlyPlaying.value.name} removed from favorites!`
       toastTitle.value = 'Station removed from favorites!'
@@ -169,6 +184,15 @@ const removeStationFromFavorites = (station: FormattedStation) => {
   toastTitle.value = 'Station removed from favorites!'
   localStorage.setItem('favorites', JSON.stringify(favorites.value));
 }
+
+const reloadStations = async() => {
+  try {
+    await getStations();
+
+  } catch (error) {
+    stationsLoadingError.value = true;
+  }
+}
 </script>
 
 <template>
@@ -185,7 +209,7 @@ const removeStationFromFavorites = (station: FormattedStation) => {
       Your browser does not support the video tag.
     </video>
     <div class="flex justify-between p-5 font-press-start">
-      <div class="flex flex-col gap-5" >
+      <div class="flex flex-col gap-5">
         <h1 v-if="!streamLoading" class="flex items-center gap-3">
           Current station: {{ currentlyPlaying?.name }}
           <SaveStation @click="setFavorite"/>
@@ -202,7 +226,13 @@ const removeStationFromFavorites = (station: FormattedStation) => {
     </div>
 
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
-      <Cassete @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation" @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre" :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying" ref="cassettePlayer" @toggle-player="togglePlayer"/>
+      <h1>{{ internetStatus }}</h1>
+      <Cassete
+          @reload-stations="reloadStations"
+          @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation"
+               @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre"
+               :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying"
+               ref="cassettePlayer" @toggle-player="togglePlayer"/>
     </div>
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
       <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
@@ -216,8 +246,11 @@ const removeStationFromFavorites = (station: FormattedStation) => {
       <div :class="streamVolume < 0.2 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
       <div :class="streamVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
     </div>
-    <ToastMessage @close-toast="closeToast"  :toast-message="toastMessage" :toast-title="toastTitle"/>
-    <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation" @close-modal="favoritesModalShown = false" v-if="favoritesModalShown" :favorite-stations="favorites"/>
+    <ToastMessage @close-toast="closeToast" :toast-message="toastMessage" :toast-title="toastTitle"/>
+    <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation"
+                        @close-modal="favoritesModalShown = false" v-if="favoritesModalShown"
+                        :favorite-stations="favorites"/>
 
   </div>
+
 </template>

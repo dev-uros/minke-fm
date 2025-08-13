@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import GenreSwitcher from "./GenreSwitcher.vue";
+import {FormattedStation, StreamTypeEnum} from "../types";
 
 const emit = defineEmits<{
   togglePlayer: [toggle: boolean],
+  setGenre: [genre: StreamTypeEnum]
 }>()
 
+interface Props {
+  currentlyPlaying: FormattedStation | null
+  stationCount: number
+}
+
+defineProps<Props>()
 
 const isRunning = ref(true);
 
@@ -27,6 +35,11 @@ const toggleSwitchGenreModal = () => {
 
 const closeGenreSwitcherModal = () => {
   switchGenreModal.value = false;
+}
+
+const setGenre = (genre: StreamTypeEnum) => {
+  switchGenreModal.value = false;
+  emit("setGenre", genre)
 
 }
 </script>
@@ -71,7 +84,7 @@ const closeGenreSwitcherModal = () => {
         <div class="line1">
         </div>
         <div class="line2" @click="toggleSwitchGenreModal">
-          <span class="line2-text text-2xl font-lofi" style="color: red">LOFI</span>
+          <span class="line2-text text-2xl font-lofi" style="color: red">{{currentlyPlaying?.type}} ({{ stationCount }})</span>
         </div>
 
         <div class="yl">
@@ -99,7 +112,7 @@ const closeGenreSwitcherModal = () => {
         <div class="screw4">+</div>
       </div>
     </div>
-    <GenreSwitcher @close-modal="closeGenreSwitcherModal" v-if="switchGenreModal"/>
+    <GenreSwitcher @set-genre="setGenre" @close-modal="closeGenreSwitcherModal" v-if="switchGenreModal"/>
   </div>
 </template>
 
@@ -197,7 +210,7 @@ const closeGenreSwitcherModal = () => {
 
 .line2 {
   position: relative;
-  width: 200px;
+  width: 270px;
   height: 1px;
   background-color: black;
   top: 2em;
@@ -207,7 +220,7 @@ const closeGenreSwitcherModal = () => {
 .line2-text {
   position: absolute;
   top: -1.2em;
-  left: 50%;
+  left: 38%;
   transform: translateX(-50%);
   background-color: #f9f6f0; /* warm off-white */
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" fill-opacity="0.1"><rect width="4" height="4" fill="black"/></svg>');

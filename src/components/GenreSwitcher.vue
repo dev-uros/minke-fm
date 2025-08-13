@@ -1,15 +1,17 @@
 <script setup lang="ts">
+import {StreamTypeEnum} from "../types";
+
 const emit = defineEmits<{
   closeModal: [],
+  setGenre: [genre: StreamTypeEnum]
 }>()
 
 const closeModal = () => {
   emit('closeModal');
 }
 
-const setGenre = (genre: string) => {
-  console.log(genre);
-  emit('closeModal');
+const setGenre = (genre: StreamTypeEnum) => {
+  emit('setGenre', genre);
 
 }
 </script>
@@ -19,13 +21,12 @@ const setGenre = (genre: string) => {
     <div class="card" @click.stop>
       <div class="head">Select Genre</div>
       <div class="content flex flex-col gap-3">
-        <button class="button" @click="setGenre('lofi')">LoFi</button>
-        <button class="button" @click="setGenre('chillhop')">ChillHop</button>
-        <button class="button" @click="setGenre('synthwave')">SynthWave</button>
-        <button class="button" @click="setGenre('jazzhop')">JazzHop</button>
-        <button class="button" @click="setGenre('vaporwave')">VaporWave</button>
-        <button class="button" @click="setGenre('retrowave')">RetroWave</button>
-        <button class="button" @click="setGenre('classical')">Classical</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.LOFI)">LoFi</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.CHILLHOP)">ChillHop</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.SYNTHWAVE)">SynthWave</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.JAZZHOP)">JazzHop</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.VAPORWAVE)">VaporWave</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.RETROWAVE)">RetroWave</button>
 
       </div>
     </div>

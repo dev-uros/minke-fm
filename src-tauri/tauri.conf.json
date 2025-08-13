@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "minke-fm",
+  "productName": "MinkeFM",
   "version": "0.1.0",
   "identifier": "com.uros.minke-fm",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "minke-fm",
+        "title": "MinkeFM",
         "width": 1200,
         "height": 800
       }

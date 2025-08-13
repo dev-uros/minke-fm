@@ -12,7 +12,7 @@ function updateTime() {
   })
 }
 
-let timer
+let timer: NodeJS.Timeout
 
 onMounted(() => {
   updateTime()

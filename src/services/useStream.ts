@@ -10,13 +10,13 @@ export function useStream() {
     const online = useOnline()
 
     const urls = {
-        lofUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/lofi',
-        chillhopUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/chillhop',
-        synthwaveUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/synthwave',
-        jazzhopUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/jazzhop',
-        vaporwaveUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/vaporwave',
-        chillwaveUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/chillwave',
-        retrowaveUrl: 'http://de1.api.radio-browser.info/json/stations/bytag/retrowave',
+        lofUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/lofi',
+        chillhopUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/chillhop',
+        synthwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/synthwave',
+        jazzhopUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/jazzhop',
+        vaporwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/vaporwave',
+        chillwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/chillwave',
+        retrowaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/retrowave',
     }
 
     const lofiStreams: Ref<FormattedStation[]> = ref([]);

@@ -10,7 +10,6 @@ import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
-import {useOnline} from "@vueuse/core";
 
 const {
   currentlyPlaying,

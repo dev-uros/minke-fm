@@ -10,6 +10,7 @@ import {FormattedStation, StreamTypeEnum} from "./types";
 import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
+import HelpModal from "./components/HelpModal.vue";
 
 const {
   currentlyPlaying,
@@ -192,6 +193,15 @@ const reloadStations = async() => {
     stationsLoadingError.value = true;
   }
 }
+
+const helpModal = ref(false)
+const openHelpModal = () => {
+  helpModal.value = true
+}
+
+const closeHelpModal = () => {
+  helpModal.value = false
+}
 </script>
 
 <template>
@@ -227,6 +237,7 @@ const reloadStations = async() => {
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
       <h1>{{ internetStatus }}</h1>
       <Cassete
+          @open-help-modal="openHelpModal"
           @reload-stations="reloadStations"
           @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation"
                @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre"
@@ -249,6 +260,7 @@ const reloadStations = async() => {
     <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation"
                         @close-modal="favoritesModalShown = false" v-if="favoritesModalShown"
                         :favorite-stations="favorites"/>
+    <HelpModal v-if="helpModal" @close-modal="closeHelpModal"/>
 
   </div>
 

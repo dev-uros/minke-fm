@@ -19,7 +19,10 @@ const setGenre = (genre: StreamTypeEnum) => {
 <template>
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
-      <div class="head">Select Genre</div>
+      <div class="head flex justify-between items-center">
+        <span>Hotkeys</span>
+        <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
+      </div>
       <div class="content flex flex-col gap-3">
         <button class="button" @click="setGenre(StreamTypeEnum.LOFI)">LoFi</button>
         <button class="button" @click="setGenre(StreamTypeEnum.CHILLHOP)">ChillHop</button>

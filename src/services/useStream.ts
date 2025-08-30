@@ -143,8 +143,6 @@ export function useStream() {
         }catch(e){
             console.log(e)
             streamBrokenGetNextStation(station);
-            return;
-
         }
         if (stream) {
             stream.unload();
@@ -730,6 +728,29 @@ export function useStream() {
                 }
 
                 createStream(jazzStreams.value[jazzStationIndex])
+
+                break;
+
+            case StreamTypeEnum.BLUES:
+
+                const bluesStationIndex = bluesStreams.value.findIndex(bluesStation => bluesStation.id === station.id)
+                bluesStreams.value.splice(bluesStationIndex, 1);
+                if (bluesStreams.value.length === 0) {
+                    console.error('blues STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(bluesStreams.value, station.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (bluesStreams.value.length === bluesStationIndex) {
+                    createStream(bluesStreams.value[0])
+                    return
+                }
+
+                createStream(bluesStreams.value[bluesStationIndex])
 
                 break;
             default:

@@ -77,7 +77,7 @@ const video = ref();
 
 const backgroundVideo = ref('/videos/lofi-1.mp4');
 const changeVideo = () => {
-  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(currentlyPlaying.value!.type)) {
+  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP, StreamTypeEnum.INDIE, StreamTypeEnum.JAZZ].includes(currentlyPlaying.value!.type)) {
     backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -87,6 +87,13 @@ const changeVideo = () => {
 
   if ([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(currentlyPlaying.value!.type)) {
     backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
+
+    if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(currentlyPlaying.value!.type)) {
+    backgroundVideo.value = `/videos/${getRandomRockVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
     return

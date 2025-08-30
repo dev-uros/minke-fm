@@ -1,4 +1,4 @@
-let lastVideo: string | null = 'lofi-1.mp4';
+let lastVideo: string | null = 'synthwave-1.mp4';
 
 export function getRandomSynthwaveVideoNoRepeat(): string {
     const videos = [

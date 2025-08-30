@@ -17,6 +17,12 @@ export function useStream() {
         vaporwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/vaporwave',
         chillwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/chillwave',
         retrowaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/retrowave',
+        rockUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/rock',
+        metalUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/metal',
+        indieUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/indie',
+        jazzUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/jazz',
+        bluesUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/blues'
+
     }
 
     const lofiStreams: Ref<FormattedStation[]> = ref([]);
@@ -26,6 +32,12 @@ export function useStream() {
     const vaporwaveStreams: Ref<FormattedStation[]> = ref([]);
     const chillwaveStreams: Ref<FormattedStation[]> = ref([]);
     const retrowaveStreams: Ref<FormattedStation[]> = ref([]);
+    const rockStreams: Ref<FormattedStation[]> = ref([]);
+    const metalStreams: Ref<FormattedStation[]> = ref([]);
+    const indieStreams: Ref<FormattedStation[]> = ref([]);
+    const jazzStreams: Ref<FormattedStation[]> = ref([]);
+    const bluesStreams: Ref<FormattedStation[]> = ref([]);
+
 
     const streamLoading = ref(false);
     const currentlyPlaying: Ref<FormattedStation | null> = ref(null);
@@ -47,6 +59,16 @@ export function useStream() {
                     return chillwaveStreams.value.length
                 case StreamTypeEnum.RETROWAVE:
                     return retrowaveStreams.value.length
+                case StreamTypeEnum.ROCK:
+                    return rockStreams.value.length
+                case StreamTypeEnum.METAL:
+                    return metalStreams.value.length
+                case StreamTypeEnum.INDIE:
+                    return indieStreams.value.length
+                case StreamTypeEnum.JAZZ:
+                    return jazzStreams.value.length
+                case StreamTypeEnum.BLUES:
+                    return bluesStreams.value.length
                 default :
                     return 0;
             }
@@ -76,6 +98,11 @@ export function useStream() {
             vaporwaveStations,
             chillwaveStations,
             retrowaveStations,
+            rockStations,
+            metalStations,
+            indieStations,
+            jazzStations,
+            bluesStations
         ] = await Promise.all(
             Object.values(urls).map(async (url) => {
                 const response = await fetch(url);
@@ -93,15 +120,32 @@ export function useStream() {
         vaporwaveStreams.value = formatStations(vaporwaveStations, StreamTypeEnum.VAPORWAVE);
         chillwaveStreams.value = formatStations(chillwaveStations, StreamTypeEnum.CHILLWAVE);
         retrowaveStreams.value = formatStations(retrowaveStations, StreamTypeEnum.RETROWAVE);
+        rockStreams.value = formatStations(rockStations, StreamTypeEnum.ROCK);
+        metalStreams.value = formatStations(metalStations, StreamTypeEnum.METAL);
+        indieStreams.value = formatStations(indieStations, StreamTypeEnum.INDIE);
+        jazzStreams.value = formatStations(jazzStations, StreamTypeEnum.JAZZ);
+        bluesStreams.value = formatStations(bluesStations, StreamTypeEnum.BLUES);
 
 
         createStream(lofiStreams.value[0]);
 
     }
 
-    const createStream = (station: FormattedStation) => {
+    const createStream = async(station: FormattedStation) => {
         if(!online.value) return
         streamLoading.value = true;
+        try{
+            const testStation = await fetch(station.url)
+            if(testStation.status !== 200){
+                throw new Error('Station not OK')
+            }
+            
+        }catch(e){
+            console.log(e)
+            streamBrokenGetNextStation(station);
+            return;
+
+        }
         if (stream) {
             stream.unload();
         }
@@ -161,6 +205,24 @@ export function useStream() {
                 createStream(retrowaveStreams.value[0])
                 break;
 
+            case StreamTypeEnum.ROCK:
+                createStream(rockStreams.value[0])
+                break;
+
+            case StreamTypeEnum.METAL:
+                createStream(metalStreams.value[0])
+                break;
+
+            case StreamTypeEnum.INDIE:
+                createStream(indieStreams.value[0])
+                break;
+
+            case StreamTypeEnum.JAZZ:
+                createStream(jazzStreams.value[0])
+                break;
+            case StreamTypeEnum.BLUES:
+                createStream(bluesStreams.value[0])
+                break;
             default:
                 console.error('Unsupported genre!');
                 break
@@ -320,6 +382,112 @@ export function useStream() {
                 createStream(retrowaveStreams.value[retrowaveStationIndex + 1])
 
                 break;
+
+            case StreamTypeEnum.ROCK:
+
+                const rockStationIndex = rockStreams.value.findIndex(rockStation => rockStation.id === currentlyPlaying.value!.id)
+                if (rockStreams.value.length === 0) {
+                    console.error('rock STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(rockStreams.value, currentlyPlaying.value!.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (rockStreams.value.length === rockStationIndex) {
+                    createStream(rockStreams.value[0])
+                    return
+                }
+
+                createStream(rockStreams.value[rockStationIndex + 1])
+
+                break;
+            case StreamTypeEnum.METAL:
+
+                const metalStationIndex = metalStreams.value.findIndex(metalStation => metalStation.id === currentlyPlaying.value!.id)
+                if (metalStreams.value.length === 0) {
+                    console.error('metal STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(metalStreams.value, currentlyPlaying.value!.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (metalStreams.value.length === metalStationIndex) {
+                    createStream(metalStreams.value[0])
+                    return
+                }
+
+                createStream(metalStreams.value[metalStationIndex + 1])
+
+                break;
+            case StreamTypeEnum.INDIE:
+
+                const indieStationIndex = indieStreams.value.findIndex(indieStation => indieStation.id === currentlyPlaying.value!.id)
+                if (indieStreams.value.length === 0) {
+                    console.error('indie STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(indieStreams.value, currentlyPlaying.value!.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (indieStreams.value.length === indieStationIndex) {
+                    createStream(indieStreams.value[0])
+                    return
+                }
+
+                createStream(indieStreams.value[indieStationIndex + 1])
+
+                break;
+            case StreamTypeEnum.JAZZ:
+
+                const jazzStationIndex = jazzStreams.value.findIndex(jazzStation => jazzStation.id === currentlyPlaying.value!.id)
+                if (jazzStreams.value.length === 0) {
+                    console.error('jazz STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(jazzStreams.value, currentlyPlaying.value!.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (jazzStreams.value.length === jazzStationIndex) {
+                    createStream(jazzStreams.value[0])
+                    return
+                }
+
+                createStream(jazzStreams.value[jazzStationIndex + 1])
+
+                break;
+            case StreamTypeEnum.BLUES:
+
+                const bluesStationIndex = bluesStreams.value.findIndex(bluesStation => bluesStation.id === currentlyPlaying.value!.id)
+                if (bluesStreams.value.length === 0) {
+                    console.error('blues STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(bluesStreams.value, currentlyPlaying.value!.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (bluesStreams.value.length === bluesStationIndex) {
+                    createStream(bluesStreams.value[0])
+                    return
+                }
+
+                createStream(bluesStreams.value[bluesStationIndex + 1])
+
+                break;
             default:
                 console.error('Unsupported genre: ' + currentlyPlaying.value!.type)
         }
@@ -474,6 +642,94 @@ export function useStream() {
                 }
 
                 createStream(retrowaveStreams.value[retrowaveStationIndex])
+
+                break;
+            case StreamTypeEnum.ROCK:
+
+                const rockStationIndex = rockStreams.value.findIndex(rockStation => rockStation.id === station.id)
+                rockStreams.value.splice(rockStationIndex, 1);
+                if (rockStreams.value.length === 0) {
+                    console.error('rock STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(rockStreams.value, station.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (rockStreams.value.length === rockStationIndex) {
+                    createStream(rockStreams.value[0])
+                    return
+                }
+
+                createStream(rockStreams.value[rockStationIndex])
+
+                break;
+            case StreamTypeEnum.METAL:
+
+                const metalStationIndex = metalStreams.value.findIndex(metalStation => metalStation.id === station.id)
+                rockStreams.value.splice(metalStationIndex, 1);
+                if (metalStreams.value.length === 0) {
+                    console.error('metal STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(metalStreams.value, station.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (metalStreams.value.length === metalStationIndex) {
+                    createStream(metalStreams.value[0])
+                    return
+                }
+
+                createStream(metalStreams.value[metalStationIndex])
+
+                break;
+            case StreamTypeEnum.INDIE:
+
+                const indieStationIndex = indieStreams.value.findIndex(indieStation => indieStation.id === station.id)
+                indieStreams.value.splice(indieStationIndex, 1);
+                if (indieStreams.value.length === 0) {
+                    console.error('indie STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(indieStreams.value, station.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (indieStreams.value.length === indieStationIndex) {
+                    createStream(indieStreams.value[0])
+                    return
+                }
+
+                createStream(indieStreams.value[indieStationIndex])
+
+                break;
+            case StreamTypeEnum.JAZZ:
+
+                const jazzStationIndex = jazzStreams.value.findIndex(jazzStation => jazzStation.id === station.id)
+                jazzStreams.value.splice(jazzStationIndex, 1);
+                if (jazzStreams.value.length === 0) {
+                    console.error('jazz STREAMS OUT')
+                    return
+                }
+                if (shuffle.value) {
+                    const nextStation = getRandomStation(jazzStreams.value, station.id);
+                    createStream(nextStation);
+                    return;
+                }
+
+                if (jazzStreams.value.length === jazzStationIndex) {
+                    createStream(jazzStreams.value[0])
+                    return
+                }
+
+                createStream(jazzStreams.value[jazzStationIndex])
 
                 break;
             default:

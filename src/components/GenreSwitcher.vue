@@ -30,6 +30,11 @@ const setGenre = (genre: StreamTypeEnum) => {
         <button class="button" @click="setGenre(StreamTypeEnum.JAZZHOP)">JazzHop</button>
         <button class="button" @click="setGenre(StreamTypeEnum.VAPORWAVE)">VaporWave</button>
         <button class="button" @click="setGenre(StreamTypeEnum.RETROWAVE)">RetroWave</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.ROCK)">Rock</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.METAL)">Metal</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.BLUES)">Blues</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.JAZZ)">Jazz</button>
+        <button class="button" @click="setGenre(StreamTypeEnum.INDIE)">Indie</button>
 
       </div>
     </div>

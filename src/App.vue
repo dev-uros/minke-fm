@@ -11,6 +11,7 @@ import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
 import HelpModal from "./components/HelpModal.vue";
+import { getRandomRockVideoNoRepeat } from "./services/useRockVideo.ts";
 
 const {
   currentlyPlaying,
@@ -49,7 +50,7 @@ const togglePlayer = () => {
 const setGenre = (genre: StreamTypeEnum) => {
   changeGenre(genre);
 
-  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP].includes(genre)) {
+  if ([StreamTypeEnum.LOFI, StreamTypeEnum.CHILLWAVE, StreamTypeEnum.CHILLHOP, StreamTypeEnum.INDIE, StreamTypeEnum.JAZZ].includes(genre)) {
     backgroundVideo.value = `/videos/${getRandomLofiVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -59,6 +60,13 @@ const setGenre = (genre: StreamTypeEnum) => {
 
   if ([StreamTypeEnum.SYNTHWAVE, StreamTypeEnum.RETROWAVE, StreamTypeEnum.VAPORWAVE].includes(genre)) {
     backgroundVideo.value = `/videos/${getRandomSynthwaveVideoNoRepeat()}`;
+    video.value.load();
+    video.value.play();
+    return
+  }
+
+    if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(genre)) {
+    backgroundVideo.value = `/videos/${getRandomRockVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
     return

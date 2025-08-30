@@ -49,6 +49,9 @@ export enum StreamTypeEnum {
     VAPORWAVE = 'vaporwave',
     CHILLWAVE = 'chillwave',
     RETROWAVE = 'retrowave',
-
-
+    ROCK = 'rock',
+    BLUES = 'blues',
+    METAL = 'metal',
+    INDIE = 'indie',
+    JAZZ = 'jazz'
 }

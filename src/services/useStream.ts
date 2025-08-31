@@ -131,6 +131,7 @@ export function useStream() {
 
     }
 
+    let streamTimeout: number;
     const createStream = async(station: FormattedStation) => {
         if(!online.value) return
         streamLoading.value = true;
@@ -153,9 +154,30 @@ export function useStream() {
             volume: streamVolume.value
         });
 
+        console.log('pred play')
+        console.log(station.url)
+
         play()
 
+        console.log('prosao play')
+        console.log(station.url);
+        if(streamTimeout){
+            clearTimeout(streamTimeout);
+        }
+        streamTimeout = setTimeout(()=>{
+            if(currentlyPlaying.value){
+                console.log('timeout check');
+                console.log(currentlyPlaying.value.url);
+                console.log(station.url);
+                if(currentlyPlaying.value.id !== station.id){
+                    streamBrokenGetNextStation(station);
+                }
+            }
+
+        }, 5000)
         stream.on('play', () => {
+            console.log('TRIGGER PLAY')
+            console.log(station.url);
             previousStation.value = currentlyPlaying.value;
             currentlyPlaying.value = station;
             streamLoading.value = false;

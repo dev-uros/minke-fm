@@ -10,18 +10,18 @@ export function useStream() {
     const online = useOnline()
 
     const urls = {
-        lofUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/lofi',
-        chillhopUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/chillhop',
-        synthwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/synthwave',
-        jazzhopUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/jazzhop',
-        vaporwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/vaporwave',
-        chillwaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/chillwave',
-        retrowaveUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/retrowave',
-        rockUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/rock',
-        metalUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/metal',
-        indieUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/indie',
-        jazzUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/jazz',
-        bluesUrl: 'https://de1.api.radio-browser.info/json/stations/bytag/blues'
+        lofUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/lofi',
+        chillhopUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/chillhop',
+        synthwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/synthwave',
+        jazzhopUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/jazzhop',
+        vaporwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/vaporwave',
+        chillwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/chillwave',
+        retrowaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/retrowave',
+        rockUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/rock',
+        metalUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/metal',
+        indieUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/indie',
+        jazzUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/jazz',
+        bluesUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/blues'
 
     }
 
@@ -146,7 +146,9 @@ export function useStream() {
             streamBrokenGetNextStation(station);
         }
         if (stream) {
+            stream.stop();
             stream.unload();
+            
         }
         stream = new Howl({
             src: [station.url],

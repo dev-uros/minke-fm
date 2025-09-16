@@ -12,7 +12,7 @@ function updateTime() {
   })
 }
 
-let timer: number
+let timer: ReturnType<typeof setInterval>
 
 onMounted(() => {
   updateTime()

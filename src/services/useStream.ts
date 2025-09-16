@@ -131,7 +131,7 @@ export function useStream() {
 
     }
 
-    let streamTimeout: number;
+    let streamTimeout: ReturnType<typeof setInterval>
     const createStream = async(station: FormattedStation) => {
         if(!online.value) return
         streamLoading.value = true;

@@ -291,7 +291,7 @@ const closeStationListModal = () => {
     <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation"
                         @close-modal="favoritesModalShown = false" v-if="favoritesModalShown"
                         :favorite-stations="favorites"/>
-    <HelpModal v-if="helpModal" @close-modal="closeStationListModal"/>
+    <HelpModal v-if="helpModal" @close-modal="closeHelpModal"/>
     <StationListModal :stations="stationListByGenre" @set-station="playStation"
                       @close-modal="stationListModal = false" v-if="stationListModal"/>
 

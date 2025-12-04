@@ -11,7 +11,8 @@ import {getRandomSynthwaveVideoNoRepeat} from "./services/useSynthwaveVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
 import HelpModal from "./components/HelpModal.vue";
-import { getRandomRockVideoNoRepeat } from "./services/useRockVideo.ts";
+import {getRandomRockVideoNoRepeat} from "./services/useRockVideo.ts";
+import StationListModal from "./components/StationListModal.vue";
 
 const {
   currentlyPlaying,
@@ -19,6 +20,7 @@ const {
   stationsCount,
   streamLoading,
   shuffle,
+  stationListByGenre,
   getStations,
   toggleStream,
   unload,
@@ -65,7 +67,7 @@ const setGenre = (genre: StreamTypeEnum) => {
     return
   }
 
-    if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(genre)) {
+  if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(genre)) {
     backgroundVideo.value = `/videos/${getRandomRockVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -92,7 +94,7 @@ const changeVideo = () => {
     return
   }
 
-    if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(currentlyPlaying.value!.type)) {
+  if ([StreamTypeEnum.ROCK, StreamTypeEnum.METAL, StreamTypeEnum.BLUES].includes(currentlyPlaying.value!.type)) {
     backgroundVideo.value = `/videos/${getRandomRockVideoNoRepeat()}`;
     video.value.load();
     video.value.play();
@@ -100,6 +102,8 @@ const changeVideo = () => {
   }
 }
 const onKeyDown = (event: KeyboardEvent) => {
+  if(stationListModal.value) return;
+
   if (event.code === "Space") {
     event.preventDefault();
     if (!streamLoading.value) {
@@ -130,6 +134,7 @@ const onKeyDown = (event: KeyboardEvent) => {
 }
 const onWheel = (event: WheelEvent) => {
   if (favoritesModalShown.value) return
+  if(stationListModal.value) return;
   if (event.deltaY < 0) {
     streamVolume.value = Math.min(1, streamVolume.value + 0.1);
   } else if (event.deltaY > 0) {
@@ -200,7 +205,7 @@ const removeStationFromFavorites = (station: FormattedStation) => {
   localStorage.setItem('favorites', JSON.stringify(favorites.value));
 }
 
-const reloadStations = async() => {
+const reloadStations = async () => {
   try {
     await getStations();
 
@@ -216,6 +221,16 @@ const openHelpModal = () => {
 
 const closeHelpModal = () => {
   helpModal.value = false
+}
+
+
+const stationListModal = ref(false)
+const openStationListModal = () => {
+  stationListModal.value = true
+}
+
+const closeStationListModal = () => {
+  stationListModal.value = false
 }
 </script>
 
@@ -253,11 +268,12 @@ const closeHelpModal = () => {
       <h1>{{ internetStatus }}</h1>
       <Cassete
           @open-help-modal="openHelpModal"
+          @open-station-list-modal="openStationListModal"
           @reload-stations="reloadStations"
           @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation"
-               @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre"
-               :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying"
-               ref="cassettePlayer" @toggle-player="togglePlayer"/>
+          @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre"
+          :shuffle="shuffle" :station-count="stationsCount" :currently-playing="currentlyPlaying"
+          ref="cassettePlayer" @toggle-player="togglePlayer"/>
     </div>
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
       <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
@@ -276,6 +292,8 @@ const closeHelpModal = () => {
                         @close-modal="favoritesModalShown = false" v-if="favoritesModalShown"
                         :favorite-stations="favorites"/>
     <HelpModal v-if="helpModal" @close-modal="closeHelpModal"/>
+    <StationListModal :stations="stationListByGenre" @set-station="playStation"
+                      @close-modal="stationListModal = false" v-if="stationListModal"/>
 
   </div>
 

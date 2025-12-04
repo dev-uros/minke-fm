@@ -41,6 +41,41 @@ export function useStream() {
 
     const streamLoading = ref(false);
     const currentlyPlaying: Ref<FormattedStation | null> = ref(null);
+    const stationListByGenre = computed(() => {
+        if (currentlyPlaying.value) {
+            switch (currentlyPlaying.value.type) {
+                case StreamTypeEnum.LOFI:
+                    return lofiStreams.value
+                case StreamTypeEnum.CHILLHOP:
+                    return chillhopStreams.value
+                case StreamTypeEnum.SYNTHWAVE:
+                    return synthwaveStreams.value
+                case StreamTypeEnum.JAZZHOP:
+                    return jazzhopStreams.value
+                case StreamTypeEnum.VAPORWAVE:
+                    return vaporwaveStreams.value
+                case StreamTypeEnum.CHILLWAVE:
+                    return chillwaveStreams.value
+                case StreamTypeEnum.RETROWAVE:
+                    return retrowaveStreams.value
+                case StreamTypeEnum.ROCK:
+                    return rockStreams.value
+                case StreamTypeEnum.METAL:
+                    return metalStreams.value
+                case StreamTypeEnum.INDIE:
+                    return indieStreams.value
+                case StreamTypeEnum.JAZZ:
+                    return jazzStreams.value
+                case StreamTypeEnum.BLUES:
+                    return bluesStreams.value
+                default :
+                    return []
+            }
+        } else {
+            return []
+        }
+    })
+
 
     const stationsCount = computed(() => {
         if (currentlyPlaying.value) {
@@ -823,6 +858,7 @@ export function useStream() {
         stationsCount,
         streamLoading,
         shuffle,
+        stationListByGenre,
         getStations,
         toggleStream,
         unload,

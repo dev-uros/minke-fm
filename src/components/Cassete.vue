@@ -11,7 +11,8 @@ const emit = defineEmits<{
   toggleShuffle: [],
   toggleFavoritesModal: [],
   reloadStations: [],
-  openHelpModal: []
+  openHelpModal: [],
+  openStationListModal: []
 }>()
 
 interface Props {
@@ -74,6 +75,10 @@ const reloadStations = () => {
 const openHelpModal = () => {
   emit('openHelpModal')
 }
+
+const openStationListModal = () => {
+  emit('openStationListModal')
+}
 </script>
 
 <template>
@@ -91,7 +96,9 @@ const openHelpModal = () => {
         <div class="screw1">
           <svg @click="openHelpModal" color="purple" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ --><path fill="currentColor" fill-rule="evenodd" d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10M12 7.75c-.621 0-1.125.504-1.125 1.125a.75.75 0 0 1-1.5 0a2.625 2.625 0 1 1 4.508 1.829q-.138.142-.264.267a7 7 0 0 0-.571.617c-.22.282-.298.489-.298.662V13a.75.75 0 0 1-1.5 0v-.75c0-.655.305-1.186.614-1.583c.229-.294.516-.58.75-.814q.106-.105.193-.194A1.125 1.125 0 0 0 12 7.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2" clip-rule="evenodd"/></svg>
         </div>
-
+        <div class="screw1">
+          <svg color="darkcyan" @click="openStationListModal" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Majesticons by Gerrit Halfmann - https://github.com/halfmage/majesticons/blob/main/LICENSE --><g fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm-1 5a4 4 0 1 0 2.032 7.446l1.76 1.761a1 1 0 0 0 1.415-1.414l-1.761-1.761A4 4 0 0 0 11 7zm0 6a2 2 0 1 0 0-4a2 2 0 0 0 0 4z" fill="currentColor"/></g></svg>
+        </div>
         <div class="screw2">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
                @click="toggleFavoritesModal">
@@ -217,7 +224,7 @@ const openHelpModal = () => {
   height: 2em;
   width: 2em;
   margin-top: 0.5em;
-  margin-left: 10em;
+  margin-left: 7em;
   border-radius: 50%;
   align-items: center;
   justify-content: center;

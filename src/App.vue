@@ -229,9 +229,6 @@ const openStationListModal = () => {
   stationListModal.value = true
 }
 
-const closeStationListModal = () => {
-  stationListModal.value = false
-}
 </script>
 
 <template>

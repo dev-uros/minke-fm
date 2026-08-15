@@ -15,10 +15,30 @@
         "title": "MinkeFM",
         "width": 1200,
         "height": 800
+      },
+      {
+        "label": "tray-panel",
+        "title": "MinkeFM",
+        "url": "index.html",
+        "width": 272,
+        "height": 374,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "focus": false,
+        "shadow": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$APPCACHE/backgrounds/**"
+        ]
+      }
     }
   },
   "bundle": {

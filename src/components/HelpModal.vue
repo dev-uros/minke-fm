@@ -3,10 +3,13 @@
 const emit = defineEmits<{
   closeModal: [],
 }>()
+import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 
 const closeModal = () => {
   emit('closeModal');
 }
+
+useEscapeToClose(closeModal);
 
 </script>
 
@@ -23,6 +26,8 @@ const closeModal = () => {
         <button class="button">H - play previous station</button>
         <button class="button">J - play next station</button>
         <button class="button">K - toggle shuffle</button>
+        <button class="button">L - now playing &amp; lyrics</button>
+        <button class="button">Esc - close any window</button>
         <button class="button">Scroll up - volume up</button>
         <button class="button">Scroll down - volume down</button>
 

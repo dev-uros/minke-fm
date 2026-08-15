@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Secrets - the Pexels key for background footage lives here
+.env
+.env.*
+!.env.example

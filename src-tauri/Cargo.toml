@@ -18,8 +18,22 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+# protocol-asset lets the webview play the cached background clips off disk.
+# tray-icon: the menu bar item. image-png: decodes the template icon.
+tauri = { version = "2", features = ["protocol-asset", "tray-icon", "image-png"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Local HTTP server that re-serves the stream to the webview.
+tiny_http = "0.12"
+# Upstream client. gzip is off: any re-encoding would desync the byte counting
+# that ICY metadata depends on.
+ureq = { version = "3", default-features = false, features = ["rustls"] }
+rand = "0.9"
+# Places the tray panel under the menu bar icon.
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 
+# Desktop only - the plugin has no Android/iOS support, and a phone has no
+# concept of launching a second copy anyway.
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2"

@@ -1,867 +1,280 @@
 import {computed, ref, Ref, watch} from "vue";
-import {FormattedStation, Station, StreamTypeEnum} from "../types";
-import {Howl} from "howler";
-import {formatStations} from "./useStationFormat.ts";
+import {invoke} from "@tauri-apps/api/core";
+import {FormattedStation, Genre} from "../types";
 import {getRandomStation} from "./useRandomStation.ts";
-import {useOnline} from "@vueuse/core";
+import {useConnectivity} from "./useConnectivity.ts";
+import {useAudioEngine} from "./useAudioEngine.ts";
+import {useNowPlaying} from "./useNowPlaying.ts";
+import {DEFAULT_GENRE} from "./useGenres.ts";
+import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 
 export function useStream() {
 
-    const online = useOnline()
+    const connectivity = useConnectivity();
+    const online = connectivity.online;
 
-    const urls = {
-        lofUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/lofi',
-        chillhopUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/chillhop',
-        synthwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/synthwave',
-        jazzhopUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/jazzhop',
-        vaporwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/vaporwave',
-        chillwaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/chillwave',
-        retrowaveUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/retrowave',
-        rockUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/rock',
-        metalUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/metal',
-        indieUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/indie',
-        jazzUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/jazz',
-        bluesUrl: 'https://de2.api.radio-browser.info/json/stations/bytag/blues'
-
-    }
-
-    const lofiStreams: Ref<FormattedStation[]> = ref([]);
-    const chillhopStreams: Ref<FormattedStation[]> = ref([]);
-    const synthwaveStreams: Ref<FormattedStation[]> = ref([]);
-    const jazzhopStreams: Ref<FormattedStation[]> = ref([]);
-    const vaporwaveStreams: Ref<FormattedStation[]> = ref([]);
-    const chillwaveStreams: Ref<FormattedStation[]> = ref([]);
-    const retrowaveStreams: Ref<FormattedStation[]> = ref([]);
-    const rockStreams: Ref<FormattedStation[]> = ref([]);
-    const metalStreams: Ref<FormattedStation[]> = ref([]);
-    const indieStreams: Ref<FormattedStation[]> = ref([]);
-    const jazzStreams: Ref<FormattedStation[]> = ref([]);
-    const bluesStreams: Ref<FormattedStation[]> = ref([]);
-
-
-    const streamLoading = ref(false);
+    /** Only genres the user has actually visited are held in memory. */
+    const stations: Ref<Record<Genre, FormattedStation[]>> = ref({});
+    const currentGenre: Ref<Genre> = ref(DEFAULT_GENRE);
     const currentlyPlaying: Ref<FormattedStation | null> = ref(null);
-    const stationListByGenre = computed(() => {
-        if (currentlyPlaying.value) {
-            switch (currentlyPlaying.value.type) {
-                case StreamTypeEnum.LOFI:
-                    return lofiStreams.value
-                case StreamTypeEnum.CHILLHOP:
-                    return chillhopStreams.value
-                case StreamTypeEnum.SYNTHWAVE:
-                    return synthwaveStreams.value
-                case StreamTypeEnum.JAZZHOP:
-                    return jazzhopStreams.value
-                case StreamTypeEnum.VAPORWAVE:
-                    return vaporwaveStreams.value
-                case StreamTypeEnum.CHILLWAVE:
-                    return chillwaveStreams.value
-                case StreamTypeEnum.RETROWAVE:
-                    return retrowaveStreams.value
-                case StreamTypeEnum.ROCK:
-                    return rockStreams.value
-                case StreamTypeEnum.METAL:
-                    return metalStreams.value
-                case StreamTypeEnum.INDIE:
-                    return indieStreams.value
-                case StreamTypeEnum.JAZZ:
-                    return jazzStreams.value
-                case StreamTypeEnum.BLUES:
-                    return bluesStreams.value
-                default :
-                    return []
-            }
-        } else {
-            return []
-        }
-    })
-
-
-    const stationsCount = computed(() => {
-        if (currentlyPlaying.value) {
-            switch (currentlyPlaying.value.type) {
-                case StreamTypeEnum.LOFI:
-                    return lofiStreams.value.length
-                case StreamTypeEnum.CHILLHOP:
-                    return chillhopStreams.value.length
-                case StreamTypeEnum.SYNTHWAVE:
-                    return synthwaveStreams.value.length
-                case StreamTypeEnum.JAZZHOP:
-                    return jazzhopStreams.value.length
-                case StreamTypeEnum.VAPORWAVE:
-                    return vaporwaveStreams.value.length
-                case StreamTypeEnum.CHILLWAVE:
-                    return chillwaveStreams.value.length
-                case StreamTypeEnum.RETROWAVE:
-                    return retrowaveStreams.value.length
-                case StreamTypeEnum.ROCK:
-                    return rockStreams.value.length
-                case StreamTypeEnum.METAL:
-                    return metalStreams.value.length
-                case StreamTypeEnum.INDIE:
-                    return indieStreams.value.length
-                case StreamTypeEnum.JAZZ:
-                    return jazzStreams.value.length
-                case StreamTypeEnum.BLUES:
-                    return bluesStreams.value.length
-                default :
-                    return 0;
-            }
-        } else {
-            return 0;
-        }
-    })
-
-    let stream: Howl;
-
+    const previousStation: Ref<FormattedStation | null> = ref(null);
     const streamVolume = ref(1);
-
     const shuffle = ref(false);
 
-    const previousStation: Ref<FormattedStation | null> = ref(null);
+    const genreLoading = ref(false);
+    /** Set when a genre was reachable but had nothing playable in it. */
+    const genreEmpty = ref(false);
 
-    const toggleShuffle = () => {
-        shuffle.value = !shuffle.value
+    const genreList = (genre: Genre | undefined): FormattedStation[] =>
+        genre ? stations.value[genre] ?? [] : [];
+
+    const stationListByGenre = computed(() => genreList(currentGenre.value));
+    const stationsCount = computed(() => stationListByGenre.value.length);
+
+    const engine = useAudioEngine({
+        isOnline: () => connectivity.online.value,
+        onReachable: connectivity.reportReachable,
+        onUnreachable: connectivity.reportUnreachable,
+        onStationDead: (dead, everPlayed) => skipDeadStation(dead.id, everPlayed)
+    });
+
+    /** Only the very first connect blanks the UI; reconnects keep the station visible. */
+    const streamLoading = computed(() => engine.state.value === 'connecting');
+    const reconnecting = computed(() => engine.state.value === 'reconnecting');
+    const isPlaying = computed(() => engine.state.value === 'playing');
+    const needsGesture = computed(() => engine.state.value === 'blocked');
+    const reconnectAttempt = computed(() => engine.attempt.value);
+
+    const {
+        nowPlaying,
+        lyrics,
+        stationHasMetadata,
+        reset: resetNowPlaying,
+        dispose: disposeNowPlaying
+    } = useNowPlaying(() => currentlyPlaying.value?.name ?? null);
+
+    /**
+     * Route the stream through the Rust ICY proxy so we can read track metadata.
+     * If the proxy is unavailable we play the station directly - that costs the
+     * track title, never the audio.
+     */
+    const resolveStreamUrl = async (url: string): Promise<string> => {
+        try {
+            return await invoke<string>('prepare_stream', {url});
+        } catch {
+            return url;
+        }
+    };
+
+    /** Guards against an earlier, slower resolve landing after a later one. */
+    let playRequest = 0;
+
+    const playStation = async (station: FormattedStation | undefined) => {
+        if (!station) return;
+        if (currentlyPlaying.value && currentlyPlaying.value.id !== station.id) {
+            previousStation.value = currentlyPlaying.value;
+        }
+        // Set it up front rather than waiting for a 'play' event, so the UI is
+        // honest about what we are trying to play even while reconnecting.
+        currentlyPlaying.value = station;
+        currentGenre.value = station.type;
+        resetNowPlaying();
+
+        const request = ++playRequest;
+        const url = await resolveStreamUrl(station.url);
+        if (request !== playRequest) return;
+
+        engine.play({id: station.id, url});
+    };
+
+    /**
+     * The station could not be reached while our own connection was fine, so
+     * move on. A station that never produced a byte is a bad entry and gets
+     * pruned; one that worked and has since gone down stays in the list, since
+     * it is probably a temporary outage on their side.
+     */
+    function skipDeadStation(stationId: string, everPlayed: boolean) {
+        const current = currentlyPlaying.value;
+        if (!current) return;
+
+        const list = genreList(current.type);
+        const index = list.findIndex(station => station.id === stationId);
+
+        if (!everPlayed && index !== -1) {
+            list.splice(index, 1);
+        }
+
+        if (list.length === 0) {
+            console.error(`No stations left for genre: ${current.type}`);
+            currentlyPlaying.value = null;
+            genreEmpty.value = true;
+            return;
+        }
+
+        if (shuffle.value) {
+            void playStation(getRandomStation(list, stationId));
+            return;
+        }
+
+        if (index === -1) {
+            void playStation(list[0]);
+            return;
+        }
+
+        // After a splice `index` already points at the next station; without one
+        // we still have to step past the station we just gave up on.
+        const nextIndex = everPlayed ? index + 1 : index;
+        void playStation(list[nextIndex % list.length]);
     }
+
+    /** Guards against a slow genre load landing after the user moved on. */
+    let genreRequest = 0;
+
+    /**
+     * Load a genre's stations, serving the cache first so switching feels
+     * instant, then refreshing in the background when the cache is stale.
+     */
+    const loadGenre = async (genre: Genre): Promise<FormattedStation[]> => {
+        const request = ++genreRequest;
+
+        const cached = loadCachedGenre(genre);
+        if (cached) {
+            stations.value = {...stations.value, [genre]: cached.stations};
+            if (cached.fresh) return cached.stations;
+        }
+
+        if (!cached) genreLoading.value = true;
+        try {
+            const fresh = await fetchGenre(genre);
+            if (request !== genreRequest) return genreList(genre);
+
+            stations.value = {...stations.value, [genre]: fresh};
+            return fresh;
+        } catch (error) {
+            connectivity.reportUnreachable();
+            if (cached) return cached.stations;
+            throw error;
+        } finally {
+            if (request === genreRequest) genreLoading.value = false;
+        }
+    };
+
+    const changeGenre = async (genre: Genre) => {
+        if (genre === currentGenre.value && stationsCount.value > 0) return;
+
+        currentGenre.value = genre;
+        genreEmpty.value = false;
+
+        let list: FormattedStation[];
+        try {
+            list = await loadGenre(genre);
+        } catch {
+            genreEmpty.value = true;
+            return;
+        }
+
+        if (list.length === 0) {
+            genreEmpty.value = true;
+            return;
+        }
+
+        await playStation(shuffle.value ? getRandomStation(list, '') : list[0]);
+    };
 
     const getStations = async () => {
-        const [
-            lofiStations,
-            chillhopStations,
-            synthwaveStations,
-            jazzhopStations,
-            vaporwaveStations,
-            chillwaveStations,
-            retrowaveStations,
-            rockStations,
-            metalStations,
-            indieStations,
-            jazzStations,
-            bluesStations
-        ] = await Promise.all(
-            Object.values(urls).map(async (url) => {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Response status: ${response.status}`);
-                }
-                return await response.json() as Station[];
-            })
-        );
+        await changeGenre(DEFAULT_GENRE);
+    };
 
-        lofiStreams.value = formatStations(lofiStations, StreamTypeEnum.LOFI)
-        chillhopStreams.value = formatStations(chillhopStations, StreamTypeEnum.CHILLHOP)
-        synthwaveStreams.value = formatStations(synthwaveStations, StreamTypeEnum.SYNTHWAVE);
-        jazzhopStreams.value = formatStations(jazzhopStations, StreamTypeEnum.JAZZHOP);
-        vaporwaveStreams.value = formatStations(vaporwaveStations, StreamTypeEnum.VAPORWAVE);
-        chillwaveStreams.value = formatStations(chillwaveStations, StreamTypeEnum.CHILLWAVE);
-        retrowaveStreams.value = formatStations(retrowaveStations, StreamTypeEnum.RETROWAVE);
-        rockStreams.value = formatStations(rockStations, StreamTypeEnum.ROCK);
-        metalStreams.value = formatStations(metalStations, StreamTypeEnum.METAL);
-        indieStreams.value = formatStations(indieStations, StreamTypeEnum.INDIE);
-        jazzStreams.value = formatStations(jazzStations, StreamTypeEnum.JAZZ);
-        bluesStreams.value = formatStations(bluesStations, StreamTypeEnum.BLUES);
+    /**
+     * Back to how the app starts on a clean machine.
+     *
+     * Not a reload of the current genre: `changeGenre` deliberately does nothing
+     * when asked for the genre already playing, so reset has to clear the state
+     * out first. The station cache goes too, otherwise "reset" would hand back
+     * the same list this session had already pruned dead stations from.
+     *
+     * Favourites and volume are left alone - those are the user's, not the
+     * radio's.
+     */
+    const resetAll = async () => {
+        engine.stop();
+        clearStationCache();
 
+        stations.value = {};
+        currentlyPlaying.value = null;
+        previousStation.value = null;
+        shuffle.value = false;
+        genreEmpty.value = false;
+        currentGenre.value = DEFAULT_GENRE;
+        resetNowPlaying();
 
-        createStream(lofiStreams.value[0]);
+        await changeGenre(DEFAULT_GENRE);
+    };
 
-    }
+    const playNextStation = () => {
+        const current = currentlyPlaying.value;
+        if (!current) return;
 
-    let streamTimeout: ReturnType<typeof setInterval>
-    const createStream = async(station: FormattedStation) => {
-        if(!online.value) return
-        streamLoading.value = true;
-        try{
-            const testStation = await fetch(station.url)
-            if(testStation.status !== 200){
-                throw new Error('Station not OK')
-            }
-            
-        }catch(e){
-            console.log(e)
-            streamBrokenGetNextStation(station);
-        }
-        if (stream) {
-            stream.stop();
-            stream.unload();
-            
-        }
-        stream = new Howl({
-            src: [station.url],
-            html5: true,
-            volume: streamVolume.value
-        });
+        const list = genreList(current.type);
+        if (list.length === 0) return;
 
-        console.log('pred play')
-        console.log(station.url)
-
-        play()
-
-        console.log('prosao play')
-        console.log(station.url);
-        if(streamTimeout){
-            clearTimeout(streamTimeout);
-        }
-        streamTimeout = setTimeout(()=>{
-            if(currentlyPlaying.value){
-                console.log('timeout check');
-                console.log(currentlyPlaying.value.url);
-                console.log(station.url);
-                if(currentlyPlaying.value.id !== station.id){
-                    streamBrokenGetNextStation(station);
-                }
-            }
-
-        }, 5000)
-        stream.on('play', () => {
-            console.log('TRIGGER PLAY')
-            console.log(station.url);
-            previousStation.value = currentlyPlaying.value;
-            currentlyPlaying.value = station;
-            streamLoading.value = false;
-        })
-
-
-        stream.on('loaderror', function () {
-            console.error('Stream failed to load');
-            streamBrokenGetNextStation(station)
-        });
-
-        stream.on('playerror', () => {
-            console.error('Stream failed to play');
-            streamBrokenGetNextStation(station)
-        })
-
-    }
-
-    const changeGenre = (genre: StreamTypeEnum) => {
-        if(!online.value) return
-
-        if (currentlyPlaying.value!.type === genre) return
-
-        switch (genre) {
-            case StreamTypeEnum.LOFI:
-                createStream(lofiStreams.value[0])
-                break;
-            case StreamTypeEnum.CHILLHOP:
-                createStream(chillhopStreams.value[0])
-                break;
-            case StreamTypeEnum.SYNTHWAVE:
-                createStream(synthwaveStreams.value[0])
-                break;
-            case StreamTypeEnum.JAZZHOP:
-                createStream(jazzhopStreams.value[0])
-                break;
-            case StreamTypeEnum.VAPORWAVE:
-                createStream(vaporwaveStreams.value[0])
-                break;
-            case StreamTypeEnum.CHILLWAVE:
-                createStream(chillhopStreams.value[0])
-                break;
-
-            case StreamTypeEnum.RETROWAVE:
-                createStream(retrowaveStreams.value[0])
-                break;
-
-            case StreamTypeEnum.ROCK:
-                createStream(rockStreams.value[0])
-                break;
-
-            case StreamTypeEnum.METAL:
-                createStream(metalStreams.value[0])
-                break;
-
-            case StreamTypeEnum.INDIE:
-                createStream(indieStreams.value[0])
-                break;
-
-            case StreamTypeEnum.JAZZ:
-                createStream(jazzStreams.value[0])
-                break;
-            case StreamTypeEnum.BLUES:
-                createStream(bluesStreams.value[0])
-                break;
-            default:
-                console.error('Unsupported genre!');
-                break
-
+        if (shuffle.value) {
+            void playStation(getRandomStation(list, current.id));
+            return;
         }
 
-    }
+        const index = list.findIndex(station => station.id === current.id);
+        void playStation(list[(index + 1) % list.length]);
+    };
 
     const playPreviousStation = () => {
-        if(!online.value) return
-
-        if(previousStation.value){
-            createStream(previousStation.value)
+        if (previousStation.value) {
+            void playStation(previousStation.value);
         }
-    }
-    const playNextStation = () => {
-        if(!online.value) return
+    };
 
-        switch (currentlyPlaying.value!.type) {
-            case StreamTypeEnum.LOFI:
-                const lofiStationIndex = lofiStreams.value.findIndex(lofiStation => lofiStation.id === currentlyPlaying.value!.id)
-                if (lofiStreams.value.length === 0) {
-                    console.error('LOFI STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(lofiStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (lofiStreams.value.length === lofiStationIndex) {
-                    createStream(lofiStreams.value[0])
-                    return
-                }
-
-                createStream(lofiStreams.value[lofiStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.CHILLHOP:
-
-                const chillhopStationIndex = chillhopStreams.value.findIndex(chillhopStation => chillhopStation.id === currentlyPlaying.value!.id)
-                if (chillhopStreams.value.length === 0) {
-                    console.error('chillhop STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(chillhopStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (chillhopStreams.value.length === chillhopStationIndex) {
-                    createStream(chillhopStreams.value[0])
-                    return
-                }
-
-                createStream(chillhopStreams.value[chillhopStationIndex + 1])
-                break;
-            case StreamTypeEnum.SYNTHWAVE:
-                const synthwaveStationIndex = synthwaveStreams.value.findIndex(synthwaveStation => synthwaveStation.id === currentlyPlaying.value!.id)
-                if (synthwaveStreams.value.length === 0) {
-                    console.error('synthwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(synthwaveStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (synthwaveStreams.value.length === synthwaveStationIndex) {
-                    createStream(synthwaveStreams.value[0])
-                    return
-                }
-
-                createStream(synthwaveStreams.value[synthwaveStationIndex + 1])
-                break;
-            case StreamTypeEnum.JAZZHOP:
-                const jazzhopStationIndex = jazzhopStreams.value.findIndex(jazzhopStation => jazzhopStation.id === currentlyPlaying.value!.id)
-                if (jazzhopStreams.value.length === 0) {
-                    console.error('jazzhop STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(jazzhopStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (jazzhopStreams.value.length === jazzhopStationIndex) {
-                    createStream(jazzhopStreams.value[0])
-                    return
-                }
-
-                createStream(jazzhopStreams.value[jazzhopStationIndex + 1])
-                break;
-            case StreamTypeEnum.VAPORWAVE:
-
-                const vaporwaveStationIndex = vaporwaveStreams.value.findIndex(vaporwaveStation => vaporwaveStation.id === currentlyPlaying.value!.id)
-                if (vaporwaveStreams.value.length === 0) {
-                    console.error('vaporwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(vaporwaveStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (vaporwaveStreams.value.length === vaporwaveStationIndex) {
-                    createStream(vaporwaveStreams.value[0])
-                    return
-                }
-
-                createStream(vaporwaveStreams.value[vaporwaveStationIndex + 1])
-                break;
-            case StreamTypeEnum.CHILLWAVE:
-
-                const chillwaveStationIndex = chillwaveStreams.value.findIndex(chillwaveStation => chillwaveStation.id === currentlyPlaying.value!.id)
-                if (chillwaveStreams.value.length === 0) {
-                    console.error('chillwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(chillwaveStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (chillwaveStreams.value.length === chillwaveStationIndex) {
-                    createStream(chillwaveStreams.value[0])
-                    return
-                }
-
-                createStream(chillwaveStreams.value[chillwaveStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.RETROWAVE:
-
-                const retrowaveStationIndex = retrowaveStreams.value.findIndex(retrowaveStation => retrowaveStation.id === currentlyPlaying.value!.id)
-                if (retrowaveStreams.value.length === 0) {
-                    console.error('retrowave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(retrowaveStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (retrowaveStreams.value.length === retrowaveStationIndex) {
-                    createStream(retrowaveStreams.value[0])
-                    return
-                }
-
-                createStream(retrowaveStreams.value[retrowaveStationIndex + 1])
-
-                break;
-
-            case StreamTypeEnum.ROCK:
-
-                const rockStationIndex = rockStreams.value.findIndex(rockStation => rockStation.id === currentlyPlaying.value!.id)
-                if (rockStreams.value.length === 0) {
-                    console.error('rock STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(rockStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (rockStreams.value.length === rockStationIndex) {
-                    createStream(rockStreams.value[0])
-                    return
-                }
-
-                createStream(rockStreams.value[rockStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.METAL:
-
-                const metalStationIndex = metalStreams.value.findIndex(metalStation => metalStation.id === currentlyPlaying.value!.id)
-                if (metalStreams.value.length === 0) {
-                    console.error('metal STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(metalStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (metalStreams.value.length === metalStationIndex) {
-                    createStream(metalStreams.value[0])
-                    return
-                }
-
-                createStream(metalStreams.value[metalStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.INDIE:
-
-                const indieStationIndex = indieStreams.value.findIndex(indieStation => indieStation.id === currentlyPlaying.value!.id)
-                if (indieStreams.value.length === 0) {
-                    console.error('indie STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(indieStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (indieStreams.value.length === indieStationIndex) {
-                    createStream(indieStreams.value[0])
-                    return
-                }
-
-                createStream(indieStreams.value[indieStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.JAZZ:
-
-                const jazzStationIndex = jazzStreams.value.findIndex(jazzStation => jazzStation.id === currentlyPlaying.value!.id)
-                if (jazzStreams.value.length === 0) {
-                    console.error('jazz STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(jazzStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (jazzStreams.value.length === jazzStationIndex) {
-                    createStream(jazzStreams.value[0])
-                    return
-                }
-
-                createStream(jazzStreams.value[jazzStationIndex + 1])
-
-                break;
-            case StreamTypeEnum.BLUES:
-
-                const bluesStationIndex = bluesStreams.value.findIndex(bluesStation => bluesStation.id === currentlyPlaying.value!.id)
-                if (bluesStreams.value.length === 0) {
-                    console.error('blues STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(bluesStreams.value, currentlyPlaying.value!.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (bluesStreams.value.length === bluesStationIndex) {
-                    createStream(bluesStreams.value[0])
-                    return
-                }
-
-                createStream(bluesStreams.value[bluesStationIndex + 1])
-
-                break;
-            default:
-                console.error('Unsupported genre: ' + currentlyPlaying.value!.type)
-        }
-
-    }
-    const streamBrokenGetNextStation = (station: FormattedStation) => {
-        if(!online.value) return
-
-        switch (station.type) {
-            case StreamTypeEnum.LOFI:
-                const lofiStationIndex = lofiStreams.value.findIndex(lofiStation => lofiStation.id === station.id)
-                lofiStreams.value.splice(lofiStationIndex, 1);
-                if (lofiStreams.value.length === 0) {
-                    console.error('LOFI STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(lofiStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (lofiStreams.value.length === lofiStationIndex) {
-                    createStream(lofiStreams.value[0])
-                    return
-                }
-
-                createStream(lofiStreams.value[lofiStationIndex])
-
-                break;
-            case StreamTypeEnum.CHILLHOP:
-
-                const chillhopStationIndex = chillhopStreams.value.findIndex(chillhopStation => chillhopStation.id === station.id)
-                chillhopStreams.value.splice(chillhopStationIndex, 1);
-                if (chillhopStreams.value.length === 0) {
-                    console.error('chillhop STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(chillhopStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (chillhopStreams.value.length === chillhopStationIndex) {
-                    createStream(chillhopStreams.value[0])
-                    return
-                }
-
-                createStream(chillhopStreams.value[chillhopStationIndex])
-                break;
-            case StreamTypeEnum.SYNTHWAVE:
-                const synthwaveStationIndex = synthwaveStreams.value.findIndex(synthwaveStation => synthwaveStation.id === station.id)
-                synthwaveStreams.value.splice(synthwaveStationIndex, 1);
-                if (synthwaveStreams.value.length === 0) {
-                    console.error('synthwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(synthwaveStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (synthwaveStreams.value.length === synthwaveStationIndex) {
-                    createStream(synthwaveStreams.value[0])
-                    return
-                }
-
-                createStream(synthwaveStreams.value[synthwaveStationIndex])
-                break;
-            case StreamTypeEnum.JAZZHOP:
-                const jazzhopStationIndex = jazzhopStreams.value.findIndex(jazzhopStation => jazzhopStation.id === station.id)
-                jazzhopStreams.value.splice(jazzhopStationIndex, 1);
-                if (jazzhopStreams.value.length === 0) {
-                    console.error('jazzhop STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(jazzhopStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (jazzhopStreams.value.length === jazzhopStationIndex) {
-                    createStream(jazzhopStreams.value[0])
-                    return
-                }
-
-                createStream(jazzhopStreams.value[jazzhopStationIndex])
-                break;
-            case StreamTypeEnum.VAPORWAVE:
-
-                const vaporwaveStationIndex = vaporwaveStreams.value.findIndex(vaporwaveStation => vaporwaveStation.id === station.id)
-                vaporwaveStreams.value.splice(vaporwaveStationIndex, 1);
-                if (vaporwaveStreams.value.length === 0) {
-                    console.error('vaporwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(vaporwaveStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (vaporwaveStreams.value.length === vaporwaveStationIndex) {
-                    createStream(vaporwaveStreams.value[0])
-                    return
-                }
-
-                createStream(vaporwaveStreams.value[vaporwaveStationIndex])
-                break;
-            case StreamTypeEnum.CHILLWAVE:
-
-                const chillwaveStationIndex = chillwaveStreams.value.findIndex(chillwaveStation => chillwaveStation.id === station.id)
-                chillwaveStreams.value.splice(chillwaveStationIndex, 1);
-                if (chillwaveStreams.value.length === 0) {
-                    console.error('chillwave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(chillwaveStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (chillwaveStreams.value.length === chillwaveStationIndex) {
-                    createStream(chillwaveStreams.value[0])
-                    return
-                }
-
-                createStream(chillwaveStreams.value[chillwaveStationIndex])
-
-                break;
-            case StreamTypeEnum.RETROWAVE:
-
-                const retrowaveStationIndex = retrowaveStreams.value.findIndex(retrowaveStation => retrowaveStation.id === station.id)
-                retrowaveStreams.value.splice(retrowaveStationIndex, 1);
-                if (retrowaveStreams.value.length === 0) {
-                    console.error('retrowave STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(retrowaveStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (retrowaveStreams.value.length === retrowaveStationIndex) {
-                    createStream(retrowaveStreams.value[0])
-                    return
-                }
-
-                createStream(retrowaveStreams.value[retrowaveStationIndex])
-
-                break;
-            case StreamTypeEnum.ROCK:
-
-                const rockStationIndex = rockStreams.value.findIndex(rockStation => rockStation.id === station.id)
-                rockStreams.value.splice(rockStationIndex, 1);
-                if (rockStreams.value.length === 0) {
-                    console.error('rock STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(rockStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (rockStreams.value.length === rockStationIndex) {
-                    createStream(rockStreams.value[0])
-                    return
-                }
-
-                createStream(rockStreams.value[rockStationIndex])
-
-                break;
-            case StreamTypeEnum.METAL:
-
-                const metalStationIndex = metalStreams.value.findIndex(metalStation => metalStation.id === station.id)
-                rockStreams.value.splice(metalStationIndex, 1);
-                if (metalStreams.value.length === 0) {
-                    console.error('metal STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(metalStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (metalStreams.value.length === metalStationIndex) {
-                    createStream(metalStreams.value[0])
-                    return
-                }
-
-                createStream(metalStreams.value[metalStationIndex])
-
-                break;
-            case StreamTypeEnum.INDIE:
-
-                const indieStationIndex = indieStreams.value.findIndex(indieStation => indieStation.id === station.id)
-                indieStreams.value.splice(indieStationIndex, 1);
-                if (indieStreams.value.length === 0) {
-                    console.error('indie STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(indieStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (indieStreams.value.length === indieStationIndex) {
-                    createStream(indieStreams.value[0])
-                    return
-                }
-
-                createStream(indieStreams.value[indieStationIndex])
-
-                break;
-            case StreamTypeEnum.JAZZ:
-
-                const jazzStationIndex = jazzStreams.value.findIndex(jazzStation => jazzStation.id === station.id)
-                jazzStreams.value.splice(jazzStationIndex, 1);
-                if (jazzStreams.value.length === 0) {
-                    console.error('jazz STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(jazzStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (jazzStreams.value.length === jazzStationIndex) {
-                    createStream(jazzStreams.value[0])
-                    return
-                }
-
-                createStream(jazzStreams.value[jazzStationIndex])
-
-                break;
-
-            case StreamTypeEnum.BLUES:
-
-                const bluesStationIndex = bluesStreams.value.findIndex(bluesStation => bluesStation.id === station.id)
-                bluesStreams.value.splice(bluesStationIndex, 1);
-                if (bluesStreams.value.length === 0) {
-                    console.error('blues STREAMS OUT')
-                    return
-                }
-                if (shuffle.value) {
-                    const nextStation = getRandomStation(bluesStreams.value, station.id);
-                    createStream(nextStation);
-                    return;
-                }
-
-                if (bluesStreams.value.length === bluesStationIndex) {
-                    createStream(bluesStreams.value[0])
-                    return
-                }
-
-                createStream(bluesStreams.value[bluesStationIndex])
-
-                break;
-            default:
-                console.error('Unsupported genre: ' + station.type)
-        }
-    }
-    const play = () => {
-        stream.play()
-    }
-
-    const pause = () => {
-        stream.pause()
-    }
-
-    const unload = () => {
-        stream.unload();
-    }
-    const toggleStream = () => {
-        if (stream.playing()) {
-            pause()
-            return
-        }
-        play()
-    }
-
-    const setVolume = (volume: number) => {
-        stream.volume(volume)
-    }
-
-    watch(streamVolume, (value) => {
-        setVolume(value)
-    })
-
-    const streamStation = (station: FormattedStation) => {
-        createStream(station)
-    }
+    const streamStation = (station: FormattedStation) => void playStation(station);
 
     const reloadStream = () => {
-        if(currentlyPlaying.value){
-            createStream(currentlyPlaying.value);
+        if (currentlyPlaying.value) {
+            void playStation(currentlyPlaying.value);
         }
-    }
+    };
+
+    const toggleStream = () => engine.toggle();
+    const toggleShuffle = () => {
+        shuffle.value = !shuffle.value;
+    };
+
+    watch(streamVolume, value => engine.setVolume(value), {immediate: true});
+
+    const dispose = () => {
+        engine.destroy();
+        connectivity.dispose();
+        disposeNowPlaying();
+    };
+
     return {
+        nowPlaying,
+        lyrics,
+        stationHasMetadata,
         currentlyPlaying,
+        currentGenre,
+        genreLoading,
+        genreEmpty,
         streamVolume,
         stationsCount,
         streamLoading,
+        reconnecting,
+        isPlaying,
+        needsGesture,
+        reconnectAttempt,
         shuffle,
         stationListByGenre,
         getStations,
+        resetAll,
         toggleStream,
-        unload,
+        unload: dispose,
         playNextStation,
         changeGenre,
         toggleShuffle,
@@ -869,5 +282,5 @@ export function useStream() {
         streamStation,
         reloadStream,
         online
-    }
+    };
 }

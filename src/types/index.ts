@@ -31,6 +31,13 @@ export interface Station {
     clicktrend: number;
 }
 
+/**
+ * A radio-browser tag, lowercase. Any tag is playable, so this is a plain
+ * string rather than a fixed set - the catalogue in `useGenres.ts` is only the
+ * browsable selection, not the limit of what can be tuned into.
+ */
+export type Genre = string;
+
 export interface FormattedStation {
     name: string,
     id: string,
@@ -38,20 +45,16 @@ export interface FormattedStation {
     urlResolved: string,
     country: string,
     state: string,
-    type: StreamTypeEnum
+    /** The genre this station was found under. */
+    type: Genre
 }
 
-export enum StreamTypeEnum {
-    LOFI = 'lofi',
-    CHILLHOP = 'chillhop',
-    SYNTHWAVE = 'synthwave',
-    JAZZHOP = 'jazzhop',
-    VAPORWAVE = 'vaporwave',
-    CHILLWAVE = 'chillwave',
-    RETROWAVE = 'retrowave',
-    ROCK = 'rock',
-    BLUES = 'blues',
-    METAL = 'metal',
-    INDIE = 'indie',
-    JAZZ = 'jazz'
+/** One entry in the browsable genre catalogue. */
+export interface GenreOption {
+    name: Genre;
+    /** Display name, since tags are all lowercase. */
+    label: string;
+    family: string;
+    /** Stations the directory reports, once counts have loaded. */
+    stationCount?: number;
 }

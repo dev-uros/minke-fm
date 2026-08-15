@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {FormattedStation} from "../types";
-import {ref, watch} from "vue";
+import {computed, ref} from "vue";
+import {useRememberedScroll} from "../services/useRememberedScroll.ts";
+import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 
 interface Props {
   stations: FormattedStation[]
@@ -16,21 +18,23 @@ const closeModal = () => {
   emit('closeModal');
 }
 
+useEscapeToClose(closeModal);
+
 const setStation = (station: FormattedStation) => {
   emit('setStation', station);
 }
 
+const {container} = useRememberedScroll(() => `stations:${props.stations[0]?.type ?? ''}`);
+
 const searchInput = ref('');
-const allStations = ref(props.stations)
-watch(searchInput, (value) => {
-  const query = value.toLowerCase().trim();
-  if (!query) {
-    allStations.value = props.stations;
-  } else {
-    allStations.value = props.stations.filter(station =>
-        station.name.toLowerCase().includes(query)
-    );
-  }
+// Derived, so the list stays in sync when a dead station gets pruned while the
+// modal is open.
+const allStations = computed(() => {
+  const query = searchInput.value.toLowerCase().trim();
+  if (!query) return props.stations;
+  return props.stations.filter(station =>
+      station.name.toLowerCase().includes(query)
+  );
 })
 </script>
 
@@ -38,7 +42,7 @@ watch(searchInput, (value) => {
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
       <div class="head flex justify-between items-center">
-        <span>{{ stations[0].type }} stations</span>
+        <span>{{ stations[0]?.type ?? 'No' }} stations</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
       <div class="search-head flex justify-between items-center">
@@ -51,7 +55,7 @@ watch(searchInput, (value) => {
             @click.stop
         />
       </div>
-      <div class="content flex flex-col gap-3">
+      <div class="content flex flex-col gap-3" ref="container">
         <div
             v-for="station in allStations"
             :key="station.id"
@@ -124,7 +128,10 @@ watch(searchInput, (value) => {
   max-width: 500px;
   width: 500px;
   max-height: 300px;
-  overflow-x: scroll;
+  /* A column of stations scrolls vertically; overflow-x only ever produced a
+     stray horizontal scrollbar. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .button {

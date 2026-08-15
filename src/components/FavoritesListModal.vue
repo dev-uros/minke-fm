@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {FormattedStation} from "../types";
+import {useRememberedScroll} from "../services/useRememberedScroll.ts";
+import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 interface Props {
   favoriteStations: FormattedStation[]
 }
@@ -11,9 +13,13 @@ const emit = defineEmits<{
   removeStation: [station: FormattedStation]
 }>()
 
+const {container} = useRememberedScroll(() => 'favorites');
+
 const closeModal = () => {
   emit('closeModal');
 }
+
+useEscapeToClose(closeModal);
 
 const setStation = (station: FormattedStation) => {
   emit('setStation', station);
@@ -30,7 +36,7 @@ const removeStation = (station: FormattedStation) => {
         <span>Favorite stations</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
-      <div class="content flex flex-col gap-3">
+      <div class="content flex flex-col gap-3" ref="container">
         <div
             v-for="station in favoriteStations"
             :key="station.id"
@@ -94,7 +100,8 @@ const removeStation = (station: FormattedStation) => {
   font-size: 14px;
   font-weight: 600;
   max-height: 300px;
-  overflow-x: scroll;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .button {

@@ -1,36 +1,33 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import GenreSwitcher from "./GenreSwitcher.vue";
-import {FormattedStation, StreamTypeEnum} from "../types";
+import {Genre} from "../types";
 
 const emit = defineEmits<{
   togglePlayer: [toggle: boolean],
   playNext: [],
   playPrevious: [],
-  setGenre: [genre: StreamTypeEnum],
+  setGenre: [genre: Genre],
   toggleShuffle: [],
   toggleFavoritesModal: [],
-  reloadStations: [],
+  resetAll: [],
   openHelpModal: [],
   openStationListModal: []
 }>()
 
 interface Props {
-  currentlyPlaying: FormattedStation | null
+  currentGenre: Genre
   stationCount: number,
-  shuffle: boolean
+  shuffle: boolean,
+  isPlaying: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
-const isRunning = ref(true);
-
-
+// Driven by the player, not by a local flag - otherwise the reels keep spinning
+// through a dropped connection and stop during an automatic reconnect.
 const toggleIsRunning = () => {
-  isRunning.value = !isRunning.value
-
-  emit('togglePlayer', isRunning.value);
-
+  emit('togglePlayer', !props.isPlaying);
 }
 
 defineExpose({
@@ -45,7 +42,7 @@ const closeGenreSwitcherModal = () => {
   switchGenreModal.value = false;
 }
 
-const setGenre = (genre: StreamTypeEnum) => {
+const setGenre = (genre: Genre) => {
   switchGenreModal.value = false;
   emit("setGenre", genre)
 }
@@ -55,21 +52,18 @@ const toggleShuffle = () => {
 }
 
 const playPrevious = () => {
-  isRunning.value = true
   emit('playPrevious')
 }
 
 const playNext = () => {
-  isRunning.value = true
-
   emit('playNext')
 }
 
 const toggleFavoritesModal = () => {
   emit('toggleFavoritesModal')
 }
-const reloadStations = () => {
-  emit('reloadStations');
+const resetAll = () => {
+  emit('resetAll');
 }
 
 const openHelpModal = () => {
@@ -87,7 +81,7 @@ const openStationListModal = () => {
 
       <div class="ups">
         <div class="screw1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" @click="reloadStations">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" @click="resetAll">
             <!-- Icon from Google Material Icons by Material Design Authors - https://github.com/material-icons/material-icons/blob/master/LICENSE -->
             <path fill="currentColor"
                   d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44c-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z"/>
@@ -119,11 +113,11 @@ const openStationListModal = () => {
             </svg>
           </button>
           <button @click="toggleIsRunning" class="btn btn-circle">
-            <svg v-show="isRunning" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <svg v-show="isPlaying" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
               <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
               <path fill="currentColor" d="M17 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3"/>
             </svg>
-            <svg v-show="!isRunning" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <svg v-show="!isPlaying" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
               <!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
               <path fill="currentColor" d="M6 4v16a1 1 0 0 0 1.524.852l13-8a1 1 0 0 0 0-1.704l-13-8A1 1 0 0 0 6 4"/>
             </svg>
@@ -154,16 +148,16 @@ const openStationListModal = () => {
         <div class="line1">
         </div>
         <div class="line2" @click="toggleSwitchGenreModal">
-          <span class="line2-text text-2xl font-lofi" style="color: red">{{ currentlyPlaying?.type }} ({{
+          <span class="line2-text font-lofi" style="color: red" :title="currentGenre">{{ currentGenre }} ({{
               stationCount
             }})</span>
         </div>
 
         <div class="yl">
           <div class="roll">
-            <div class="s_wheel" :class="{ 'animate-run': isRunning }"></div>
+            <div class="s_wheel" :class="{ 'animate-run': isPlaying }"></div>
             <div class="tape"></div>
-            <div class="e_wheel" :class="{ 'animate-run': isRunning }"></div>
+            <div class="e_wheel" :class="{ 'animate-run': isPlaying }"></div>
           </div>
         </div>
         <div class="or">
@@ -184,7 +178,8 @@ const openStationListModal = () => {
         <div class="screw4">+</div>
       </div>
     </div>
-    <GenreSwitcher @set-genre="setGenre" @close-modal="closeGenreSwitcherModal" v-if="switchGenreModal"/>
+    <GenreSwitcher :current="currentGenre" @set-genre="setGenre" @close-modal="closeGenreSwitcherModal"
+                   v-if="switchGenreModal"/>
   </div>
 </template>
 
@@ -304,6 +299,15 @@ const openStationListModal = () => {
   padding: 0 0.3em;
   color: black;
   border-radius: 2px;
+  /* The cassette label is 230px of physical space. A long genre such as
+     "experimental" used to run straight off the shell. */
+  display: inline-block;
+  max-width: 190px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.35rem;
+  line-height: 1.3;
   box-shadow: inset 0 0 4px rgba(255 255 255 / 0.6), /* subtle light highlight */ 1px 1px 2px rgba(0 0 0 / 0.1); /* slight shadow for depth */
   user-select: none;
   -webkit-user-select: none; /* Safari */

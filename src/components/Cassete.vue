@@ -188,6 +188,10 @@ const openStationListModal = () => {
   width: 300px;
   height: 200px;
   background: #252525;
+  /* The parts below were laid out to a taller box than this and spilled out of
+     the shell. Measured: the trapezoid hung 26px under it, the bottom screws
+     17px. They are sized to fit now, and this is the backstop. */
+  overflow: hidden;
   border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
 }
@@ -238,7 +242,7 @@ const openStationListModal = () => {
   background-color: lightgrey;
   height: 0.75em;
   width: 0.75em;
-  margin-top: -1.3em;
+  margin-top: -1.05em;
   margin-left: 0.5em;
   border-radius: 50%;
   align-items: center;
@@ -252,7 +256,7 @@ const openStationListModal = () => {
   background-color: lightgrey;
   height: 0.75em;
   width: 0.75em;
-  margin-top: -1.3em;
+  margin-top: -1.05em;
   margin-left: 16.35em;
   border-radius: 50%;
   align-items: center;
@@ -262,7 +266,7 @@ const openStationListModal = () => {
 .card1 {
   width: 230px;
   height: 120px;
-  margin-top: 0.5em;
+  margin-top: 0.25em;
   margin-left: 2.18em;
   background-color: #FFFDD0;
   clip-path: polygon(5% 0, 95% 0, 100% 10%, 100% 100%, 100% 100%, 0 100%, 0 100%, 0 10%);
@@ -399,7 +403,7 @@ const openStationListModal = () => {
 
 .card2 {
   width: 150px;
-  height: 50px;
+  height: 26px;
   margin-top: 0em;
   margin-left: 4.6em;
   background-color: #252525;
@@ -415,7 +419,7 @@ const openStationListModal = () => {
   height: 0.75em;
   width: 0.75em;
   left: 4.25em;
-  top: -0.5em;
+  top: -1.05em;
   border-radius: 50%;
   align-items: center;
   justify-content: center;
@@ -428,7 +432,7 @@ const openStationListModal = () => {
   background-color: rgb(190, 190, 190);
   border-radius: 50%;
   left: 1.5em;
-  top: 2em;
+  top: 0.55em;
 }
 
 .t1 {
@@ -438,7 +442,7 @@ const openStationListModal = () => {
   background-color: rgb(190, 190, 190);
   border-radius: 2px;
   left: 3em;
-  top: 1em;
+  top: -0.05em;
 }
 
 .t2 {
@@ -448,7 +452,7 @@ const openStationListModal = () => {
   background-color: rgb(190, 190, 190);
   border-radius: 2px;
   left: 5.7em;
-  top: -0.2em;
+  top: -1.3em;
 }
 
 .c2 {
@@ -458,7 +462,7 @@ const openStationListModal = () => {
   background-color: rgb(190, 190, 190);
   border-radius: 50%;
   left: 7.2em;
-  top: -0.2em;
+  top: -1.7em;
 }
 
 .animate-run {

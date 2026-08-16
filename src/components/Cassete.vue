@@ -178,8 +178,15 @@ const openStationListModal = () => {
         <div class="screw4">+</div>
       </div>
     </div>
-    <GenreSwitcher :current="currentGenre" @set-genre="setGenre" @close-modal="closeGenreSwitcherModal"
-                   v-if="switchGenreModal"/>
+    <!-- Teleported out of the cassette, which the phone layout scales with
+         `zoom`. A position:fixed child of a zoomed element is laid out in that
+         element's scaled coordinates, so `inset: 0` covered only the cassette
+         and the modal came out clipped. On desktop nothing is zoomed and this
+         changes nothing. -->
+    <Teleport to="body">
+      <GenreSwitcher :current="currentGenre" @set-genre="setGenre" @close-modal="closeGenreSwitcherModal"
+                     v-if="switchGenreModal"/>
+    </Teleport>
   </div>
 </template>
 

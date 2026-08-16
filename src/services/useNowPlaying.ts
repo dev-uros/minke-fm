@@ -150,14 +150,38 @@ export function useNowPlaying(stationName: () => string | null) {
         stationHasMetadata.value = true;
     };
 
+    /*
+     * Connecting is not the same as changing station, and this used to treat it
+     * as if it were.
+     *
+     * Every reconnect re-announces the stream, and the desktop proxy starts a
+     * fresh connection with no memory of the last title, so it sends the same
+     * one again. Clearing here and re-classifying there wiped the artwork off
+     * the screen and looked it up all over again - a flicker of two or three
+     * appearances while a station settles, exactly when reconnects happen.
+     *
+     * A genuine station change already calls `reset` from `playStation`, so
+     * there is nothing left for this to clear.
+     */
     void listen<IcyConnected>('icy:connected', event => {
         icyName = event.payload.icyName;
         stationHasMetadata.value = event.payload.hasMetadata;
-        clearTrack();
     }).then(un => unlisteners.push(un));
+
+    const sameAsShowing = (track: NowPlaying | null) => {
+        const current = nowPlaying.value;
+        return !!track && !!current
+            && current.artist === track.artist && current.song === track.song;
+    };
 
     void listen<string>('icy:title', event => {
         const track = classifyTitle(event.payload, icyName, stationName());
+
+        // Already on screen, album and artwork and all. Clearing it to set the
+        // very same thing back is the flicker; the lookup would be repeated for
+        // nothing too.
+        if (sameAsShowing(track)) return;
+
         clearTrack();
         if (!track) return;
 

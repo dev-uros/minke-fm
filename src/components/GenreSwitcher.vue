@@ -120,8 +120,7 @@ const grouped = computed(() => {
 
 .card {
   font-family: Montserrat, sans-serif;
-  width: 560px;
-  max-width: 92vw;
+  width: min(560px, 92vw);
   translate: -6px -6px;
   background: rgb(242, 188, 0);
   border: 3px solid #000000;

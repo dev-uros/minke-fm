@@ -27,3 +27,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Release signing. The real keystore lives in ~/.minke-fm, outside the repo -
+# these are a backstop in case one is ever copied in here by hand.
+*.keystore
+*.jks
+key.properties

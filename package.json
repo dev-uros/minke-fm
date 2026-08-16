@@ -9,7 +9,11 @@
     "tauri:build": "tauri build --bundles dmg",
     "preview": "vite preview",
     "tauri": "tauri",
-    "start": "tauri dev"
+    "start": "tauri dev",
+    "build:mobile": "MINKE_MOBILE=1 vue-tsc --noEmit && MINKE_MOBILE=1 vite build",
+    "tauri:build:android": "bash scripts/build-android.sh",
+    "android:install": "bash scripts/install-android.sh",
+    "tauri:build:android:debug": "bash scripts/build-android.sh aarch64 debug"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",

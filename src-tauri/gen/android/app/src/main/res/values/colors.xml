@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app's own background. Every layer that can show during startup -
+         splash, window, webview - is painted this, so the handover never
+         flashes a different colour. -->
+    <color name="minke_background">#1a1a1a</color>
+
+    <!-- Sampled from the icon artwork itself, so the adaptive background and
+         the wordmark read as one image under any launcher mask. -->
+    <color name="ic_launcher_background">#020418</color>
+</resources>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import {computed, nextTick, onMounted, onUnmounted, Ref, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Clock from "./components/Clock.vue";
 import Cassete from "./components/Cassete.vue";
 import StreamLoading from "./components/StreamLoading.vue";
 import SaveStation from "./components/SaveStation.vue";
 import {useStream} from "./services/useStream.ts";
 import {FormattedStation, Genre} from "./types";
+import {useFavorites} from "./services/useFavorites.ts";
 import {useBackgroundVideo} from "./services/useBackgroundVideo.ts";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
@@ -30,6 +31,7 @@ const {
   reconnectAttempt,
   shuffle,
   stationListByGenre,
+  ensureCurrentStations,
   getStations,
   resetAll,
   toggleStream,
@@ -86,7 +88,23 @@ const setGenre = (genre: Genre) => {
 
 const changeVideo = () => void setBackgroundFor(currentGenre.value);
 
+/**
+ * Whether the keystroke is going into a text field.
+ *
+ * Checked against the DOM rather than a list of modal flags, so a search box
+ * added later is covered without anyone having to remember this - which is how
+ * the genre picker's search ended up toggling shuffle and skipping stations
+ * while you typed.
+ */
+const isTyping = (target: EventTarget | null) =>
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+
 const onKeyDown = (event: KeyboardEvent) => {
+  // Escape is handled per modal, elsewhere, so nothing here needs to run while
+  // a field has focus.
+  if (isTyping(event.target)) return;
+
   if (stationListModal.value) return;
   // The now-playing modal handles its own keys.
   if (nowPlayingModal.value) return;
@@ -143,10 +161,6 @@ onUnmounted(() => {
 const stationsLoadingError = ref(false);
 onMounted(async () => {
 
-  const localStorageFavorites = localStorage.getItem('favorites');
-  if (localStorageFavorites) {
-    favorites.value = JSON.parse(localStorageFavorites);
-  }
   try {
     await getStations();
 
@@ -160,7 +174,7 @@ onMounted(async () => {
   window.addEventListener("wheel", onWheel);
 })
 
-const favorites: Ref<FormattedStation[]> = ref([]);
+const {favorites, toggle: toggleFavorite, remove: removeFavorite} = useFavorites();
 const toastMessage = ref('');
 const toastTitle = ref('');
 const closeToast = () => {
@@ -168,21 +182,11 @@ const closeToast = () => {
   toastTitle.value = '';
 }
 const setFavorite = () => {
-  if (currentlyPlaying.value) {
-    const favoriteExistsIndex = favorites.value.findIndex(fav => fav.id === currentlyPlaying.value!.id)
-    if (favoriteExistsIndex === -1) {
-      favorites.value.unshift(currentlyPlaying.value);
-      toastMessage.value = `${currentlyPlaying.value.name} added to favorites!`
-      toastTitle.value = 'New favorite station!'
-      localStorage.setItem('favorites', JSON.stringify(favorites.value));
-    } else {
-      favorites.value.splice(favoriteExistsIndex, 1);
-      toastMessage.value = `${currentlyPlaying.value.name} removed from favorites!`
-      toastTitle.value = 'Station removed from favorites!'
-      localStorage.setItem('favorites', JSON.stringify(favorites.value));
-    }
-
-  }
+  const station = currentlyPlaying.value;
+  const result = toggleFavorite(station);
+  if (!result || !station) return;
+  toastTitle.value = result === 'added' ? 'New favorite station!' : 'Station removed from favorites!';
+  toastMessage.value = `${station.name} ${result === 'added' ? 'added to' : 'removed from'} favorites!`;
 }
 
 const favoritesModalShown = ref(false);
@@ -197,11 +201,9 @@ const playStation = (station: FormattedStation) => {
 
 const removeStationFromFavorites = (station: FormattedStation) => {
   favoritesModalShown.value = false;
-  const favoriteExistsIndex = favorites.value.findIndex(fav => fav.id === station.id)
-  favorites.value.splice(favoriteExistsIndex, 1);
+  removeFavorite(station);
   toastMessage.value = `${station.name} removed from favorites!`
   toastTitle.value = 'Station removed from favorites!'
-  localStorage.setItem('favorites', JSON.stringify(favorites.value));
 }
 
 const reloadStations = async () => {
@@ -237,6 +239,9 @@ const closeHelpModal = () => {
 
 const stationListModal = ref(false)
 const openStationListModal = () => {
+  // Playing a favourite switches genre without pulling its stations; this is
+  // the moment they are actually needed.
+  void ensureCurrentStations();
   stationListModal.value = true
 }
 
@@ -380,7 +385,7 @@ useTray(
                         @close-modal="favoritesModalShown = false" v-if="favoritesModalShown"
                         :favorite-stations="favorites"/>
     <HelpModal v-if="helpModal" @close-modal="closeHelpModal"/>
-    <StationListModal :stations="stationListByGenre" @set-station="playStation"
+    <StationListModal :stations="stationListByGenre" :loading="genreLoading" @set-station="playStation"
                       @close-modal="stationListModal = false" v-if="stationListModal"/>
     <NowPlayingModal v-if="nowPlayingModal" :now-playing="nowPlaying" :lyrics="lyrics"
                      @close-modal="nowPlayingModal = false"/>

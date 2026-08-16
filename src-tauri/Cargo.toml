@@ -30,10 +30,15 @@ tiny_http = "0.12"
 # that ICY metadata depends on.
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 rand = "0.9"
-# Places the tray panel under the menu bar icon.
-tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 
 # Desktop only - the plugin has no Android/iOS support, and a phone has no
 # concept of launching a second copy anyway.
 [target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = "2"
+# Places the tray panel under the menu bar icon.
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+
+# The unstripped debug library is 215MB, which makes every Android install take
+# minutes. Debugging here is done with logs, not a native debugger.
+[profile.dev]
+strip = "debuginfo"

@@ -64,7 +64,10 @@ const visible = ref(false);
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 20px;
+  /* --safe-top is pushed in by the Android shell and is unset on desktop, where
+     the calc falls back to the plain 20px. Without it the toast opens under the
+     status bar. */
+  padding-top: calc(var(--safe-top, 0px) + 20px);
   z-index: 9999;
   pointer-events: none; /* allow clicks through */
 }

@@ -1,5 +1,9 @@
 mod icy;
 pub mod lyrics;
+// Playback lives in Kotlin on Android; on desktop `useAudioEngine.ts` is still
+// the player and this module does not exist.
+#[cfg(target_os = "android")]
+mod player;
 pub mod text;
 pub mod track;
 mod tray;
@@ -92,6 +96,16 @@ fn backgrounds_enabled(library: tauri::State<'_, std::sync::Arc<VideoLibrary>>) 
     library.has_key()
 }
 
+/// Whether this build runs on a phone.
+///
+/// Answered at compile time rather than sniffed from the user agent, and it is
+/// what decides which root component mounts - the desktop layout and the mobile
+/// one are different enough to be separate components.
+#[tauri::command]
+fn is_mobile() -> bool {
+    cfg!(any(target_os = "android", target_os = "ios"))
+}
+
 /// Pushes the current player state into the menu bar.
 ///
 /// Called by the frontend whenever anything visible there changes, so the menu
@@ -116,6 +130,8 @@ fn tray_command(action: String, app: tauri::AppHandle) {
     match action.as_str() {
         "show" => {
             if let Some(window) = app.get_webview_window("main") {
+                // Mobile windows have no concept of being minimised.
+                #[cfg(desktop)]
                 let _ = window.unminimize();
                 let _ = window.show();
                 let _ = window.set_focus();
@@ -156,6 +172,9 @@ pub fn run() {
             let _ = window.set_focus();
         }
     }));
+
+    #[cfg(target_os = "android")]
+    let builder = builder.plugin(player::init());
 
     builder
         .plugin(tauri_plugin_opener::init())
@@ -204,6 +223,7 @@ pub fn run() {
             lookup_lyrics,
             background_video,
             backgrounds_enabled,
+            is_mobile,
             update_tray,
             tray_state,
             tray_command

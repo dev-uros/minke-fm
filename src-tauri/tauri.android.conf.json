@@ -1,0 +1,14 @@
+{
+  "$schema": "gen/schemas/mobile-schema.json",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "MinkeFM"
+      }
+    ]
+  },
+  "build": {
+    "beforeBuildCommand": "npm run build:mobile"
+  }
+}

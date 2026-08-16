@@ -1,5 +1,6 @@
 import {FormattedStation, Genre, Station} from "../types";
 import {formatStations} from "./useStationFormat.ts";
+import {clearGenres, readGenre, writeGenre} from "./useStationCache.ts";
 
 /**
  * Station lists come from radio-browser, which is a pool of volunteer mirrors -
@@ -18,27 +19,37 @@ const API_HOSTS = [
     'https://at1.api.radio-browser.info'
 ];
 
-const REQUEST_TIMEOUT_MS = 8_000;
 /**
- * The top few hundred by popularity is what anyone actually listens to, and it
- * is a fraction of the bytes of an unbounded tag like "rock".
+ * Generous, because a genre is now the whole tag rather than a page of it:
+ * "rock" is about six megabytes, and the mirrors do not compress it.
  */
-const STATIONS_PER_GENRE = 200;
+const REQUEST_TIMEOUT_MS = 45_000;
 
-const CACHE_PREFIX = 'minke-fm:stations:v2:';
-/** Matches every version, so clearing also sweeps up formats no longer read. */
-const CACHE_FAMILY = 'minke-fm:stations';
+/** Higher than any tag's station count, which is how you ask for all of them. */
+const NO_LIMIT = 100_000;
+
 const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
-/** Old genres are evicted so a session of browsing cannot fill localStorage. */
-const CACHED_GENRE_LIMIT = 24;
 
 async function fetchFromHost(host: string, genre: Genre): Promise<FormattedStation[]> {
+    /*
+     * No limit: every station under the tag, most-played first.
+     *
+     * It used to take the top 200, which quietly put a floor on how obscure a
+     * station could be and still be reachable - twelve clicks, in the case of
+     * "rock". Sampling proved that floor was not buying quality either: of
+     * twenty-five stations with zero clicks, twenty-five answered, against
+     * twenty-four of twenty-five from the top of the list. Clicks measure fame,
+     * not whether a station works.
+     */
     const query = new URLSearchParams({
         // Let the server drop the dead ones so we never even see them.
         hidebroken: 'true',
         order: 'clickcount',
         reverse: 'true',
-        limit: String(STATIONS_PER_GENRE)
+        // Omitting this does not mean "everything" - radio-browser then applies
+        // its own default of 1000, which silently capped "rock" at 908 stations
+        // after de-duplication. The ceiling has to be asked for explicitly.
+        limit: String(NO_LIMIT)
     });
 
     const controller = new AbortController();
@@ -67,7 +78,8 @@ export async function fetchGenre(genre: Genre): Promise<FormattedStation[]> {
     for (const host of API_HOSTS) {
         try {
             const stations = await fetchFromHost(host, genre);
-            writeCache(genre, stations);
+            // Not awaited: a megabyte of stations should not hold up playback.
+            void writeGenre(genre, stations);
             return stations;
         } catch (error) {
             lastError = error;
@@ -77,83 +89,28 @@ export async function fetchGenre(genre: Genre): Promise<FormattedStation[]> {
     throw lastError;
 }
 
-interface CachePayload {
-    savedAt: number;
-    stations: FormattedStation[];
-}
-
-const cacheKey = (genre: Genre) => `${CACHE_PREFIX}${genre}`;
-
-function evictOldest() {
-    try {
-        const keys: Array<{key: string; savedAt: number}> = [];
-        for (let i = 0; i < localStorage.length; i += 1) {
-            const key = localStorage.key(i);
-            if (!key?.startsWith(CACHE_PREFIX)) continue;
-            const raw = localStorage.getItem(key);
-            const savedAt = raw ? (JSON.parse(raw) as CachePayload).savedAt ?? 0 : 0;
-            keys.push({key, savedAt});
-        }
-        if (keys.length < CACHED_GENRE_LIMIT) return;
-
-        keys.sort((a, b) => a.savedAt - b.savedAt);
-        for (const {key} of keys.slice(0, keys.length - CACHED_GENRE_LIMIT + 1)) {
-            localStorage.removeItem(key);
-        }
-    } catch {
-        // Cache housekeeping is best-effort.
-    }
-}
-
-function writeCache(genre: Genre, stations: FormattedStation[]) {
-    try {
-        evictOldest();
-        const payload: CachePayload = {savedAt: Date.now(), stations};
-        localStorage.setItem(cacheKey(genre), JSON.stringify(payload));
-    } catch {
-        // Quota or private mode - the cache is an optimisation, not a requirement.
-    }
-}
-
 export interface CachedStations {
     stations: FormattedStation[];
     fresh: boolean;
 }
 
-export function loadCachedGenre(genre: Genre): CachedStations | null {
-    try {
-        const raw = localStorage.getItem(cacheKey(genre));
-        if (!raw) return null;
+export async function loadCachedGenre(genre: Genre): Promise<CachedStations | null> {
+    const entry = await readGenre(genre);
+    if (!entry) return null;
 
-        const payload = JSON.parse(raw) as CachePayload;
-        if (!Array.isArray(payload?.stations) || payload.stations.length === 0) return null;
-
-        return {
-            stations: payload.stations,
-            fresh: Date.now() - payload.savedAt < CACHE_TTL_MS
-        };
-    } catch {
-        return null;
-    }
+    return {
+        stations: entry.stations,
+        fresh: Date.now() - entry.savedAt < CACHE_TTL_MS
+    };
 }
 
 /**
  * Drops every cached genre, so the next load genuinely goes to the network.
  *
- * Matches on the family rather than the current prefix: entries written by an
- * older cache format are never read and never expire, so a reset is the one
- * chance to be rid of them.
+ * Also sweeps the localStorage entries the previous cache format left behind:
+ * they are never read and never expire, so a reset is the one chance to be rid
+ * of them.
  */
-export function clearStationCache() {
-    try {
-        const keys: string[] = [];
-        for (let index = 0; index < localStorage.length; index += 1) {
-            const key = localStorage.key(index);
-            if (key?.startsWith(CACHE_FAMILY)) keys.push(key);
-        }
-        // Collected first: removing while iterating shifts the indices.
-        for (const key of keys) localStorage.removeItem(key);
-    } catch {
-        // Private mode - there was nothing cached to clear anyway.
-    }
+export async function clearStationCache() {
+    await clearGenres();
 }

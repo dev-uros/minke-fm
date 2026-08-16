@@ -23,6 +23,14 @@ export type PlaybackState =
 export interface AudioSource {
     id: string;
     url: string;
+    /**
+     * What a lock screen would display. The desktop engine ignores these - it
+     * has no lock screen - but the Android player needs them at the moment
+     * playback starts, so they travel with the source rather than separately.
+     */
+    title?: string;
+    artist?: string;
+    artwork?: string;
 }
 
 interface AudioEngineOptions {
@@ -59,6 +67,11 @@ export interface AudioEngine {
     attempt: Ref<number>;
     currentSource: Ref<AudioSource | null>;
     play: (source: AudioSource) => void;
+    /**
+     * Updates what is displayed without interrupting playback, for when the
+     * station announces a new track. Only the Android player implements it.
+     */
+    setMetadata?: (metadata: Pick<AudioSource, 'title' | 'artist' | 'artwork'>) => void;
     pause: () => void;
     resume: () => void;
     toggle: () => void;

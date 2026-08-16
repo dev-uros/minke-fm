@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {FormattedStation} from "../types";
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {useRememberedScroll} from "../services/useRememberedScroll.ts";
 import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 
 interface Props {
   stations: FormattedStation[]
+  /** True while the genre is still being fetched, so an empty list can say so. */
+  loading?: boolean
 }
 
 const props = defineProps<Props>()
@@ -36,13 +38,59 @@ const allStations = computed(() => {
       station.name.toLowerCase().includes(query)
   );
 })
+
+/**
+ * Only the rows on screen are rendered.
+ *
+ * A genre is now the entire tag rather than its most-played couple of hundred -
+ * "rock" is around four and a half thousand stations - and building that many
+ * buttons locks the page up for seconds every time the modal opens. Rows are a
+ * fixed height and absolutely placed inside a rail of the full scroll height,
+ * so the scrollbar behaves exactly as it would with all of them present.
+ *
+ * The fixed height is why a station name is kept to one line: names in this
+ * directory run to whole sentences of tags, and letting them wrap would make
+ * every row a different height and the arithmetic below impossible.
+ */
+const ROW_HEIGHT = 44;
+const OVERSCAN = 6;
+
+const scrollTop = ref(0);
+const viewport = ref(320);
+
+const onScroll = () => {
+  const element = container.value;
+  if (!element) return;
+  scrollTop.value = element.scrollTop;
+  viewport.value = element.clientHeight;
+};
+
+const totalHeight = computed(() => allStations.value.length * ROW_HEIGHT);
+
+const window_ = computed(() => {
+  const first = Math.max(0, Math.floor(scrollTop.value / ROW_HEIGHT) - OVERSCAN);
+  const count = Math.ceil(viewport.value / ROW_HEIGHT) + OVERSCAN * 2;
+  const last = Math.min(allStations.value.length, first + count);
+  return allStations.value.slice(first, last).map((station, index) => ({
+    station,
+    top: (first + index) * ROW_HEIGHT
+  }));
+});
+
+// Typing a query shortens the list, and a scroll position from the longer one
+// would leave the modal looking empty.
+watch(() => allStations.value.length, () => {
+  const element = container.value;
+  if (element && element.scrollTop > 0) element.scrollTop = 0;
+  scrollTop.value = 0;
+});
 </script>
 
 <template>
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
       <div class="head flex justify-between items-center">
-        <span>{{ stations[0]?.type ?? 'No' }} stations</span>
+        <span>{{ stations[0]?.type ?? 'No' }} stations ({{ allStations.length }})</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
       <div class="search-head flex justify-between items-center">
@@ -55,19 +103,23 @@ const allStations = computed(() => {
             @click.stop
         />
       </div>
-      <div class="content flex flex-col gap-3" ref="container">
-        <div
-            v-for="station in allStations"
-            :key="station.id"
-            class="flex items-center gap-2"
-        >
-          <button
-              class="button flex-1"
-              @click="setStation(station)"
-          >
-            {{ station.name }}
-          </button>
+      <div class="content" ref="container" @scroll.passive="onScroll">
+        <!-- Reached by opening the list straight after playing a favourite from
+             a genre that has never been browsed: the stations are on their way. -->
+        <p v-if="loading && allStations.length === 0" class="note">Loading stations...</p>
+        <p v-else-if="allStations.length === 0" class="note">Nothing here</p>
 
+        <div class="rail" :style="{ height: totalHeight + 'px' }">
+          <button
+              v-for="row in window_"
+              :key="row.station.id"
+              class="button"
+              :style="{ top: row.top + 'px' }"
+              :title="row.station.name"
+              @click="setStation(row.station)"
+          >
+            {{ row.station.name }}
+          </button>
         </div>
       </div>
     </div>
@@ -125,30 +177,53 @@ const allStations = computed(() => {
   padding: 8px 12px;
   font-size: 14px;
   font-weight: 600;
-  max-width: 500px;
-  width: 500px;
-  max-height: 300px;
+  width: min(560px, 86vw);
+  /* A fixed height rather than a max: the virtual window needs to know how much
+     it is filling, and a box that grows with its contents cannot say. */
+  height: min(52vh, 360px);
   /* A column of stations scrolls vertically; overflow-x only ever produced a
      stray horizontal scrollbar. */
   overflow-y: auto;
   overscroll-behavior: contain;
 }
 
+/* Holds the full scroll height so the scrollbar matches the whole list, while
+   only the visible rows exist. */
+.rail {
+  position: relative;
+  width: 100%;
+}
+
+.note {
+  margin: 6px 2px;
+  font-weight: 700;
+  color: #000000;
+  opacity: 0.65;
+}
+
 .button {
+  position: absolute;
+  left: 0;
+  right: 6px;
+  height: 34px;
   padding: 5px 10px;
-  margin-top: 10px;
   border: 3px solid #000000;
   box-shadow: 3px 3px 0 #000000;
   font-weight: 750;
   background: rgb(241, 90, 37);
-  transition: all 0.3s ease;
   cursor: pointer;
   color: white;
+  /* One line, so every row is the same height. The full name is on the title
+     attribute, and it is shown in full on the display once selected. */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* No transition: with rows recycled as you scroll, animating their arrival
+     makes the list shimmer. */
 }
 
 .button:hover {
-  translate: 1.5px 1.5px;
-  box-shadow: 1.5px 1.5px 0 #000000;
   background: #1ac2ff;
 }
 

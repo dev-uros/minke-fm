@@ -3,12 +3,13 @@ import {invoke} from "@tauri-apps/api/core";
 import {FormattedStation, Genre} from "../types";
 import {getRandomStation} from "./useRandomStation.ts";
 import {useConnectivity} from "./useConnectivity.ts";
-import {useAudioEngine} from "./useAudioEngine.ts";
+import {AudioEngine, useAudioEngine} from "./useAudioEngine.ts";
+import {useNativePlayer} from "./useNativePlayer.ts";
 import {useNowPlaying} from "./useNowPlaying.ts";
 import {DEFAULT_GENRE} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 
-export function useStream() {
+export function useStream(mobile = false) {
 
     const connectivity = useConnectivity();
     const online = connectivity.online;
@@ -31,12 +32,24 @@ export function useStream() {
     const stationListByGenre = computed(() => genreList(currentGenre.value));
     const stationsCount = computed(() => stationListByGenre.value.length);
 
-    const engine = useAudioEngine({
+    // Same interface either way. On Android playback lives in a Kotlin service
+    // so it survives the screen locking; on desktop it is a webview <audio>.
+    const shared = {
         isOnline: () => connectivity.online.value,
         onReachable: connectivity.reportReachable,
         onUnreachable: connectivity.reportUnreachable,
-        onStationDead: (dead, everPlayed) => skipDeadStation(dead.id, everPlayed)
-    });
+        onStationDead: (dead: {id: string}, everPlayed: boolean) =>
+            skipDeadStation(dead.id, everPlayed)
+    };
+
+    const engine: AudioEngine = mobile
+        ? useNativePlayer({
+            ...shared,
+            // The lock screen's skip buttons reach the service, which has no
+            // idea what the station list looks like.
+            onSkip: forward => (forward ? playNextStation() : playPreviousStation())
+        })
+        : useAudioEngine(shared);
 
     /** Only the very first connect blanks the UI; reconnects keep the station visible. */
     const streamLoading = computed(() => engine.state.value === 'connecting');
@@ -59,6 +72,9 @@ export function useStream() {
      * track title, never the audio.
      */
     const resolveStreamUrl = async (url: string): Promise<string> => {
+        // ExoPlayer parses Icecast metadata natively, so routing through the
+        // proxy on Android would only strip the very titles we want.
+        if (mobile) return url;
         try {
             return await invoke<string>('prepare_stream', {url});
         } catch {
@@ -84,7 +100,13 @@ export function useStream() {
         const url = await resolveStreamUrl(station.url);
         if (request !== playRequest) return;
 
-        engine.play({id: station.id, url});
+        engine.play({
+            id: station.id,
+            url,
+            // Ignored by the desktop engine; this is what a lock screen shows.
+            title: station.name,
+            artist: station.type
+        });
     };
 
     /**
@@ -137,7 +159,7 @@ export function useStream() {
     const loadGenre = async (genre: Genre): Promise<FormattedStation[]> => {
         const request = ++genreRequest;
 
-        const cached = loadCachedGenre(genre);
+        const cached = await loadCachedGenre(genre);
         if (cached) {
             stations.value = {...stations.value, [genre]: cached.stations};
             if (cached.fresh) return cached.stations;
@@ -198,7 +220,7 @@ export function useStream() {
      */
     const resetAll = async () => {
         engine.stop();
-        clearStationCache();
+        await clearStationCache();
 
         stations.value = {};
         currentlyPlaying.value = null;
@@ -211,11 +233,36 @@ export function useStream() {
         await changeGenre(DEFAULT_GENRE);
     };
 
-    const playNextStation = () => {
+    /**
+     * The current genre's stations, fetched now if they are not already here.
+     *
+     * Playing a favourite switches the genre without loading its list: pulling a
+     * whole tag - megabytes for something like rock - to play one station nobody
+     * asked to browse would spend a lot of someone's mobile data for nothing. So
+     * the list is fetched at the moment it is actually needed instead, which is
+     * opening the station list or stepping to the next station. Before this, a
+     * favourite from an unvisited genre left `next` and `previous` silently
+     * doing nothing and the search list empty.
+     */
+    const ensureStations = async (genre: Genre): Promise<FormattedStation[]> => {
+        const existing = genreList(genre);
+        if (existing.length > 0) return existing;
+
+        try {
+            return await loadGenre(genre);
+        } catch {
+            return [];
+        }
+    };
+
+    /** For the callers that only know they are about to show the list. */
+    const ensureCurrentStations = () => ensureStations(currentGenre.value);
+
+    const playNextStation = async () => {
         const current = currentlyPlaying.value;
         if (!current) return;
 
-        const list = genreList(current.type);
+        const list = await ensureStations(current.type);
         if (list.length === 0) return;
 
         if (shuffle.value) {
@@ -248,6 +295,17 @@ export function useStream() {
 
     watch(streamVolume, value => engine.setVolume(value), {immediate: true});
 
+    // A confirmed track replaces the station name on the lock screen. Only the
+    // native player implements this; on desktop the call simply is not there.
+    watch(nowPlaying, track => {
+        if (!engine.setMetadata) return;
+        engine.setMetadata(
+            track
+                ? {title: track.song, artist: track.artist, artwork: track.artwork}
+                : {title: currentlyPlaying.value?.name, artist: currentGenre.value}
+        );
+    });
+
     const dispose = () => {
         engine.destroy();
         connectivity.dispose();
@@ -271,6 +329,7 @@ export function useStream() {
         reconnectAttempt,
         shuffle,
         stationListByGenre,
+        ensureCurrentStations,
         getStations,
         resetAll,
         toggleStream,

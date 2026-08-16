@@ -14,8 +14,15 @@
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
+
+// The menu bar exists only on desktop. `TrayState` and `TrayStore` below are
+// plain data and stay available everywhere, so the commands that carry them do
+// not need a second definition for mobile.
+#[cfg(desktop)]
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+#[cfg(desktop)]
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
+#[cfg(desktop)]
 use tauri_plugin_positioner::{Position, WindowExt};
 
 pub const PANEL_LABEL: &str = "tray-panel";
@@ -52,11 +59,13 @@ impl TrayStore {
     }
 }
 
+#[cfg(desktop)]
 fn panel<R: Runtime>(app: &AppHandle<R>) -> Option<WebviewWindow<R>> {
     app.get_webview_window(PANEL_LABEL)
 }
 
 /// Shows the panel under the tray icon, or hides it if it is already up.
+#[cfg(desktop)]
 fn toggle_panel<R: Runtime>(app: &AppHandle<R>) {
     let Some(window) = panel(app) else { return };
 
@@ -73,6 +82,7 @@ fn toggle_panel<R: Runtime>(app: &AppHandle<R>) {
     let _ = window.set_focus();
 }
 
+#[cfg(desktop)]
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
     TrayIconBuilder::with_id("minke-tray")
         .icon(tauri::image::Image::from_bytes(include_bytes!(

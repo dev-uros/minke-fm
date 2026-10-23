@@ -72,6 +72,11 @@ export interface AudioEngine {
      * station announces a new track. Only the Android player implements it.
      */
     setMetadata?: (metadata: Pick<AudioSource, 'title' | 'artist' | 'artwork'>) => void;
+    /**
+     * Runs the sleep timer in the player itself, for a platform where the
+     * webview's timers stop with the screen. 0 turns it off. Android only.
+     */
+    setSleepTimer?: (durationMs: number) => void;
     pause: () => void;
     resume: () => void;
     toggle: () => void;

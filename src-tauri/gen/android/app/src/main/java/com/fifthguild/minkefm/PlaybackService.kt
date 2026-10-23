@@ -6,6 +6,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
@@ -57,6 +58,20 @@ class PlaybackService : MediaSessionService() {
 
     private var connectivity: ConnectivityManager? = null
     private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
+    /*
+     * The sleep timer runs here rather than in the webview for the same reason
+     * reconnection does: it matters most with the screen locked, which is when
+     * the webview's timers are throttled or stopped.
+     *
+     * Its own handler, because `resetBackoff` clears every callback on the
+     * retry handler and would take the timer with it.
+     */
+    private val sleepHandler = Handler(Looper.getMainLooper())
+    /** `elapsedRealtime` at which to pause, or 0 while off. */
+    private var sleepEndsAt = 0L
+    /** The volume before the fade began, to put back afterwards; null until it begins. */
+    private var volumeBeforeFade: Float? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -259,23 +274,103 @@ class PlaybackService : MediaSessionService() {
         }
 
         override fun seekToNext() {
+            wakeIfFading()
             onStationChange?.invoke(true)
         }
 
         override fun seekToNextMediaItem() {
+            wakeIfFading()
             onStationChange?.invoke(true)
         }
 
         override fun seekToPrevious() {
+            wakeIfFading()
             onStationChange?.invoke(false)
         }
 
         override fun seekToPreviousMediaItem() {
+            wakeIfFading()
             onStationChange?.invoke(false)
+        }
+
+        override fun play() {
+            wakeIfFading()
+            super.play()
+        }
+
+        override fun pause() {
+            wakeIfFading()
+            super.pause()
+        }
+
+        override fun setPlayWhenReady(playWhenReady: Boolean) {
+            wakeIfFading()
+            super.setPlayWhenReady(playWhenReady)
         }
     }
 
+    private fun startSleep(durationMs: Long) {
+        restoreFadedVolume()
+        sleepHandler.removeCallbacksAndMessages(null)
+        sleepEndsAt = SystemClock.elapsedRealtime() + durationMs
+        sleepHandler.post(sleepTick)
+    }
+
+    /** Off, with the sound back where it was. Returns whether a timer was running. */
+    private fun cancelSleep(): Boolean {
+        if (sleepEndsAt == 0L) return false
+        sleepHandler.removeCallbacksAndMessages(null)
+        sleepEndsAt = 0L
+        restoreFadedVolume()
+        return true
+    }
+
+    private fun restoreFadedVolume() {
+        volumeBeforeFade?.let { player?.volume = it }
+        volumeBeforeFade = null
+    }
+
+    private val sleepTick = object : Runnable {
+        override fun run() {
+            val target = player ?: return
+            val left = sleepEndsAt - SystemClock.elapsedRealtime()
+
+            if (left <= 0) {
+                // Paused before the volume goes back, or the last instant of
+                // the station would come back at full volume.
+                target.pause()
+                cancelSleep()
+                onSleepTimerOver?.invoke(true)
+                return
+            }
+
+            if (left < SLEEP_FADE_MS) {
+                val base = volumeBeforeFade ?: target.volume.also { volumeBeforeFade = it }
+                target.volume = base * (left.toFloat() / SLEEP_FADE_MS)
+            }
+
+            // Handler delays stop while the CPU sleeps, so a long one could
+            // overshoot; the cap keeps any drift under a minute, and `left` is
+            // measured on the real clock each time anyway.
+            val next = if (left < SLEEP_FADE_MS) SLEEP_FADE_TICK_MS
+            else minOf(left - SLEEP_FADE_MS, SLEEP_IDLE_TICK_MS).coerceAtLeast(SLEEP_FADE_TICK_MS)
+            sleepHandler.postDelayed(this, next)
+        }
+    }
+
+    /**
+     * Someone pressed a lock screen, notification or headphone button during
+     * the fade - they are awake. Mirrors what touching the app does on desktop.
+     * Before the fade the timer is left alone: setting it and then changing
+     * station is the normal order.
+     */
+    private fun wakeIfFading() {
+        if (volumeBeforeFade == null) return
+        if (cancelSleep()) onSleepTimerOver?.invoke(false)
+    }
+
     override fun onDestroy() {
+        sleepHandler.removeCallbacksAndMessages(null)
         handler.removeCallbacksAndMessages(null)
         networkCallback?.let { callback ->
             runCatching { connectivity?.unregisterNetworkCallback(callback) }
@@ -338,6 +433,29 @@ class PlaybackService : MediaSessionService() {
         /** Set by the plugin. Carries the station's announced track title. */
         @Volatile
         var onIcyTitle: ((String) -> Unit)? = null
+
+        /**
+         * Set by the plugin. The sleep timer is over: `true` when it ran out and
+         * paused playback, `false` when a button press during the fade called
+         * it off.
+         */
+        @Volatile
+        var onSleepTimerOver: ((Boolean) -> Unit)? = null
+
+        /** The fade over the sleep timer's last stretch; matches the desktop. */
+        private const val SLEEP_FADE_MS = 30_000L
+
+        /** Often enough during the fade that it sounds smooth rather than stepped. */
+        private const val SLEEP_FADE_TICK_MS = 250L
+
+        /** Before the fade there is nothing to do, so wake up rarely. */
+        private const val SLEEP_IDLE_TICK_MS = 60_000L
+
+        /** Starts the sleep timer, or with 0 turns it off. Main thread only. */
+        fun setSleepTimer(durationMs: Long) {
+            val service = instance ?: return
+            if (durationMs > 0) service.startSleep(durationMs) else service.cancelSleep()
+        }
 
         @Volatile
         private var instance: PlaybackService? = null

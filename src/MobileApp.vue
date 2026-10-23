@@ -47,6 +47,9 @@ const {
   toggleShuffle,
   playPreviousStation,
   streamStation,
+  sleepTimeLeft,
+  cycleSleepTimer,
+  wakeSleepTimer,
   unload,
   online
 } = useStream(true);
@@ -178,6 +181,33 @@ const confirmExit = () => {
   exitApp();
 };
 
+/**
+ * One button, the phone's version of the desktop's T key: each tap moves to the
+ * next length, and past the longest it turns off. The service does the actual
+ * counting, so it keeps going with the screen locked.
+ */
+const tapSleepTimer = () => {
+  const minutes = cycleSleepTimer();
+  toastTitle.value = minutes ? 'Sleep timer' : 'Sleep timer off';
+  toastMessage.value = minutes
+      ? `Fades out and pauses in ${minutes} minutes`
+      : 'The radio keeps playing';
+};
+
+/**
+ * A touch anywhere during the fade means the listener is awake. Capture phase,
+ * so it runs ahead of whatever was tapped. The sleep button is left out: tapping
+ * it during the fade is how the timer gets extended.
+ */
+const onTouch = (event: Event) => {
+  if (event.target instanceof Element && event.target.closest('.sleep-timer')) return;
+  if (!wakeSleepTimer()) return;
+  toastTitle.value = 'Sleep timer off';
+  toastMessage.value = 'Welcome back - the radio keeps playing';
+};
+onMounted(() => window.addEventListener('pointerdown', onTouch, {capture: true}));
+onUnmounted(() => window.removeEventListener('pointerdown', onTouch, {capture: true}));
+
 const setGenre = (genre: Genre) => void changeGenre(genre);
 const reset = () => void resetAll();
 </script>
@@ -187,6 +217,11 @@ const reset = () => void resetAll();
     <!-- The display: everything about what is playing, framed like a panel on
          a stereo rather than floating on the background. -->
     <div class="display">
+      <!-- In the corner, so it costs the layout nothing; it only grows to show
+           the time while a timer is running. -->
+      <button class="sleep-timer" :class="{ on: sleepTimeLeft }" @click="tapSleepTimer">
+        &#9790;<span v-if="sleepTimeLeft"> {{ sleepTimeLeft }}</span>
+      </button>
       <div class="info">
       <p class="on-air">{{ status }}</p>
 
@@ -461,6 +496,34 @@ const reset = () => void resetAll();
 .spinner {
   flex: none;
   transform: scale(0.85);
+}
+
+/* Above the scanline overlay, which is the panel's ::after. */
+.sleep-timer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 36px;
+  white-space: nowrap;
+  color: rgba(255, 253, 208, 0.35);
+  cursor: pointer;
+}
+
+.sleep-timer span {
+  font-size: 12px;
+}
+
+.sleep-timer.on {
+  color: #67e8f9;
 }
 
 /* The deck hugs the cassette rather than reserving a fixed 40% band: the

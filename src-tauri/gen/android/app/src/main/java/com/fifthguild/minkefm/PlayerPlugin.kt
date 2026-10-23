@@ -32,6 +32,12 @@ class VolumeArgs {
     var volume: Float = 1.0f
 }
 
+@InvokeArg
+class SleepArgs {
+    /** How long until playback pauses; 0 turns the timer off. */
+    var durationMs: Long = 0
+}
+
 /**
  * The frontend's window onto the playback service.
  *
@@ -81,6 +87,10 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
         // controller never sees `onMetadata`.
         PlaybackService.onIcyTitle = { title ->
             trigger("title", JSObject().put("title", title))
+        }
+
+        PlaybackService.onSleepTimerOver = { paused ->
+            trigger("sleep", JSObject().put("paused", paused))
         }
     }
 
@@ -189,6 +199,14 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
     @Command
     fun stop(invoke: Invoke) {
         controller?.stop()
+        invoke.resolve()
+    }
+
+    @Command
+    fun setSleepTimer(invoke: Invoke) {
+        val args = invoke.parseArgs(SleepArgs::class.java)
+        // The service's timer lives on the main looper; commands arrive elsewhere.
+        activity.runOnUiThread { PlaybackService.setSleepTimer(args.durationMs) }
         invoke.resolve()
     }
 

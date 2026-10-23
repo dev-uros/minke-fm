@@ -10,6 +10,7 @@ fn main() {
             "player_resume",
             "player_stop",
             "player_set_volume",
+            "player_set_sleep_timer",
             // Added by the mobile plugin system for events, and ACL-gated the
             // same as any other command.
             "registerListener",

@@ -30,6 +30,13 @@ struct VolumeRequest {
     volume: f32,
 }
 
+/// Matches `SleepArgs` in `PlayerPlugin.kt`. Zero turns the timer off.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SleepRequest {
+    duration_ms: u64,
+}
+
 #[derive(Deserialize)]
 struct Empty {}
 
@@ -88,6 +95,16 @@ fn player_set_volume(
     player.call("setVolume", VolumeRequest { volume })
 }
 
+/// The sleep timer, which has to run in the service: the webview's own timers
+/// stop with the screen locked, which is exactly when it is needed.
+#[tauri::command]
+fn player_set_sleep_timer(
+    duration_ms: u64,
+    player: tauri::State<'_, Player>,
+) -> Result<(), String> {
+    player.call("setSleepTimer", SleepRequest { duration_ms })
+}
+
 pub fn init() -> TauriPlugin<Wry> {
     Builder::new("player")
         .invoke_handler(tauri::generate_handler![
@@ -96,7 +113,8 @@ pub fn init() -> TauriPlugin<Wry> {
             player_pause,
             player_resume,
             player_stop,
-            player_set_volume
+            player_set_volume,
+            player_set_sleep_timer
         ])
         .setup(|app: &AppHandle<Wry>, api| {
             // The Kotlin class lives in the app's own package rather than a

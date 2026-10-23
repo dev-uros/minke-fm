@@ -54,7 +54,9 @@ export function useStream(mobile = false) {
             ...shared,
             // The lock screen's skip buttons reach the service, which has no
             // idea what the station list looks like.
-            onSkip: forward => (forward ? playNextStation() : playPreviousStation())
+            onSkip: forward => (forward ? playNextStation() : playPreviousStation()),
+            // `sleepTimer` is created below; this only runs once it exists.
+            onSleepTimerOver: () => sleepTimer.clear()
         })
         : useAudioEngine(shared);
 
@@ -236,13 +238,15 @@ export function useStream(mobile = false) {
      * Startup: back to the station that was playing when the app was closed,
      * or the default genre on a first run.
      *
-     * The remembered station is played on its own, the way a favourite is -
-     * its genre's list is only fetched once something needs it.
+     * The remembered station starts first, then its genre's list loads behind
+     * it - a start always loaded a genre, so this costs no more data than it
+     * did, and without it the deck reads "(0)" stations until something asks.
      */
     const getStations = async () => {
         const last = loadLastStation();
         if (last) {
             await playStation(last);
+            void ensureStations(last.type);
             return;
         }
         await changeGenre(DEFAULT_GENRE);
@@ -333,7 +337,10 @@ export function useStream(mobile = false) {
         shuffle.value = !shuffle.value;
     };
 
-    const sleepTimer = useSleepTimer(() => engine.pause());
+    const sleepTimer = useSleepTimer({
+        pause: () => engine.pause(),
+        native: engine.setSleepTimer
+    });
 
     /** What is actually heard: the setting, scaled down while the sleep timer fades out. */
     const effectiveVolume = computed(() => streamVolume.value * sleepTimer.fade.value);

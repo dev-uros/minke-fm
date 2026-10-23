@@ -38,6 +38,8 @@ interface NativePlayerOptions {
     onStationDead: (source: AudioSource, everPlayed: boolean) => void;
     /** The lock screen's skip buttons, which know nothing of the station list. */
     onSkip: (forward: boolean) => void;
+    /** The service's sleep timer ran out, or a button press during the fade ended it. */
+    onSleepTimerOver: () => void;
 }
 
 /**
@@ -157,6 +159,16 @@ export function useNativePlayer(options: NativePlayerOptions): AudioEngine {
         options.onSkip(payload.forward);
     }).then(listener => listeners.push(listener));
 
+    void addPluginListener('player', 'sleep', (payload: {paused: boolean}) => {
+        // The service paused on its own, and its state events cannot say why -
+        // without this the deck would go on showing "playing".
+        if (payload.paused) {
+            userPaused = true;
+            state.value = 'paused';
+        }
+        options.onSleepTimerOver();
+    }).then(listener => listeners.push(listener));
+
     const toRequest = (source: AudioSource) => ({
         url: source.url,
         title: source.title ?? null,
@@ -219,6 +231,10 @@ export function useNativePlayer(options: NativePlayerOptions): AudioEngine {
         void call('player_set_volume', {volume: Math.min(1, Math.max(0, value))});
     };
 
+    const setSleepTimer = (durationMs: number) => {
+        void call('player_set_sleep_timer', {durationMs: Math.max(0, Math.round(durationMs))});
+    };
+
     const destroy = () => {
         void call('player_stop');
         while (listeners.length) void listeners.pop()!.unregister();
@@ -235,6 +251,7 @@ export function useNativePlayer(options: NativePlayerOptions): AudioEngine {
         toggle,
         stop,
         setVolume,
+        setSleepTimer,
         destroy
     };
 }

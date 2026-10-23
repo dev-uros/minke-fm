@@ -20,7 +20,7 @@ Predlozi iz pregleda koda (2026-10-23). Poređano po odnosu korist / trud.
 
 ## 2. Nove funkcije
 
-- [x] **Sleep timer** – taster T (15 / 30 / 60 / 90 min), stišavanje zadnjih 30 s, klikabilan indikator. Telefon još nema dugme.
+- [x] **Sleep timer** – taster T (15 / 30 / 60 / 90 min), stišavanje zadnjih 30 s, klikabilan indikator. Na telefonu dugme ☾, tajmer radi u Kotlin servisu.
 
 - [ ] **Istorija pesama** – lista potvrđenih `Artist – Song` (sa albumom/omotom gde postoji),
   uz kopiranje ili link. Ulaze samo pesme koje su prošle `classifyTitle`, da ostane

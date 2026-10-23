@@ -10,6 +10,7 @@ import {DEFAULT_GENRE} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
 import {useSleepTimer} from "./useSleepTimer.ts";
+import {recordTrack} from "./useTrackHistory.ts";
 
 export function useStream(mobile = false) {
 
@@ -353,6 +354,14 @@ export function useStream(mobile = false) {
     watch(isPlaying, playing => {
         if (playing && currentlyPlaying.value) saveLastStation(currentlyPlaying.value);
     });
+
+    // Into the history as soon as it is confirmed, and again when its album
+    // lands. 'sync' so two titles arriving in one tick - a backgrounded webview
+    // catching up - are not batched into one.
+    watch(nowPlaying, track => {
+        const station = currentlyPlaying.value?.name;
+        if (track && station) recordTrack(track, station);
+    }, {flush: 'sync'});
 
     // A confirmed track replaces the station name on the lock screen. Only the
     // native player implements this; on desktop the call simply is not there.

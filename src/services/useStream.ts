@@ -9,6 +9,7 @@ import {useNowPlaying} from "./useNowPlaying.ts";
 import {DEFAULT_GENRE} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
+import {useSleepTimer} from "./useSleepTimer.ts";
 
 export function useStream(mobile = false) {
 
@@ -332,7 +333,12 @@ export function useStream(mobile = false) {
         shuffle.value = !shuffle.value;
     };
 
-    watch(streamVolume, value => engine.setVolume(value), {immediate: true});
+    const sleepTimer = useSleepTimer(() => engine.pause());
+
+    /** What is actually heard: the setting, scaled down while the sleep timer fades out. */
+    const effectiveVolume = computed(() => streamVolume.value * sleepTimer.fade.value);
+
+    watch(effectiveVolume, value => engine.setVolume(value), {immediate: true});
     watch(streamVolume, saveLastVolume);
 
     // Saved once it actually plays, not when picked, so a station that never
@@ -353,6 +359,7 @@ export function useStream(mobile = false) {
     });
 
     const dispose = () => {
+        sleepTimer.dispose();
         engine.destroy();
         connectivity.dispose();
         disposeNowPlaying();
@@ -386,6 +393,11 @@ export function useStream(mobile = false) {
         playPreviousStation,
         streamStation,
         reloadStream,
+        effectiveVolume,
+        sleepTimeLeft: sleepTimer.timeLeft,
+        cycleSleepTimer: sleepTimer.cycle,
+        cancelSleepTimer: sleepTimer.cancel,
+        wakeSleepTimer: sleepTimer.wake,
         online
     };
 }

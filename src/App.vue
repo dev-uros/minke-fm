@@ -42,6 +42,11 @@ const {
   toggleShuffle,
   playPreviousStation,
   streamStation,
+  effectiveVolume,
+  sleepTimeLeft,
+  cycleSleepTimer,
+  cancelSleepTimer,
+  wakeSleepTimer,
   online
 } = useStream();
 
@@ -137,12 +142,49 @@ const onKeyDown = (event: KeyboardEvent) => {
       playNextStation();
     }
   }
+  if (event.code === 'KeyT') {
+    const minutes = cycleSleepTimer();
+    toastTitle.value = minutes ? 'Sleep timer set!' : 'Sleep timer off!';
+    toastMessage.value = minutes
+        ? `The radio fades out and pauses in ${minutes} minutes.`
+        : 'The radio keeps playing.';
+    return;
+  }
   if (event.code === 'KeyK') {
     if (!streamLoading.value) {
       toggleShuffle()
     }
   }
 }
+/**
+ * Any input while the sleep timer is fading out means the listener is awake.
+ * Runs in the capture phase, ahead of the handler the input was meant for, so a
+ * scroll to turn it up lands on the restored volume rather than the faded one.
+ * T is left out: that key is how the timer gets set in the first place.
+ */
+const onUserInput = (event: Event) => {
+  if (event instanceof KeyboardEvent && event.code === 'KeyT') return;
+  wakeUp();
+};
+
+const wakeUp = () => {
+  if (!wakeSleepTimer()) return;
+  toastTitle.value = 'Sleep timer off!';
+  toastMessage.value = 'Welcome back - the radio keeps playing.';
+};
+
+const turnOffSleepTimer = () => {
+  cancelSleepTimer();
+  toastTitle.value = 'Sleep timer off!';
+  toastMessage.value = 'The radio keeps playing.';
+};
+
+/** The same, for controls that arrive from outside the window. */
+const awake = (action: () => void) => () => {
+  wakeUp();
+  action();
+};
+
 const onWheel = (event: WheelEvent) => {
   // An open modal owns its own scrolling, so the volume wheel must not steal it.
   // Checked against the DOM rather than a list of flags, so a modal added later
@@ -159,8 +201,11 @@ onUnmounted(() => {
   unload();
   window.removeEventListener("keydown", onKeyDown);
   window.removeEventListener("wheel", onWheel);
+  for (const type of USER_INPUT) window.removeEventListener(type, onUserInput, {capture: true});
 
 });
+const USER_INPUT = ['keydown', 'wheel', 'pointerdown'] as const;
+
 const stationsLoadingError = ref(false);
 onMounted(async () => {
 
@@ -175,6 +220,7 @@ onMounted(async () => {
 
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("wheel", onWheel);
+  for (const type of USER_INPUT) window.addEventListener(type, onUserInput, {capture: true});
 })
 
 const {favorites, toggle: toggleFavorite, remove: removeFavorite} = useFavorites();
@@ -272,11 +318,11 @@ useTray(
       favourite: currentIsFavourite.value
     }),
     {
-      playPause: togglePlayer,
-      next: playNextStation,
-      previous: playPreviousStation,
-      toggleShuffle,
-      toggleFavourite: setFavorite
+      playPause: awake(togglePlayer),
+      next: awake(playNextStation),
+      previous: awake(playPreviousStation),
+      toggleShuffle: awake(toggleShuffle),
+      toggleFavourite: awake(setFavorite)
     }
 );
 
@@ -292,9 +338,9 @@ useMediaSession(
       playing: isPlaying.value || streamLoading.value || reconnecting.value
     }),
     {
-      playPause: togglePlayer,
-      next: playNextStation,
-      previous: playPreviousStation
+      playPause: awake(togglePlayer),
+      next: awake(playNextStation),
+      previous: awake(playPreviousStation)
     }
 );
 
@@ -376,7 +422,17 @@ useMediaSession(
     </div>
 
     <div class="flex flex-col gap-2 fixed bottom-0 left-0 m-4">
-      <h1>{{ internetStatus }}</h1>
+      <h1>
+        {{ internetStatus }}
+        <!-- Only there while the timer runs, so it costs the layout nothing
+             the rest of the time. -->
+        <button
+            v-if="sleepTimeLeft"
+            class="text-cyan-300 cursor-pointer hover:line-through"
+            title="Click to turn off - T to change"
+            @click="turnOffSleepTimer"
+        >&middot; sleep in {{ sleepTimeLeft }}</button>
+      </h1>
       <!-- Pexels' API terms ask for a visible credit while showing their video. -->
       <a v-if="backgroundFetched" href="https://www.pexels.com" target="_blank"
          class="text-[10px] opacity-60 hover:opacity-100">Backgrounds by Pexels</a>
@@ -389,17 +445,18 @@ useMediaSession(
           :shuffle="shuffle" :station-count="stationsCount" :current-genre="currentGenre"
           :is-playing="isPlaying" @toggle-player="togglePlayer"/>
     </div>
+    <!-- The audible level, so the sleep timer's fade shows here too. -->
     <div class="flex flex-col gap-5 fixed bottom-0 right-0 m-4 items-center">
-      <div :class="streamVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.9 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.8 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.7 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.6 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.5 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.4 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.3 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.2 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
-      <div :class="streamVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.9 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.8 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.7 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.6 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.5 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.4 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.3 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.2 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
+      <div :class="effectiveVolume < 0.1 ? 'w-12 h-12 rounded-full bg-gray-100' : 'w-32 h-12 bg-gray-100'"></div>
     </div>
     <ToastMessage @close-toast="closeToast" :toast-message="toastMessage" :toast-title="toastTitle"/>
     <FavoritesListModal @remove-station="removeStationFromFavorites" @set-station="playStation"

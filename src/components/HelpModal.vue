@@ -27,6 +27,7 @@ useEscapeToClose(closeModal);
         <button class="button">J - play next station</button>
         <button class="button">K - toggle shuffle</button>
         <button class="button">L - now playing &amp; lyrics</button>
+        <button class="button">T - sleep timer (15/30/60/90 min, off)</button>
         <button class="button">Esc - close any window</button>
         <button class="button">Scroll up - volume up</button>
         <button class="button">Scroll down - volume down</button>

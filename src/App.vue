@@ -14,6 +14,7 @@ import HelpModal from "./components/HelpModal.vue";
 import StationListModal from "./components/StationListModal.vue";
 import NowPlayingModal from "./components/NowPlayingModal.vue";
 import {useTray} from "./services/useTray.ts";
+import {useMediaSession} from "./services/useMediaSession.ts";
 
 const {
   nowPlaying,
@@ -46,9 +47,11 @@ const {
 
 
 // The player reconnects itself, so the only thing left to recover here is the
-// station list when the very first load happened with no internet.
+// station list when the very first load happened with no internet. A station
+// resumed from last time is already playing (or reconnecting) without a list,
+// so that case is left to the player.
 watch(online, (value) => {
-  if (value && stationsCount.value === 0) {
+  if (value && stationsCount.value === 0 && !currentlyPlaying.value) {
     void reloadStations();
   }
 })
@@ -274,6 +277,24 @@ useTray(
       previous: playPreviousStation,
       toggleShuffle,
       toggleFavourite: setFavorite
+    }
+);
+
+// Media keys and the Now Playing widget, wired to the same controls as the tray.
+useMediaSession(
+    () => ({
+      station: currentlyPlaying.value?.name ?? null,
+      genre: currentGenre.value,
+      artist: nowPlaying.value?.artist ?? null,
+      song: nowPlaying.value?.song ?? null,
+      album: nowPlaying.value?.album ?? null,
+      artwork: nowPlaying.value?.artwork ?? null,
+      playing: isPlaying.value || streamLoading.value || reconnecting.value
+    }),
+    {
+      playPause: togglePlayer,
+      next: playNextStation,
+      previous: playPreviousStation
     }
 );
 

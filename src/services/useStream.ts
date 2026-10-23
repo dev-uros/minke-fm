@@ -8,6 +8,7 @@ import {useNativePlayer} from "./useNativePlayer.ts";
 import {useNowPlaying} from "./useNowPlaying.ts";
 import {DEFAULT_GENRE} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
+import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
 
 export function useStream(mobile = false) {
 
@@ -18,8 +19,13 @@ export function useStream(mobile = false) {
     const stations: Ref<Record<Genre, FormattedStation[]>> = ref({});
     const currentGenre: Ref<Genre> = ref(DEFAULT_GENRE);
     const currentlyPlaying: Ref<FormattedStation | null> = ref(null);
-    const previousStation: Ref<FormattedStation | null> = ref(null);
-    const streamVolume = ref(1);
+    /**
+     * Stations played before the current one, most recent last, so "previous"
+     * can keep walking back instead of bouncing between the last two. Nothing
+     * on screen shows it, so it is a plain array rather than a ref.
+     */
+    let history: FormattedStation[] = [];
+    const streamVolume = ref(loadLastVolume() ?? 1);
     const shuffle = ref(false);
 
     const genreLoading = ref(false);
@@ -85,10 +91,20 @@ export function useStream(mobile = false) {
     /** Guards against an earlier, slower resolve landing after a later one. */
     let playRequest = 0;
 
-    const playStation = async (station: FormattedStation | undefined) => {
+    /** Enough to retrace an evening's channel surfing, not a log of it. */
+    const HISTORY_LIMIT = 20;
+
+    /**
+     * `remember` is false only when stepping back through the history itself -
+     * otherwise going back would push the station we left, and "previous"
+     * would ping-pong between two stations again.
+     */
+    const playStation = async (station: FormattedStation | undefined, remember = true) => {
         if (!station) return;
-        if (currentlyPlaying.value && currentlyPlaying.value.id !== station.id) {
-            previousStation.value = currentlyPlaying.value;
+        const leaving = currentlyPlaying.value;
+        if (remember && leaving && leaving.id !== station.id && history[history.length - 1]?.id !== leaving.id) {
+            history.push(leaving);
+            if (history.length > HISTORY_LIMIT) history.shift();
         }
         // Set it up front rather than waiting for a 'play' event, so the UI is
         // honest about what we are trying to play even while reconnecting.
@@ -115,10 +131,22 @@ export function useStream(mobile = false) {
      * pruned; one that worked and has since gone down stays in the list, since
      * it is probably a temporary outage on their side.
      */
-    function skipDeadStation(stationId: string, everPlayed: boolean) {
+    async function skipDeadStation(stationId: string, everPlayed: boolean) {
         const current = currentlyPlaying.value;
         if (!current) return;
 
+        // Whether it never answered or has gone down, stepping back onto it
+        // would only land on the same silence.
+        history = history.filter(station => station.id !== stationId);
+
+        // A station resumed from last time, or played from favourites, arrives
+        // without its genre's list. Fetch it rather than declaring the genre
+        // empty just because nothing had loaded it yet.
+        await ensureStations(current.type);
+        if (currentlyPlaying.value !== current) return;
+
+        // Read back through the ref: a freshly fetched list comes back raw, and
+        // the splice below has to be seen by the station count.
         const list = genreList(current.type);
         const index = list.findIndex(station => station.id === stationId);
 
@@ -203,7 +231,19 @@ export function useStream(mobile = false) {
         await playStation(shuffle.value ? getRandomStation(list, '') : list[0]);
     };
 
+    /**
+     * Startup: back to the station that was playing when the app was closed,
+     * or the default genre on a first run.
+     *
+     * The remembered station is played on its own, the way a favourite is -
+     * its genre's list is only fetched once something needs it.
+     */
     const getStations = async () => {
+        const last = loadLastStation();
+        if (last) {
+            await playStation(last);
+            return;
+        }
         await changeGenre(DEFAULT_GENRE);
     };
 
@@ -224,7 +264,7 @@ export function useStream(mobile = false) {
 
         stations.value = {};
         currentlyPlaying.value = null;
-        previousStation.value = null;
+        history = [];
         shuffle.value = false;
         genreEmpty.value = false;
         currentGenre.value = DEFAULT_GENRE;
@@ -275,9 +315,8 @@ export function useStream(mobile = false) {
     };
 
     const playPreviousStation = () => {
-        if (previousStation.value) {
-            void playStation(previousStation.value);
-        }
+        const previous = history.pop();
+        if (previous) void playStation(previous, false);
     };
 
     const streamStation = (station: FormattedStation) => void playStation(station);
@@ -294,6 +333,13 @@ export function useStream(mobile = false) {
     };
 
     watch(streamVolume, value => engine.setVolume(value), {immediate: true});
+    watch(streamVolume, saveLastVolume);
+
+    // Saved once it actually plays, not when picked, so a station that never
+    // answered is not what the next start tries first.
+    watch(isPlaying, playing => {
+        if (playing && currentlyPlaying.value) saveLastStation(currentlyPlaying.value);
+    });
 
     // A confirmed track replaces the station name on the lock screen. Only the
     // native player implements this; on desktop the call simply is not there.

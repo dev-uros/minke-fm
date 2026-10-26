@@ -19,6 +19,8 @@ import {AudioEngine, AudioSource, PlaybackState} from "./useAudioEngine.ts";
 
 interface PlayerState {
     playing: boolean;
+    /** False once anything - this app, the lock screen, the sleep timer - paused it. */
+    playWhenReady: boolean;
     state: 'idle' | 'buffering' | 'ready' | 'ended' | 'unknown';
 }
 
@@ -81,6 +83,16 @@ export function useNativePlayer(options: NativePlayerOptions): AudioEngine {
             state.value = 'playing';
             options.onReachable();
             return;
+        }
+
+        // The service is the authority on whether playback is wanted: a pause
+        // from the lock screen or notification never passes through `pause()`.
+        if (currentSource.value) {
+            userPaused = !payload.playWhenReady;
+            if (userPaused) {
+                state.value = 'paused';
+                return;
+            }
         }
 
         switch (payload.state) {

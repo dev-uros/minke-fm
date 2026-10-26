@@ -1,6 +1,9 @@
 package com.fifthguild.minkefm
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Uri
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -11,6 +14,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Metadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -22,8 +26,14 @@ import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.extractor.metadata.icy.IcyHeaders
 import androidx.media3.extractor.metadata.icy.IcyInfo
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.LibraryParams
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
+import com.google.common.collect.ImmutableList
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 
 /**
  * Holds the player, outside the activity.
@@ -36,10 +46,16 @@ import androidx.media3.session.MediaSessionService
  * Reconnection lives here for the same reason. The desktop keeps that logic in
  * JavaScript, but a backgrounded webview is throttled or suspended - which is
  * exactly when a radio most needs to recover on its own.
+ *
+ * A library service rather than a plain session service only so the system
+ * can offer playback resumption: once the player has been paused long enough
+ * for Android to drop it, or the app is gone altogether, the lock screen and
+ * the shade keep a card for the last station instead of nothing. The "library"
+ * is just that one station.
  */
-class PlaybackService : MediaSessionService() {
+class PlaybackService : MediaLibraryService() {
 
-    private var session: MediaSession? = null
+    private var session: MediaLibrarySession? = null
     private var player: ExoPlayer? = null
 
     /**
@@ -148,6 +164,10 @@ class PlaybackService : MediaSessionService() {
                     lastUri = uri
                     hasPlayed = false
                     resetBackoff()
+                    // At this point the item still carries the station rather
+                    // than a track title, which is what a resumption card
+                    // should show hours later.
+                    item?.let { rememberStation(it) }
                 }
             }
 
@@ -169,12 +189,94 @@ class PlaybackService : MediaSessionService() {
         })
 
         player = exo
-        session = MediaSession.Builder(this, StationPlayer(exo)).build()
+        // Tapping the player on the lock screen or in the shade opens the app.
+        val openApp = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        session = MediaLibrarySession.Builder(this, StationPlayer(exo), LibraryCallback())
+            .setSessionActivity(openApp)
+            .build()
 
         watchNetwork()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = session
+
+    /**
+     * What System UI and Bluetooth need for playback resumption: a root, the
+     * last station as its only child, and that station again when asked to
+     * resume. Everything is answered from local storage, since the call can
+     * come at boot, before there is any network.
+     */
+    private inner class LibraryCallback : MediaLibrarySession.Callback {
+
+        override fun onGetLibraryRoot(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val root = MediaItem.Builder()
+                .setMediaId(ROOT_ID)
+                .setMediaMetadata(
+                    MediaMetadata.Builder().setIsBrowsable(true).setIsPlayable(false).build()
+                )
+                .build()
+            return Futures.immediateFuture(LibraryResult.ofItem(root, params))
+        }
+
+        override fun onGetChildren(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            parentId: String,
+            page: Int,
+            pageSize: Int,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
+            val children = if (parentId == ROOT_ID) listOfNotNull(lastStation()) else emptyList()
+            return Futures.immediateFuture(LibraryResult.ofItemList(children, params))
+        }
+
+        override fun onPlaybackResumption(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            isForPlayback: Boolean
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            val station = lastStation()
+                ?: return Futures.immediateFailedFuture(IllegalStateException("nothing played yet"))
+            return Futures.immediateFuture(
+                MediaSession.MediaItemsWithStartPosition(listOf(station), 0, C.TIME_UNSET)
+            )
+        }
+    }
+
+    private fun rememberStation(item: MediaItem) {
+        val uri = item.localConfiguration?.uri ?: return
+        val metadata = item.mediaMetadata
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+            .putString(KEY_URL, uri.toString())
+            .putString(KEY_TITLE, metadata.title?.toString())
+            .putString(KEY_ARTIST, metadata.artist?.toString())
+            .putString(KEY_ARTWORK, metadata.artworkUri?.toString())
+            .apply()
+    }
+
+    private fun lastStation(): MediaItem? {
+        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
+        val url = prefs.getString(KEY_URL, null) ?: return null
+        val metadata = MediaMetadata.Builder()
+            .setTitle(prefs.getString(KEY_TITLE, null))
+            .setArtist(prefs.getString(KEY_ARTIST, null))
+            .setIsBrowsable(false)
+            .setIsPlayable(true)
+            .apply { prefs.getString(KEY_ARTWORK, null)?.let { setArtworkUri(Uri.parse(it)) } }
+            .build()
+        // A library item needs an id; the stream URL is as unique as anything.
+        return MediaItem.Builder().setMediaId(url).setUri(url).setMediaMetadata(metadata).build()
+    }
 
     /**
      * Retry policy for a live stream, and it depends entirely on whether the
@@ -389,6 +491,15 @@ class PlaybackService : MediaSessionService() {
     }
 
     companion object {
+        private const val ROOT_ID = "root"
+
+        /** Where the last station is kept for resumption. */
+        private const val PREFS = "playback"
+        private const val KEY_URL = "url"
+        private const val KEY_TITLE = "title"
+        private const val KEY_ARTIST = "artist"
+        private const val KEY_ARTWORK = "artwork"
+
         /**
          * Waiting on a first connect. A radio server that cannot complete a TCP
          * handshake in five seconds is not going to stream well, and every

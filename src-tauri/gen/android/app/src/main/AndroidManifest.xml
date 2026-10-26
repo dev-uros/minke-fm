@@ -42,10 +42,25 @@
             android:name=".PlaybackService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="true">
+            <!--
+                The library actions are what System UI binds to for playback
+                resumption; the platform one is how it finds us at all.
+            -->
             <intent-filter>
+                <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="androidx.media3.session.MediaSessionService" />
+                <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
+
+        <!-- Lets a headset or the resumption card start playback with no service running. -->
+        <receiver
+            android:name="androidx.media3.session.MediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <provider
           android:name="androidx.core.content.FileProvider"

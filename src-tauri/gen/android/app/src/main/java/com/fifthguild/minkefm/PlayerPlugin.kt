@@ -1,7 +1,10 @@
 package com.fifthguild.minkefm
 
+import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
+import android.content.pm.PackageManager
+import android.os.Build
 import android.net.Uri
 import android.webkit.WebView
 import androidx.media3.common.MediaItem
@@ -11,6 +14,8 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import app.tauri.annotation.Command
 import app.tauri.annotation.InvokeArg
 import app.tauri.annotation.TauriPlugin
@@ -52,11 +57,15 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
         /** Set on load, called by MainActivity when the user chooses to exit. */
         @Volatile
         var releaseController: (() -> Unit)? = null
+
+        private const val NOTIFICATION_REQUEST = 4201
     }
 
     private var controller: MediaController? = null
     /** Volume survives until a controller exists to apply it to. */
     private var pendingVolume: Float? = null
+    /** The notification prompt is shown at most once per launch. */
+    private var askedForNotifications = false
 
     override fun load(webView: WebView) {
         val token = SessionToken(activity, ComponentName(activity, PlaybackService::class.java))
@@ -67,6 +76,9 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
             controller = media
             pendingVolume?.let { media.volume = it }
             media.addListener(listener)
+            // The service may already be playing - resumed from the lock
+            // screen or a headset while the app was closed. Tell the page.
+            reportState()
         }, MoreExecutors.directExecutor())
 
         // A connected controller keeps the service bound, and a bound service
@@ -97,6 +109,9 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
     private val listener = object : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) = reportState()
         override fun onIsPlayingChanged(isPlaying: Boolean) = reportState()
+        // A pause from the lock screen or notification only shows up here: the
+        // player stays READY, so nothing else tells the webview it happened.
+        override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) = reportState()
 
         override fun onPlayerError(error: PlaybackException) {
             trigger(
@@ -115,6 +130,7 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
             "state",
             JSObject()
                 .put("playing", media.isPlaying)
+                .put("playWhenReady", media.playWhenReady)
                 .put(
                     "state",
                     when (media.playbackState) {
@@ -146,10 +162,46 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
             .apply { args.artwork?.let { setArtworkUri(Uri.parse(it)) } }
             .build()
 
+        askForNotifications()
+
+        // Already on this station - resumed from the lock screen before the app
+        // opened, say. Starting it over would only cut the sound for a moment.
+        val current = media.currentMediaItem
+        if (media.playWhenReady && current?.localConfiguration?.uri?.toString() == args.url) {
+            media.replaceMediaItem(
+                media.currentMediaItemIndex,
+                current.buildUpon().setMediaMetadata(metadata).build()
+            )
+            // The page has just switched to "connecting" and waits to hear otherwise.
+            reportState()
+            invoke.resolve()
+            return
+        }
+
         media.setMediaItem(MediaItem.Builder().setUri(args.url).setMediaMetadata(metadata).build())
-        media.prepare()
+        // `play` before `prepare`, so the webview never sees a buffering
+        // player that does not want to play - which it would read as a pause.
         media.play()
+        media.prepare()
         invoke.resolve()
+    }
+
+    /**
+     * The media notification is what the lock screen and the shade show.
+     *
+     * Android 13 exempts media notifications from this permission on paper,
+     * but not every manufacturer honours that, so it is asked for the way
+     * other players do: the first time something is played, when the reason
+     * is obvious. Android stops showing the prompt after two refusals on its own.
+     */
+    private fun askForNotifications() {
+        if (askedForNotifications || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        askedForNotifications = true
+        val permission = Manifest.permission.POST_NOTIFICATIONS
+        if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) return
+        activity.runOnUiThread {
+            ActivityCompat.requestPermissions(activity, arrayOf(permission), NOTIFICATION_REQUEST)
+        }
     }
 
     /**

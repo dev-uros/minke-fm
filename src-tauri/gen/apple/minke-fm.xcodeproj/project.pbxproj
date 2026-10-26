@@ -1,0 +1,513 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B7BDE13228076B94C658339 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E5174C55FEFA6137AE517B8B /* libapp.a */; };
+		1F2A1BD8D23901974A082098 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B4EB8AD80F6F9E3561E6655 /* Assets.xcassets */; };
+		2A6F97D6D71C7B9F615D3335 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75EC402568C848F0EB6604C7 /* WebKit.framework */; };
+		4952DEB89BE87FBB23C50DAF /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 44F2EDAAB39B979406330004 /* libapp.a */; };
+		4DF2975A283F8ABCEF7B8FFF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D89CECAB29FA66F5A00F25 /* CoreGraphics.framework */; };
+		6CB0FF1C9665C096EAFFA3B7 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF92FA7FF37A930EF91AEC39 /* MediaPlayer.framework */; };
+		923536E2F520CD1D4BDE7FA6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA262DD0092A2CA0E722A29 /* QuartzCore.framework */; };
+		951B8AC4EA288661E115E72F /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 83D49B391032B9F356136EC1 /* Security.framework */; };
+		9811B2F6C6B842B6905E9314 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 73923B1487A685929D58D6B0 /* LaunchScreen.storyboard */; };
+		A08E1181FF74D3AC803C64C5 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B895DBFFF429E6204296FF67 /* Network.framework */; };
+		B04A38BBA8CFADAAA83A1041 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC9B77CB08DC2D605384A88A /* UIKit.framework */; };
+		C52E039EF9B192AA30DC9347 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EA314D209DBC529C21FFB /* main.mm */; };
+		D88DDF12CABDF2829707D332 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 4E0D45B56AEC779C089F7B3E /* assets */; };
+		E920B55A16A4FA953BD7D397 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6F9606DED3C4FD6357D8A96 /* Metal.framework */; };
+		F0C70844FA4B8D6B9847FB5E /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E27300FD8D7179DC75220F0 /* AVFoundation.framework */; };
+		F444C86AFE54EAA17D010738 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 461C95E01B366993F364A16B /* MetalKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		015BE9BC09F51CDF6E477CE0 /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
+		060033F38A4A1B7AE0DD06E4 /* tray.rs */ = {isa = PBXFileReference; path = tray.rs; sourceTree = "<group>"; };
+		0CA0631DAF9EE4B2748F802D /* video.rs */ = {isa = PBXFileReference; path = video.rs; sourceTree = "<group>"; };
+		0F6EA314D209DBC529C21FFB /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		1EC12F29DE7F004A38FD4C69 /* text.rs */ = {isa = PBXFileReference; path = text.rs; sourceTree = "<group>"; };
+		3B4EB8AD80F6F9E3561E6655 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		44F2EDAAB39B979406330004 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		461C95E01B366993F364A16B /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		4E0D45B56AEC779C089F7B3E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		5E27300FD8D7179DC75220F0 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		60916535D79113A50C2BDB75 /* minke-fm_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "minke-fm_iOS.entitlements"; sourceTree = "<group>"; };
+		73923B1487A685929D58D6B0 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		757D9B9534EB343F7EDF7839 /* lyrics.rs */ = {isa = PBXFileReference; path = lyrics.rs; sourceTree = "<group>"; };
+		75EC402568C848F0EB6604C7 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		767D34A25F04D10DE8A32536 /* icy.rs */ = {isa = PBXFileReference; path = icy.rs; sourceTree = "<group>"; };
+		83D49B391032B9F356136EC1 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		92276A2BE975B05D8DB1A3BD /* player.rs */ = {isa = PBXFileReference; path = player.rs; sourceTree = "<group>"; };
+		AF92FA7FF37A930EF91AEC39 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		B895DBFFF429E6204296FF67 /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		CC9B77CB08DC2D605384A88A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		D62F5409DE4FE75ECED3A413 /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
+		DAA262DD0092A2CA0E722A29 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		E10516702D5A3BBD1976695B /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		E470A4EA3613EB764DA412D6 /* minke-fm_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "minke-fm_iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E5174C55FEFA6137AE517B8B /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		F30CE19028C6F834D622FC97 /* track.rs */ = {isa = PBXFileReference; path = track.rs; sourceTree = "<group>"; };
+		F6F9606DED3C4FD6357D8A96 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		F8A2779269BE8A80C7806213 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F9D89CECAB29FA66F5A00F25 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DB5B8FBCD93E8375B1D8D3F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B7BDE13228076B94C658339 /* libapp.a in Frameworks */,
+				4DF2975A283F8ABCEF7B8FFF /* CoreGraphics.framework in Frameworks */,
+				E920B55A16A4FA953BD7D397 /* Metal.framework in Frameworks */,
+				F444C86AFE54EAA17D010738 /* MetalKit.framework in Frameworks */,
+				923536E2F520CD1D4BDE7FA6 /* QuartzCore.framework in Frameworks */,
+				951B8AC4EA288661E115E72F /* Security.framework in Frameworks */,
+				B04A38BBA8CFADAAA83A1041 /* UIKit.framework in Frameworks */,
+				2A6F97D6D71C7B9F615D3335 /* WebKit.framework in Frameworks */,
+				F0C70844FA4B8D6B9847FB5E /* AVFoundation.framework in Frameworks */,
+				6CB0FF1C9665C096EAFFA3B7 /* MediaPlayer.framework in Frameworks */,
+				A08E1181FF74D3AC803C64C5 /* Network.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2F222B1CA7157E0073C81C22 = {
+			isa = PBXGroup;
+			children = (
+				4E0D45B56AEC779C089F7B3E /* assets */,
+				3B4EB8AD80F6F9E3561E6655 /* Assets.xcassets */,
+				73923B1487A685929D58D6B0 /* LaunchScreen.storyboard */,
+				448E30F6D0964E2DD20545B8 /* Externals */,
+				D45AE0A81047C4E8D103B859 /* minke-fm_iOS */,
+				88F35487F53B9948573A23E6 /* Sources */,
+				4837CB7A0B0253AD55395769 /* src */,
+				DCE499EAC0BEA76A008B21F5 /* Frameworks */,
+				30B1B097BA87EBE552036206 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		30B1B097BA87EBE552036206 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E470A4EA3613EB764DA412D6 /* minke-fm_iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		448E30F6D0964E2DD20545B8 /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+				B4278689B08CB5A3827D8B30 /* arm64 */,
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		4837CB7A0B0253AD55395769 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				767D34A25F04D10DE8A32536 /* icy.rs */,
+				015BE9BC09F51CDF6E477CE0 /* lib.rs */,
+				757D9B9534EB343F7EDF7839 /* lyrics.rs */,
+				D62F5409DE4FE75ECED3A413 /* main.rs */,
+				92276A2BE975B05D8DB1A3BD /* player.rs */,
+				1EC12F29DE7F004A38FD4C69 /* text.rs */,
+				F30CE19028C6F834D622FC97 /* track.rs */,
+				060033F38A4A1B7AE0DD06E4 /* tray.rs */,
+				0CA0631DAF9EE4B2748F802D /* video.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		88F35487F53B9948573A23E6 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				D50B3F21E9C80F164785B093 /* minke-fm */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		A5E393769D9C9FBAC70C3D0A /* debug */ = {
+			isa = PBXGroup;
+			children = (
+				44F2EDAAB39B979406330004 /* libapp.a */,
+			);
+			path = debug;
+			sourceTree = "<group>";
+		};
+		B4278689B08CB5A3827D8B30 /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+				A5E393769D9C9FBAC70C3D0A /* debug */,
+			);
+			path = arm64;
+			sourceTree = "<group>";
+		};
+		D45AE0A81047C4E8D103B859 /* minke-fm_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				F8A2779269BE8A80C7806213 /* Info.plist */,
+				60916535D79113A50C2BDB75 /* minke-fm_iOS.entitlements */,
+			);
+			path = "minke-fm_iOS";
+			sourceTree = "<group>";
+		};
+		D50B3F21E9C80F164785B093 /* minke-fm */ = {
+			isa = PBXGroup;
+			children = (
+				0F6EA314D209DBC529C21FFB /* main.mm */,
+				F2DCF9FE3376461EA5FBCD53 /* bindings */,
+			);
+			path = "minke-fm";
+			sourceTree = "<group>";
+		};
+		DCE499EAC0BEA76A008B21F5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E27300FD8D7179DC75220F0 /* AVFoundation.framework */,
+				F9D89CECAB29FA66F5A00F25 /* CoreGraphics.framework */,
+				E5174C55FEFA6137AE517B8B /* libapp.a */,
+				AF92FA7FF37A930EF91AEC39 /* MediaPlayer.framework */,
+				F6F9606DED3C4FD6357D8A96 /* Metal.framework */,
+				461C95E01B366993F364A16B /* MetalKit.framework */,
+				B895DBFFF429E6204296FF67 /* Network.framework */,
+				DAA262DD0092A2CA0E722A29 /* QuartzCore.framework */,
+				83D49B391032B9F356136EC1 /* Security.framework */,
+				CC9B77CB08DC2D605384A88A /* UIKit.framework */,
+				75EC402568C848F0EB6604C7 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F2DCF9FE3376461EA5FBCD53 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				E10516702D5A3BBD1976695B /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		"TEMP_990D8230-35E0-4807-AB5E-0780DA54B905" /* x86_64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = x86_64;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D8A2564B2BDD6526F96B5243 /* minke-fm_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D32B9FB45C7E1B4FC6370EB9 /* Build configuration list for PBXNativeTarget "minke-fm_iOS" */;
+			buildPhases = (
+				61B68B8209A1B2DBD6487153 /* Build Rust Code */,
+				9A0CCAD603F0B1AC09FB4262 /* Sources */,
+				FC0FCAA603D3283D7CDD836F /* Resources */,
+				DB5B8FBCD93E8375B1D8D3F8 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "minke-fm_iOS";
+			packageProductDependencies = (
+			);
+			productName = "minke-fm_iOS";
+			productReference = E470A4EA3613EB764DA412D6 /* minke-fm_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FD24D4EA226E60F7DB3DC9D3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 2A2148E2824385FBAEF5DD98 /* Build configuration list for PBXProject "minke-fm" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 2F222B1CA7157E0073C81C22;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 30B1B097BA87EBE552036206 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D8A2564B2BDD6526F96B5243 /* minke-fm_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FC0FCAA603D3283D7CDD836F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1F2A1BD8D23901974A082098 /* Assets.xcassets in Resources */,
+				9811B2F6C6B842B6905E9314 /* LaunchScreen.storyboard in Resources */,
+				D88DDF12CABDF2829707D332 /* assets in Resources */,
+				4952DEB89BE87FBB23C50DAF /* libapp.a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		61B68B8209A1B2DBD6487153 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "npm run -- tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9A0CCAD603F0B1AC09FB4262 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C52E039EF9B192AA30DC9347 /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B0991BE8BE0F8A018B87924E /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "minke-fm_iOS/minke-fm_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "minke-fm_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.fifthguild.minkefm;
+				PRODUCT_NAME = "MinkeFM";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = debug;
+		};
+		C46B81A22CD130416EFAF924 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		CACAB10EE916FB97F6674015 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "minke-fm_iOS/minke-fm_iOS.entitlements";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = "minke-fm_iOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = "$(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.fifthguild.minkefm;
+				PRODUCT_NAME = "MinkeFM";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+			};
+			name = release;
+		};
+		CEF578CF34D664119B29E614 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2A2148E2824385FBAEF5DD98 /* Build configuration list for PBXProject "minke-fm" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C46B81A22CD130416EFAF924 /* debug */,
+				CEF578CF34D664119B29E614 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		D32B9FB45C7E1B4FC6370EB9 /* Build configuration list for PBXNativeTarget "minke-fm_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0991BE8BE0F8A018B87924E /* debug */,
+				CACAB10EE916FB97F6674015 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FD24D4EA226E60F7DB3DC9D3 /* Project object */;
+}

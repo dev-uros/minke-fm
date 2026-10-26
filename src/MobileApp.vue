@@ -10,7 +10,7 @@ import NowPlayingModal from "./components/NowPlayingModal.vue";
 import ExitConfirmModal from "./components/ExitConfirmModal.vue";
 import {useStream} from "./services/useStream.ts";
 import {useFavorites} from "./services/useFavorites.ts";
-import {announceReady, exitApp, useAndroidBack} from "./services/useAndroidShell.ts";
+import {announceReady, exitApp, useAndroidBack, useCssSafeAreas} from "./services/useAndroidShell.ts";
 import {FormattedStation, Genre} from "./types";
 
 /**
@@ -150,6 +150,7 @@ useAndroidBack(
  * it re-send the window insets - those applied before the page loaded were
  * evaluated into nothing.
  */
+onMounted(useCssSafeAreas);
 onMounted(announceReady);
 
 /** Playing a favourite switches genre without pulling its stations. */

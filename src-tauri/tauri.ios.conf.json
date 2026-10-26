@@ -1,0 +1,15 @@
+{
+  "$schema": "gen/schemas/mobile-schema.json",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "MinkeFM",
+        "backgroundColor": "#1a1a1a"
+      }
+    ]
+  },
+  "build": {
+    "beforeBuildCommand": "npm run build:mobile"
+  }
+}

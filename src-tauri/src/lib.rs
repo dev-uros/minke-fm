@@ -1,8 +1,8 @@
 mod icy;
 pub mod lyrics;
-// Playback lives in Kotlin on Android; on desktop `useAudioEngine.ts` is still
-// the player and this module does not exist.
-#[cfg(target_os = "android")]
+// Playback lives in Kotlin on Android and Swift on iOS; on desktop
+// `useAudioEngine.ts` is still the player and this module does not exist.
+#[cfg(mobile)]
 mod player;
 pub mod text;
 pub mod track;
@@ -173,7 +173,7 @@ pub fn run() {
         }
     }));
 
-    #[cfg(target_os = "android")]
+    #[cfg(mobile)]
     let builder = builder.plugin(player::init());
 
     builder

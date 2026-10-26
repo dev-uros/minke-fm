@@ -46,6 +46,22 @@ export function announceReady() {
 
 const PAINT_GRACE_MS = 120;
 
+/**
+ * Safe areas where no Android shell measures them - that is, on iOS.
+ *
+ * The phone layout reads `--safe-*` rather than `env()` because Android's
+ * `env(safe-area-inset-top)` reports the display cutout, not the status bar.
+ * WebKit's does report the real insets, so on iOS the variables simply point
+ * at it, and the layout needs no second code path.
+ */
+export function useCssSafeAreas() {
+    if (window.MinkeShell) return;
+    const style = document.documentElement.style;
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+        style.setProperty(`--safe-${side}`, `env(safe-area-inset-${side})`);
+    }
+}
+
 export function exitApp() {
     window.MinkeShell?.exit();
 }

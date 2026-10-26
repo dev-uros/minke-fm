@@ -1,9 +1,11 @@
-//! Bridge to the Android playback service.
+//! Bridge to the native players on Android and iOS.
 //!
-//! Android cannot use the webview `<audio>` element the desktop build relies on:
+//! A phone cannot use the webview `<audio>` element the desktop build relies on:
 //! the system suspends webview media once the app is backgrounded, and a radio
-//! that stops at the lock screen is useless. Playback there lives in a
-//! MediaSessionService (`PlaybackService.kt`), and this carries commands to it.
+//! that stops at the lock screen is useless. Playback lives in a
+//! MediaSessionService on Android (`PlaybackService.kt`) and in AVPlayer on iOS
+//! (`ios/Sources/PlayerPlugin.swift`); this carries commands to whichever it is.
+//! Both answer the same commands and raise the same events.
 //!
 //! On desktop this module is absent entirely - `useAudioEngine.ts` is still the
 //! player there.
@@ -12,10 +14,10 @@ use serde::{Deserialize, Serialize};
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::{AppHandle, Manager, Wry};
 
-/// Matches `PlayArgs` in `PlayerPlugin.kt`.
+/// Matches `PlayArgs` in `PlayerPlugin.kt` and `PlayerPlugin.swift`.
 ///
 /// Deserialized on the way in from the webview, serialized again on the way out
-/// to Kotlin, so it needs both.
+/// to the native side, so it needs both.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlayRequest {
@@ -30,7 +32,7 @@ struct VolumeRequest {
     volume: f32,
 }
 
-/// Matches `SleepArgs` in `PlayerPlugin.kt`. Zero turns the timer off.
+/// Matches `SleepArgs` in both native plugins. Zero turns the timer off.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct SleepRequest {
@@ -40,7 +42,7 @@ struct SleepRequest {
 #[derive(Deserialize)]
 struct Empty {}
 
-/// Held as managed state so the commands below can reach the Kotlin side.
+/// Held as managed state so the commands below can reach the native side.
 ///
 /// Tied to `Wry` rather than generic over the runtime: a generic parameter here
 /// cannot be inferred inside `generate_handler!`, and this app has exactly one
@@ -57,7 +59,7 @@ impl Player {
 }
 
 #[tauri::command]
-fn player_play(
+async fn player_play(
     request: PlayRequest,
     player: tauri::State<'_, Player>,
 ) -> Result<(), String> {
@@ -65,7 +67,7 @@ fn player_play(
 }
 
 #[tauri::command]
-fn player_set_metadata(
+async fn player_set_metadata(
     request: PlayRequest,
     player: tauri::State<'_, Player>,
 ) -> Result<(), String> {
@@ -73,22 +75,22 @@ fn player_set_metadata(
 }
 
 #[tauri::command]
-fn player_pause(player: tauri::State<'_, Player>) -> Result<(), String> {
+async fn player_pause(player: tauri::State<'_, Player>) -> Result<(), String> {
     player.call("pause", ())
 }
 
 #[tauri::command]
-fn player_resume(player: tauri::State<'_, Player>) -> Result<(), String> {
+async fn player_resume(player: tauri::State<'_, Player>) -> Result<(), String> {
     player.call("resume", ())
 }
 
 #[tauri::command]
-fn player_stop(player: tauri::State<'_, Player>) -> Result<(), String> {
+async fn player_stop(player: tauri::State<'_, Player>) -> Result<(), String> {
     player.call("stop", ())
 }
 
 #[tauri::command]
-fn player_set_volume(
+async fn player_set_volume(
     volume: f32,
     player: tauri::State<'_, Player>,
 ) -> Result<(), String> {
@@ -98,12 +100,19 @@ fn player_set_volume(
 /// The sleep timer, which has to run in the service: the webview's own timers
 /// stop with the screen locked, which is exactly when it is needed.
 #[tauri::command]
-fn player_set_sleep_timer(
+async fn player_set_sleep_timer(
     duration_ms: u64,
     player: tauri::State<'_, Player>,
 ) -> Result<(), String> {
     player.call("setSleepTimer", SleepRequest { duration_ms })
 }
+
+#[cfg(target_os = "ios")]
+tauri::ios_plugin_binding!(init_plugin_player);
+
+// Every command above is `async` for iOS's sake. A synchronous command runs on
+// the main thread there, and blocks it waiting for Swift's reply - which Swift
+// sends from the main thread. The app sat on a blank screen until this changed.
 
 pub fn init() -> TauriPlugin<Wry> {
     Builder::new("player")
@@ -117,10 +126,12 @@ pub fn init() -> TauriPlugin<Wry> {
             player_set_sleep_timer
         ])
         .setup(|app: &AppHandle<Wry>, api| {
-            // The Kotlin class lives in the app's own package rather than a
-            // separate plugin project - there is only one app that will ever
-            // want it.
+            // Both halves live in the app itself rather than a separate plugin
+            // project - there is only one app that will ever want them.
+            #[cfg(target_os = "android")]
             let handle = api.register_android_plugin("com.fifthguild.minkefm", "PlayerPlugin")?;
+            #[cfg(target_os = "ios")]
+            let handle = api.register_ios_plugin(init_plugin_player)?;
             app.manage(Player(handle));
             Ok(())
         })

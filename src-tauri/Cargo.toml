@@ -17,6 +17,11 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
+# Compiles the Swift half of the player for iOS. The same version `tauri`
+# itself uses, so the two link against one copy.
+[target.'cfg(target_os = "macos")'.build-dependencies]
+swift-rs = { version = "1.0.7", features = ["build"] }
+
 [dependencies]
 # protocol-asset lets the webview play the cached background clips off disk.
 # tray-icon: the menu bar item. image-png: decodes the template icon.

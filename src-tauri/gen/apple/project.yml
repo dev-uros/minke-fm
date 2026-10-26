@@ -2,7 +2,7 @@ name: minke-fm
 options:
   bundleIdPrefix: com.fifthguild.minkefm
   deploymentTarget:
-    iOS: 13.0
+    iOS: 15.0
 fileGroups: [../../src]
 configs:
   debug: debug
@@ -30,7 +30,10 @@ targets:
     sources:
       - path: Sources
       - path: Assets.xcassets
+      # Holds the Rust static library between builds. It is linked, never
+      # bundled: a stray libapp.a in the .app fails App Store validation.
       - path: Externals
+        excludes: ["**/*.a"]
       - path: minke-fm_iOS
       - path: assets
         buildPhase: resources
@@ -48,6 +51,10 @@ targets:
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationPortraitUpsideDown
+        # Portrait-only on iPad is only accepted for full-screen apps.
+        UIRequiresFullScreen: true
+        # Only HTTPS from the system, so no export compliance paperwork.
+        ITSAppUsesNonExemptEncryption: false
         # Keeps the radio playing with the app in the background or locked.
         UIBackgroundModes: [audio]
         # Many stations still stream over plain http.
@@ -74,6 +81,14 @@ targets:
         LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: true
         EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
+      configs:
+        # Release only goes to the App Store, signed with a hand-made App Store
+        # profile: automatic signing wants a development profile first, which
+        # cannot exist while the team has no registered devices.
+        release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Apple Distribution
+          PROVISIONING_PROFILE_SPECIFIER: MinkeFM App Store
       groups: [app]
     dependencies:
       - framework: libapp.a

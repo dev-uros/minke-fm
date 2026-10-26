@@ -10,7 +10,6 @@
 		1B7BDE13228076B94C658339 /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E5174C55FEFA6137AE517B8B /* libapp.a */; };
 		1F2A1BD8D23901974A082098 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3B4EB8AD80F6F9E3561E6655 /* Assets.xcassets */; };
 		2A6F97D6D71C7B9F615D3335 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75EC402568C848F0EB6604C7 /* WebKit.framework */; };
-		4952DEB89BE87FBB23C50DAF /* libapp.a in Resources */ = {isa = PBXBuildFile; fileRef = 44F2EDAAB39B979406330004 /* libapp.a */; };
 		4DF2975A283F8ABCEF7B8FFF /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D89CECAB29FA66F5A00F25 /* CoreGraphics.framework */; };
 		6CB0FF1C9665C096EAFFA3B7 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF92FA7FF37A930EF91AEC39 /* MediaPlayer.framework */; };
 		923536E2F520CD1D4BDE7FA6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA262DD0092A2CA0E722A29 /* QuartzCore.framework */; };
@@ -32,7 +31,6 @@
 		0F6EA314D209DBC529C21FFB /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		1EC12F29DE7F004A38FD4C69 /* text.rs */ = {isa = PBXFileReference; path = text.rs; sourceTree = "<group>"; };
 		3B4EB8AD80F6F9E3561E6655 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		44F2EDAAB39B979406330004 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
 		461C95E01B366993F364A16B /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		4E0D45B56AEC779C089F7B3E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
 		5E27300FD8D7179DC75220F0 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -105,7 +103,6 @@
 		448E30F6D0964E2DD20545B8 /* Externals */ = {
 			isa = PBXGroup;
 			children = (
-				B4278689B08CB5A3827D8B30 /* arm64 */,
 			);
 			path = Externals;
 			sourceTree = "<group>";
@@ -133,22 +130,6 @@
 				D50B3F21E9C80F164785B093 /* minke-fm */,
 			);
 			path = Sources;
-			sourceTree = "<group>";
-		};
-		A5E393769D9C9FBAC70C3D0A /* debug */ = {
-			isa = PBXGroup;
-			children = (
-				44F2EDAAB39B979406330004 /* libapp.a */,
-			);
-			path = debug;
-			sourceTree = "<group>";
-		};
-		B4278689B08CB5A3827D8B30 /* arm64 */ = {
-			isa = PBXGroup;
-			children = (
-				A5E393769D9C9FBAC70C3D0A /* debug */,
-			);
-			path = arm64;
 			sourceTree = "<group>";
 		};
 		D45AE0A81047C4E8D103B859 /* minke-fm_iOS */ = {
@@ -195,11 +176,18 @@
 			path = bindings;
 			sourceTree = "<group>";
 		};
-		"TEMP_990D8230-35E0-4807-AB5E-0780DA54B905" /* x86_64 */ = {
+		"TEMP_3E6BE93B-BF67-475B-B518-E03E32E992AA" /* x86_64 */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			path = x86_64;
+			sourceTree = "<group>";
+		};
+		"TEMP_BF9293BC-75A2-429D-BF31-7DA535CF19CE" /* arm64 */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = arm64;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -263,7 +251,6 @@
 				1F2A1BD8D23901974A082098 /* Assets.xcassets in Resources */,
 				9811B2F6C6B842B6905E9314 /* LaunchScreen.storyboard in Resources */,
 				D88DDF12CABDF2829707D332 /* assets in Resources */,
-				4952DEB89BE87FBB23C50DAF /* libapp.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -333,6 +320,7 @@
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = arm64;
+				DEVELOPMENT_TEAM = "HQA7G6K35G";
 			};
 			name = debug;
 		};
@@ -387,7 +375,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -408,7 +396,8 @@
 				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "minke-fm_iOS/minke-fm_iOS.entitlements";
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -424,9 +413,11 @@
 				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = "$(inherited) $(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.fifthguild.minkefm;
 				PRODUCT_NAME = "MinkeFM";
+				PROVISIONING_PROFILE_SPECIFIER = "MinkeFM App Store";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = arm64;
+				DEVELOPMENT_TEAM = "HQA7G6K35G";
 			};
 			name = release;
 		};
@@ -475,7 +466,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -11,5 +11,12 @@
   },
   "build": {
     "beforeBuildCommand": "npm run build:mobile"
+  },
+  "bundle": {
+    "iOS": {
+      "developmentTeam": "HQA7G6K35G",
+      "minimumSystemVersion": "15.0",
+      "bundleVersion": "2"
+    }
   }
 }

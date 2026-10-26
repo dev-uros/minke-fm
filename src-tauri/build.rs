@@ -72,7 +72,7 @@ fn link_ios_player() {
     let sdk_root = std::env::var_os("SDKROOT");
     unsafe { std::env::remove_var("SDKROOT") };
     swift_rs::SwiftLinker::new("10.13")
-        .with_ios(&std::env::var("IPHONEOS_DEPLOYMENT_TARGET").unwrap_or_else(|_| "13.0".into()))
+        .with_ios(&std::env::var("IPHONEOS_DEPLOYMENT_TARGET").unwrap_or_else(|_| "15.0".into()))
         .with_package("minke-player", &package)
         .link();
     if let Some(root) = sdk_root {

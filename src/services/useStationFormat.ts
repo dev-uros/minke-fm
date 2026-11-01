@@ -1,4 +1,4 @@
-import {FormattedStation, Genre, Station} from "../types";
+import type {FormattedStation, Genre, Station} from "../types";
 
 /**
  * The webview runs on a secure custom scheme, so plain-http streams are the

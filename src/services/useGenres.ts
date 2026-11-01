@@ -1,5 +1,5 @@
-import {ref, Ref} from "vue";
-import {Genre, GenreOption} from "../types";
+import {ref, type Ref} from "vue";
+import type {Genre, GenreOption} from "../types";
 
 /**
  * The browsable genre catalogue.

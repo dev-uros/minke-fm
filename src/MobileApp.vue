@@ -32,6 +32,8 @@ const {
   currentGenre,
   genreLoading,
   genreEmpty,
+  genreUnreachable,
+  genreFallback,
   stationsCount,
   streamLoading,
   reconnecting,
@@ -44,6 +46,7 @@ const {
   toggleStream,
   playNextStation,
   changeGenre,
+  retryGenre,
   toggleShuffle,
   playPreviousStation,
   streamStation,
@@ -259,6 +262,12 @@ const reset = () => void resetAll();
 
       <p v-if="genreLoading" class="album">Loading {{ currentGenre }}...</p>
       <p v-if="genreEmpty" class="warn">Nothing playable under &ldquo;{{ currentGenre }}&rdquo;</p>
+      <p v-if="genreUnreachable" class="warn" @click="changeGenre(currentGenre)">
+        Station directory not answering &mdash; tap to retry
+      </p>
+      <p v-if="genreFallback" class="album" @click="retryGenre">
+        Directory offline &mdash; saved stations &middot; tap to retry
+      </p>
       <p v-if="stationsLoadingError" class="warn">Could not load stations</p>
       </div>
     </div>

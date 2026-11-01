@@ -26,6 +26,12 @@ Predlozi iz pregleda koda (2026-10-23). Poređano po odnosu korist / trud.
   uz kopiranje ili link. Ulaze samo pesme koje su prošle `classifyTitle`, da ostane
   pravilo "tačno ili ništa".
 
+- [x] **Rezervni spisak: favoriti + top 20 stanica po žanru, spakovan uz aplikaciju**
+  `src/assets/fallback-stations.json`, pravi se sa `npm run fallback:stations` (proverava
+  da stanice stvarno sviraju). Žanr koji nije keširan odmah krene sa favoritima iz tog
+  žanra + spiskom, pa se pun spisak zameni kad stigne. Ako radio-browser ne radi, ostaje
+  na tom spisku. Spisak povremeno osvežiti, jer stanice umiru.
+
 - [ ] **Prijavljivanje klikova radio-browser-u** – poziv na `/json/url/{stationuuid}` kad
   stanica krene da svira. Pomaže njihovom `clickcount` rangiranju, na koje se oslanjamo.
 

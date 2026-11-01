@@ -9,7 +9,7 @@ import {ref, Ref} from "vue";
 
 const PROBE_ENDPOINTS = [
     'https://de1.api.radio-browser.info/json/stats',
-    'https://nl1.api.radio-browser.info/json/stats'
+    'https://de2.api.radio-browser.info/json/stats'
 ];
 
 const PROBE_TIMEOUT_MS = 4_000;
@@ -45,7 +45,10 @@ export function useConnectivity(): Connectivity {
             // Always drain or cancel the body. An unread body keeps the socket
             // alive and buffering, which is what leaked memory before.
             await response.body?.cancel();
-            return response.ok;
+            // Any answer at all means the internet is there. A 503 from an
+            // overloaded mirror is the directory's problem, not the network's,
+            // and flagging it as offline sent people to check their wifi.
+            return true;
         } catch {
             return false;
         } finally {

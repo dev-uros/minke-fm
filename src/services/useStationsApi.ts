@@ -14,10 +14,16 @@ import {clearGenres, readGenre, writeGenre} from "./useStationCache.ts";
 
 const API_HOSTS = [
     'https://de1.api.radio-browser.info',
-    'https://de2.api.radio-browser.info',
-    'https://nl1.api.radio-browser.info',
-    'https://at1.api.radio-browser.info'
+    'https://de2.api.radio-browser.info'
 ];
+
+/**
+ * Pauses before going round the mirrors again. The pool shrinks and swells -
+ * nl1 and at1 have left DNS entirely, and de1/de2 share one box that answers
+ * 503 "No available server" in bursts - so one pass over the list is not
+ * enough to call a genre unreachable.
+ */
+const RETRY_DELAYS_MS = [2_000, 5_000, 10_000];
 
 /**
  * Generous, because a genre is now the whole tag rather than a page of it:
@@ -75,14 +81,18 @@ async function fetchFromHost(host: string, genre: Genre): Promise<FormattedStati
 export async function fetchGenre(genre: Genre): Promise<FormattedStation[]> {
     let lastError: unknown = new Error('No radio-browser mirror could be reached');
 
-    for (const host of API_HOSTS) {
-        try {
-            const stations = await fetchFromHost(host, genre);
-            // Not awaited: a megabyte of stations should not hold up playback.
-            void writeGenre(genre, stations);
-            return stations;
-        } catch (error) {
-            lastError = error;
+    for (let round = 0; round <= RETRY_DELAYS_MS.length; round++) {
+        if (round > 0) await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS_MS[round - 1]));
+
+        for (const host of API_HOSTS) {
+            try {
+                const stations = await fetchFromHost(host, genre);
+                // Not awaited: a megabyte of stations should not hold up playback.
+                void writeGenre(genre, stations);
+                return stations;
+            } catch (error) {
+                lastError = error;
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import {useNativePlayer} from "./useNativePlayer.ts";
 import {useNowPlaying} from "./useNowPlaying.ts";
 import {DEFAULT_GENRE} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
+import {fallbackStations} from "./useFallbackStations.ts";
 import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
 import {useSleepTimer} from "./useSleepTimer.ts";
 import {recordTrack} from "./useTrackHistory.ts";
@@ -33,6 +34,10 @@ export function useStream(mobile = false) {
     const genreLoading = ref(false);
     /** Set when a genre was reachable but had nothing playable in it. */
     const genreEmpty = ref(false);
+    /** Set when no mirror could hand over the genre's list - not the same as empty. */
+    const genreUnreachable = ref(false);
+    /** Set when the directory failed and the genre is down to its bundled stand-in. */
+    const genreFallback = ref(false);
 
     const genreList = (genre: Genre | undefined): FormattedStation[] =>
         genre ? stations.value[genre] ?? [] : [];
@@ -185,32 +190,67 @@ export function useStream(mobile = false) {
     let genreRequest = 0;
 
     /**
-     * Load a genre's stations, serving the cache first so switching feels
-     * instant, then refreshing in the background when the cache is stale.
+     * Load a genre's stations, serving whatever is already on the device first
+     * so switching feels instant, then refreshing in the background when that
+     * is stale.
+     *
+     * "On the device" is the IndexedDB cache, or for a genre never cached, the
+     * favourites and bundled top stations from `fallbackStations`. Those stand
+     * in until the full list arrives - a whole tag can take over a minute to
+     * download - and stay if the directory is down, which is what they are for.
      */
     const loadGenre = async (genre: Genre): Promise<FormattedStation[]> => {
         const request = ++genreRequest;
+        // A refresh still running for the genre we left would otherwise leave
+        // this set, since only the current request may clear it.
+        genreLoading.value = false;
 
         const cached = await loadCachedGenre(genre);
-        if (cached) {
+        if (cached?.fresh) {
             stations.value = {...stations.value, [genre]: cached.stations};
-            if (cached.fresh) return cached.stations;
+            return cached.stations;
         }
 
-        if (!cached) genreLoading.value = true;
+        const standIn = cached?.stations ?? await fallbackStations(genre);
+        if (standIn.length === 0) return refreshGenre(genre, request, 'none');
+
+        stations.value = {...stations.value, [genre]: standIn};
+        void refreshGenre(genre, request, cached ? 'cache' : 'bundle');
+        return standIn;
+    };
+
+    /**
+     * Fetch the full list. `standIn` is what is already playing meanwhile: with
+     * one, a failure keeps it (and says so, if it is only the bundled list);
+     * with none, the failure is the caller's to show.
+     */
+    const refreshGenre = async (
+        genre: Genre,
+        request: number,
+        standIn: 'none' | 'cache' | 'bundle'
+    ): Promise<FormattedStation[]> => {
+        // A stale cache is thousands of stations already; only a short list is
+        // worth announcing that more are on the way.
+        if (standIn !== 'cache') genreLoading.value = true;
         try {
             const fresh = await fetchGenre(genre);
-            if (request !== genreRequest) return genreList(genre);
-
             stations.value = {...stations.value, [genre]: fresh};
+            if (request === genreRequest) genreFallback.value = false;
             return fresh;
         } catch (error) {
             connectivity.reportUnreachable();
-            if (cached) return cached.stations;
-            throw error;
+            if (standIn === 'none') throw error;
+            if (request === genreRequest && standIn === 'bundle') genreFallback.value = true;
+            return genreList(genre);
         } finally {
             if (request === genreRequest) genreLoading.value = false;
         }
+    };
+
+    /** "Try again" while on a bundled stand-in: go back for the full list. */
+    const retryGenre = () => {
+        genreFallback.value = false;
+        void refreshGenre(currentGenre.value, ++genreRequest, 'bundle');
     };
 
     const changeGenre = async (genre: Genre) => {
@@ -218,14 +258,17 @@ export function useStream(mobile = false) {
 
         currentGenre.value = genre;
         genreEmpty.value = false;
+        genreUnreachable.value = false;
+        genreFallback.value = false;
 
         let list: FormattedStation[];
         try {
             list = await loadGenre(genre);
         } catch {
-            genreEmpty.value = true;
+            if (currentGenre.value === genre) genreUnreachable.value = true;
             return;
         }
+        if (currentGenre.value !== genre) return;
 
         if (list.length === 0) {
             genreEmpty.value = true;
@@ -273,6 +316,8 @@ export function useStream(mobile = false) {
         history = [];
         shuffle.value = false;
         genreEmpty.value = false;
+        genreUnreachable.value = false;
+        genreFallback.value = false;
         currentGenre.value = DEFAULT_GENRE;
         resetNowPlaying();
 
@@ -389,6 +434,8 @@ export function useStream(mobile = false) {
         currentGenre,
         genreLoading,
         genreEmpty,
+        genreUnreachable,
+        genreFallback,
         streamVolume,
         stationsCount,
         streamLoading,
@@ -405,6 +452,7 @@ export function useStream(mobile = false) {
         unload: dispose,
         playNextStation,
         changeGenre,
+        retryGenre,
         toggleShuffle,
         playPreviousStation,
         streamStation,

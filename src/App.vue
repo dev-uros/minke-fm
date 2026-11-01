@@ -23,6 +23,8 @@ const {
   currentGenre,
   genreLoading,
   genreEmpty,
+  genreUnreachable,
+  genreFallback,
   streamVolume,
   stationsCount,
   streamLoading,
@@ -39,6 +41,7 @@ const {
   unload,
   playNextStation,
   changeGenre,
+  retryGenre,
   toggleShuffle,
   playPreviousStation,
   streamStation,
@@ -406,6 +409,14 @@ useMediaSession(
         </h2>
         <h2 v-if="genreEmpty" class="text-red-400">
           Nothing playable under &ldquo;{{ currentGenre }}&rdquo; &mdash; try another genre.
+        </h2>
+        <h2 v-if="genreUnreachable" class="text-red-400">
+          The station directory is not answering right now &mdash;
+          <a class="underline cursor-pointer" @click="changeGenre(currentGenre)">try again</a>.
+        </h2>
+        <h2 v-if="genreFallback" class="text-yellow-300">
+          The station directory is not answering &mdash; playing saved {{ currentGenre }} stations.
+          <a class="underline cursor-pointer" @click="retryGenre">Try again</a>
         </h2>
         <h2 v-if="genreLoading" class="text-yellow-300">
           Loading {{ currentGenre }} stations...

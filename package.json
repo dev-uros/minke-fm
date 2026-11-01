@@ -13,7 +13,9 @@
     "build:mobile": "MINKE_MOBILE=1 vue-tsc --noEmit && MINKE_MOBILE=1 vite build",
     "tauri:build:android": "bash scripts/build-android.sh",
     "android:install": "bash scripts/install-android.sh",
-    "tauri:build:android:debug": "bash scripts/build-android.sh aarch64 debug"
+    "tauri:build:android:debug": "bash scripts/build-android.sh aarch64 debug",
+    "fallback:stations": "node scripts/build-fallback-stations.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.11",
@@ -27,8 +29,10 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2.12.4",
     "@vitejs/plugin-vue": "^5.2.1",
+    "happy-dom": "^17.6.3",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
+    "vitest": "^3.2.7",
     "vue-tsc": "^2.1.10"
   }
 }

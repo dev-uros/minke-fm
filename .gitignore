@@ -23,7 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Secrets - the Pexels key for background footage lives here
+# Local secrets
 .env
 .env.*
 !.env.example

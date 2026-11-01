@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Backdrop preview</title>
+  <!--
+    Dev-only page for looking at the pixel backdrops without the app.
+      /backdrop-preview.html?scene=lofi        every backdrop of a scene, live
+      /backdrop-preview.html?scene=lofi&t=6    frozen at 6 seconds (for screenshots)
+      /backdrop-preview.html?id=lasers         one backdrop, full window
+      /backdrop-preview.html?all=1&t=6         every scene
+  -->
+  <style>
+    body { margin: 0; background: #111; color: #ddd; font: 12px monospace; }
+    .grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; }
+    .cell { width: 480px; }
+    .full canvas { width: 100vw; height: 100vh; display: block; }
+    canvas { width: 480px; height: 270px; image-rendering: pixelated; display: block; background: #000; }
+    .label { padding: 2px 0 6px; }
+    .error { color: #f66; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+  import {BACKDROPS} from '/src/backdrops/index.ts';
+
+  const params = new URLSearchParams(location.search);
+  const frozen = params.has('t') ? Number(params.get('t')) : null;
+  const root = document.getElementById('root');
+
+  const all = Object.entries(BACKDROPS).flatMap(([scene, list]) => list.map(b => ({scene, b})));
+  let chosen;
+  if (params.get('id')) chosen = all.filter(x => x.b.id === params.get('id'));
+  else if (params.get('scene')) chosen = all.filter(x => x.scene === params.get('scene'));
+  else chosen = all;
+
+  const single = params.has('id');
+  root.className = single ? 'full' : 'grid';
+
+  const W = single ? Math.round(180 * innerWidth / innerHeight) : 320, H = 180;
+
+  const frames = chosen.map(({scene, b}) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    cell.appendChild(c);
+    if (!single) {
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `${scene} / ${b.id} — ${b.name}`;
+      cell.appendChild(label);
+    }
+    root.appendChild(cell);
+    const ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    try {
+      return {b, ctx, draw: b.create(W, H), cell};
+    } catch (e) {
+      cell.insertAdjacentHTML('beforeend', `<div class="error">create: ${e}</div>`);
+      return null;
+    }
+  }).filter(Boolean);
+
+  const paint = (f, t) => {
+    try {
+      f.draw(f.ctx, t, t * f.b.bpm / 60);
+    } catch (e) {
+      if (!f.failed) f.cell.insertAdjacentHTML('beforeend', `<div class="error">frame: ${e}</div>`);
+      f.failed = true;
+    }
+  };
+
+  if (params.has('bench')) {
+    // Average cost of one frame over 10 simulated seconds, per backdrop.
+    const rows = frames.map(f => {
+      const t0 = performance.now();
+      for (let i = 0; i < 300; i++) paint(f, i / 30);
+      return [f.b.id, (performance.now() - t0) / 300];
+    }).sort((a, b) => b[1] - a[1]);
+    root.className = '';
+    root.innerHTML = '<pre>' + rows.map(([id, ms]) => `${ms.toFixed(2).padStart(6)} ms  ${id}`).join('\n') + '</pre>';
+    document.title = 'ready';
+  } else if (frozen !== null) {
+    // Step up to the requested time so stateful scenes (rain, particles) have moved.
+    for (const f of frames) for (let t = 0; t <= frozen; t += 1 / 30) paint(f, t);
+    document.title = 'ready';
+  } else {
+    const start = performance.now();
+    const loop = now => {
+      requestAnimationFrame(loop);
+      for (const f of frames) paint(f, (now - start) / 1000);
+    };
+    requestAnimationFrame(loop);
+  }
+</script>
+</body>
+</html>

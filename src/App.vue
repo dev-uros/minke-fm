@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import Clock from "./components/Clock.vue";
 import Cassete from "./components/Cassete.vue";
 import StreamLoading from "./components/StreamLoading.vue";
@@ -7,7 +7,8 @@ import SaveStation from "./components/SaveStation.vue";
 import {useStream} from "./services/useStream.ts";
 import {FormattedStation, Genre} from "./types";
 import {useFavorites} from "./services/useFavorites.ts";
-import {useBackgroundVideo} from "./services/useBackgroundVideo.ts";
+import {useBackdrop} from "./services/useBackdrop.ts";
+import BackdropCanvas from "./components/BackdropCanvas.vue";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
 import HelpModal from "./components/HelpModal.vue";
@@ -77,27 +78,14 @@ const togglePlayer = () => {
   toggleStream();
 }
 
-const video = ref<HTMLVideoElement>();
-const {source: backgroundVideo, fetched: backgroundFetched, setGenre: setBackgroundFor} =
-    useBackgroundVideo();
-
-// The <source> child only takes effect after load(), and load() must wait for
-// Vue to have written the new src into the DOM.
-watch(backgroundVideo, () => {
-  nextTick(() => {
-    if (!video.value) return;
-    video.value.load();
-    // load() aborts any in-flight play(), which rejects the previous promise.
-    video.value.play().catch(() => undefined);
-  });
-});
+const {backdrop, setGenre: setBackdropFor} = useBackdrop();
 
 const setGenre = (genre: Genre) => {
   void changeGenre(genre);
-  void setBackgroundFor(genre);
+  setBackdropFor(genre);
 }
 
-const changeVideo = () => void setBackgroundFor(currentGenre.value);
+const changeBackdrop = () => setBackdropFor(currentGenre.value);
 
 /**
  * Whether the keystroke is going into a text field.
@@ -132,7 +120,7 @@ const onKeyDown = (event: KeyboardEvent) => {
   }
 
   if (event.code === 'KeyG') {
-    changeVideo();
+    changeBackdrop();
     return;
   }
   if (event.code === 'KeyH') {
@@ -218,8 +206,8 @@ onMounted(async () => {
   } catch (error) {
     stationsLoadingError.value = true;
   }
-  // Fetch a backdrop for whatever genre we started on.
-  void setBackgroundFor(currentGenre.value);
+  // Pick a backdrop for whatever genre we started on.
+  setBackdropFor(currentGenre.value);
 
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("wheel", onWheel);
@@ -276,7 +264,7 @@ const resetEverything = async () => {
   } catch (error) {
     stationsLoadingError.value = true;
   }
-  void setBackgroundFor(currentGenre.value);
+  setBackdropFor(currentGenre.value);
 }
 
 const helpModal = ref(false)
@@ -351,17 +339,11 @@ useMediaSession(
 
 <template>
   <div class="flex flex-col min-h-screen">
-    <video
-        ref="video"
-        autoplay
-        muted
-        loop
-        playsinline
-        class="fixed top-0 left-0 w-full h-full object-cover -z-10"
-    >
-      <source :src="backgroundVideo" type="video/mp4"/>
-      Your browser does not support the video tag.
-    </video>
+    <BackdropCanvas
+        v-if="backdrop"
+        :backdrop="backdrop"
+        class="fixed top-0 left-0 w-full h-full -z-10"
+    />
     <div class="flex justify-between p-5 font-press-start">
       <div class="flex flex-col gap-5">
         <!-- Station, origin and track share one guard so they appear together.
@@ -444,9 +426,6 @@ useMediaSession(
             @click="turnOffSleepTimer"
         >&middot; sleep in {{ sleepTimeLeft }}</button>
       </h1>
-      <!-- Pexels' API terms ask for a visible credit while showing their video. -->
-      <a v-if="backgroundFetched" href="https://www.pexels.com" target="_blank"
-         class="text-[10px] opacity-60 hover:opacity-100">Backgrounds by Pexels</a>
       <Cassete
           @open-help-modal="openHelpModal"
           @open-station-list-modal="openStationListModal"

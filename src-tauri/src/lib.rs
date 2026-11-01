@@ -7,14 +7,12 @@ mod player;
 pub mod text;
 pub mod track;
 mod tray;
-pub mod video;
 
 use icy::IcyProxy;
 use lyrics::{Lyrics, LyricsCache};
 use tauri::{Emitter, Manager};
 use track::{TrackCache, TrackInfo};
 use tray::{TrayState, TrayStore};
-use video::VideoLibrary;
 
 /// Register a station URL with the metadata proxy and get back the local URL to
 /// play. Falls back to the station URL itself if the proxy is not running, so a
@@ -52,48 +50,6 @@ async fn lookup_lyrics(
     tauri::async_runtime::spawn_blocking(move || cache.lookup(&artist, &song))
         .await
         .map_err(|error| error.to_string())
-}
-
-/// A backdrop clip for this search query, downloaded and cached on demand.
-///
-/// `Ok(None)` is an ordinary answer - no API key, no network, nothing found -
-/// and means the caller should use a bundled video.
-#[tauri::command]
-async fn background_video(
-    scene: String,
-    queries: Vec<String>,
-    recent: Vec<String>,
-    library: tauri::State<'_, std::sync::Arc<VideoLibrary>>,
-) -> Result<Option<String>, String> {
-    let library = std::sync::Arc::clone(library.inner());
-
-    // Searching and downloading are blocking; the UI thread must not wait.
-    let chosen = tauri::async_runtime::spawn_blocking({
-        let library = std::sync::Arc::clone(&library);
-        let (scene, queries) = (scene.clone(), queries.clone());
-        move || {
-            library
-                .clip_for(&scene, &queries, &recent)
-                .and_then(|path| path.to_str().map(str::to_string))
-        }
-    })
-    .await
-    .map_err(|error| error.to_string())?;
-
-    // Grow the pool in the background so later changes are instant. Detached
-    // on purpose: the caller has its clip and should not wait for this.
-    if library.needs_more(&scene) {
-        tauri::async_runtime::spawn_blocking(move || library.top_up(&scene, &queries));
-    }
-
-    Ok(chosen)
-}
-
-/// Whether fetched backdrops are available at all, so the UI can credit Pexels
-/// only when it is actually showing their footage.
-#[tauri::command]
-fn backgrounds_enabled(library: tauri::State<'_, std::sync::Arc<VideoLibrary>>) -> bool {
-    library.has_key()
 }
 
 /// Whether this build runs on a phone.
@@ -190,16 +146,6 @@ pub fn run() {
             app.manage(TrackCache::default());
             app.manage(LyricsCache::default());
 
-            let paths = app.path();
-            let cache_dir = paths
-                .app_cache_dir()
-                .unwrap_or_else(|_| std::env::temp_dir())
-                .join("backgrounds");
-            let config_dir = paths
-                .app_config_dir()
-                .unwrap_or_else(|_| std::env::temp_dir());
-            let _ = std::fs::create_dir_all(&config_dir);
-
             #[cfg(desktop)]
             {
                 app.handle().plugin(tauri_plugin_positioner::init())?;
@@ -207,22 +153,12 @@ pub fn run() {
                 tray::build(app.handle())?;
             }
 
-            let api_key = video::read_api_key(&config_dir);
-            if api_key.is_none() {
-                println!(
-                    "No Pexels key - using bundled backgrounds. Add one at {}",
-                    config_dir.join("pexels.key").display()
-                );
-            }
-            app.manage(std::sync::Arc::new(VideoLibrary::new(cache_dir, api_key)));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             prepare_stream,
             lookup_track,
             lookup_lyrics,
-            background_video,
-            backgrounds_enabled,
             is_mobile,
             update_tray,
             tray_state,

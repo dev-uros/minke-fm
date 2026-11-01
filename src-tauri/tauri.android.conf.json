@@ -10,5 +10,10 @@
   },
   "build": {
     "beforeBuildCommand": "npm run build:mobile"
+  },
+  "bundle": {
+    "android": {
+      "versionCode": 1001
+    }
   }
 }

@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import Cassete from "./components/Cassete.vue";
+import GenreSwitcher from "./components/GenreSwitcher.vue";
+import ThemePicker from "./components/ThemePicker.vue";
+import RadioPlayer from "./components/players/RadioPlayer.vue";
+import VinylPlayer from "./components/players/VinylPlayer.vue";
+import HifiPlayer from "./components/players/HifiPlayer.vue";
+import LcdPlayer from "./components/players/LcdPlayer.vue";
+import {useSkin} from "./services/useSkin.ts";
+import "./skins.css";
 import StreamLoading from "./components/StreamLoading.vue";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
@@ -60,6 +68,27 @@ const {
 const {favorites, isFavorite, toggle: toggleFavorite, remove: removeFavorite} = useFavorites();
 
 /**
+ * The skin picks the player. The cassette is the desktop's own component and
+ * keeps its zoom-to-fit and its built-in genre picker; the others are
+ * phone-only, size themselves in CSS, and ask the root for the genre picker.
+ */
+const {skin} = useSkin();
+const SKINNED_PLAYERS = {
+  radio: RadioPlayer,
+  vinyl: VinylPlayer,
+  hifi: HifiPlayer,
+  lcd: LcdPlayer,
+} as const;
+const skinnedPlayer = computed(() => skin.value === 'cassette' ? null : SKINNED_PLAYERS[skin.value]);
+const stationKey = computed(() => currentlyPlaying.value?.id ?? currentlyPlaying.value?.name ?? '');
+const themeModal = ref(false);
+const genreModal = ref(false);
+const pickGenre = (genre: Genre) => {
+  genreModal.value = false;
+  setGenre(genre);
+};
+
+/**
  * The deck fills the screen width, because it is how you get around the app.
  *
  * This cannot be done in CSS: `zoom` needs a plain number and `calc(100vw/300)`
@@ -96,6 +125,8 @@ onMounted(() => {
   void measureDeck();
   window.addEventListener('resize', measureDeck);
 });
+// Back on the cassette, the shell has to be measured again: it was not there.
+watch(skin, () => void measureDeck(), {flush: 'post'});
 onUnmounted(() => window.removeEventListener('resize', measureDeck));
 
 const stationsLoadingError = ref(false);
@@ -223,6 +254,7 @@ const reset = () => void resetAll();
     <div class="display">
       <!-- In the corner, so it costs the layout nothing; it only grows to show
            the time while a timer is running. -->
+      <button class="theme-button" aria-label="Theme" @click="themeModal = true">&#9680;</button>
       <button class="sleep-timer" :class="{ on: sleepTimeLeft }" @click="tapSleepTimer">
         &#9790;<span v-if="sleepTimeLeft"> {{ sleepTimeLeft }}</span>
       </button>
@@ -274,7 +306,25 @@ const reset = () => void resetAll();
 
     <!-- The deck sits at the bottom, where a thumb reaches. -->
     <div class="deck" ref="deck" :style="{ '--deck-zoom': deckZoom }">
+      <component
+          v-if="skinnedPlayer"
+          :is="skinnedPlayer"
+          :current-genre="currentGenre"
+          :station-count="stationsCount"
+          :shuffle="shuffle"
+          :is-playing="isPlaying"
+          :station-key="stationKey"
+          @toggle-player="toggleStream"
+          @play-next="playNextStation"
+          @play-previous="playPreviousStation"
+          @toggle-shuffle="toggleShuffle"
+          @open-genres="genreModal = true"
+          @open-favorites="favoritesModal = true"
+          @open-stations="openStationList"
+          @reset-all="reset"
+      />
       <Cassete
+          v-else
           :current-genre="currentGenre"
           :station-count="stationsCount"
           :shuffle="shuffle"
@@ -300,6 +350,9 @@ const reset = () => void resetAll();
     <NowPlayingModal v-if="nowPlayingModal" :now-playing="nowPlaying" :lyrics="lyrics"
                      @close-modal="nowPlayingModal = false"/>
     <HelpModal v-if="helpModal" @close-modal="helpModal = false"/>
+    <GenreSwitcher v-if="genreModal" :current="currentGenre" @set-genre="pickGenre"
+                   @close-modal="genreModal = false"/>
+    <ThemePicker v-if="themeModal" @close-modal="themeModal = false"/>
     <ExitConfirmModal v-if="exitConfirm" @close-modal="exitConfirm = false" @confirm="confirmExit"/>
   </div>
 </template>
@@ -317,10 +370,11 @@ const reset = () => void resetAll();
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  background: #1a1a1a;
-  font-family: Montserrat, sans-serif;
-  color: #FFFDD0;
+  background: var(--s-bg, #1a1a1a);
+  font-family: var(--s-font, Montserrat, sans-serif);
+  color: var(--s-fg, #FFFDD0);
   overflow: hidden;
+  transition: color 0.25s ease;
 }
 
 /* The background is never animated - it is the same colour as the splash, so
@@ -353,12 +407,14 @@ const reset = () => void resetAll();
   position: relative;
   flex: 1;
   min-height: 0;
-  margin: 0 12px 12px;
+  margin: var(--s-panel-margin, 0 12px 12px);
   padding: 16px;
   box-sizing: border-box;
-  background: #252525;
-  border: 3px solid #000;
-  box-shadow: 6px 6px 0 #000;
+  background: var(--s-panel, #252525);
+  border: var(--s-panel-border, 3px solid #000);
+  box-shadow: var(--s-panel-shadow, 6px 6px 0 #000);
+  border-radius: var(--s-panel-radius, 0);
+  text-shadow: var(--s-glow, none);
   overflow: hidden;
   display: flex;
 }
@@ -368,11 +424,11 @@ const reset = () => void resetAll();
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(
+  background: var(--s-scan, repeating-linear-gradient(
       to bottom,
       rgba(255, 255, 255, 0.03) 0 1px,
       transparent 1px 3px
-  );
+  ));
 }
 
 .info {
@@ -412,7 +468,7 @@ const reset = () => void resetAll();
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255, 253, 208, 0.5);
+  color: var(--s-dim, rgba(255, 253, 208, 0.5));
 }
 
 .sleeve {
@@ -422,9 +478,10 @@ const reset = () => void resetAll();
   width: min(58vw, 240px, 30vh);
   aspect-ratio: 1;
   flex: none;
-  border: 3px solid #000;
-  box-shadow: 7px 7px 0 #000;
-  background: #171717;
+  border: var(--s-sleeve-border, 3px solid #000);
+  box-shadow: var(--s-sleeve-shadow, 7px 7px 0 #000);
+  border-radius: var(--s-sleeve-radius, 0);
+  background: var(--s-sleeve-bg, #171717);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -436,10 +493,11 @@ const reset = () => void resetAll();
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: var(--s-art-filter, none);
 }
 
 .sleeve.empty {
-  color: rgb(242, 188, 0);
+  color: var(--s-accent, rgb(242, 188, 0));
   font-size: 72px;
 }
 
@@ -447,7 +505,8 @@ const reset = () => void resetAll();
 .station {
   margin: 4px 0 0;
   max-width: 100%;
-  font-size: 15px;
+  font-family: var(--s-font-display, inherit);
+  font-size: var(--s-station-size, 15px);
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -473,19 +532,19 @@ const reset = () => void resetAll();
   padding: 0;
   font-size: 20px;
   line-height: 1;
-  color: rgba(255, 253, 208, 0.45);
+  color: var(--s-dim, rgba(255, 253, 208, 0.45));
   cursor: pointer;
 }
 
 .star.on {
-  color: rgb(242, 188, 0);
+  color: var(--s-accent, rgb(242, 188, 0));
 }
 
 .track {
   margin: 0;
   font-size: 13px;
   font-weight: 700;
-  color: rgb(241, 90, 37);
+  color: var(--s-accent2, rgb(241, 90, 37));
   cursor: pointer;
 }
 
@@ -493,14 +552,14 @@ const reset = () => void resetAll();
   margin: 0;
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 253, 208, 0.55);
+  color: var(--s-dim, rgba(255, 253, 208, 0.55));
 }
 
 .warn {
   margin: 0;
   font-size: 11px;
   font-weight: 700;
-  color: rgb(241, 90, 37);
+  color: var(--s-accent2, rgb(241, 90, 37));
 }
 
 .spinner {
@@ -524,7 +583,7 @@ const reset = () => void resetAll();
   font-weight: 800;
   line-height: 36px;
   white-space: nowrap;
-  color: rgba(255, 253, 208, 0.35);
+  color: var(--s-dim, rgba(255, 253, 208, 0.35));
   cursor: pointer;
 }
 
@@ -533,7 +592,23 @@ const reset = () => void resetAll();
 }
 
 .sleep-timer.on {
-  color: #67e8f9;
+  color: var(--s-hi, #67e8f9);
+}
+
+/* The sleep timer's twin in the other corner. */
+.theme-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 36px;
+  color: var(--s-dim, rgba(255, 253, 208, 0.35));
+  cursor: pointer;
 }
 
 /* The deck hugs the cassette rather than reserving a fixed 40% band: the

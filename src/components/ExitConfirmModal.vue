@@ -42,7 +42,7 @@ useEscapeToClose(closeModal);
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--m-backdrop, rgba(0, 0, 0, 0.45));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -50,13 +50,14 @@ useEscapeToClose(closeModal);
 }
 
 .card {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   width: min(300px, 82vw);
   translate: -6px -6px;
-  background: rgb(242, 188, 0);
-  border: 3px solid #000000;
-  box-shadow: 12px 12px 0 #000000;
+  background: var(--m-card, rgb(242, 188, 0));
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-lg, 12px 12px 0 #000);
   overflow: hidden;
+  border-radius: var(--m-radius, 0);
 }
 
 .head {
@@ -64,15 +65,15 @@ useEscapeToClose(closeModal);
   font-weight: 900;
   width: 100%;
   height: 32px;
-  background: #ffffff;
+  background: var(--m-head, #ffffff);
   padding: 5px 12px;
-  color: #000000;
-  border-bottom: 3px solid #000000;
+  color: var(--m-head-fg, #000000);
+  border-bottom: var(--m-bw, 3px) solid var(--m-line, #000);
 }
 
 .content {
   padding: 14px 12px 16px;
-  color: #000000;
+  color: var(--m-ink, #000000);
 }
 
 .ask {
@@ -97,20 +98,21 @@ useEscapeToClose(closeModal);
 .button {
   flex: 1;
   padding: 9px 10px;
-  border: 3px solid #000000;
-  box-shadow: 3px 3px 0 #000000;
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-sm, 3px 3px 0 #000);
   font-weight: 750;
   font-size: 14px;
-  color: #ffffff;
+  color: var(--m-btn-fg, #ffffff);
   cursor: pointer;
+  border-radius: var(--m-radius-sm, 0);
 }
 
 .stay {
-  background: #1ac2ff;
+  background: var(--m-btn-hover, #1ac2ff);
 }
 
 .leave {
-  background: rgb(241, 90, 37);
+  background: var(--m-btn, rgb(241, 90, 37));
 }
 
 .button:active {

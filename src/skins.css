@@ -1,0 +1,346 @@
+/*
+ * The phone's skins - see src/services/useSkin.ts.
+ *
+ * Two sets of variables:
+ *   --s-*  the phone screen itself (MobileApp.vue): background, the display
+ *          panel, the artwork sleeve, text.
+ *   --m-*  the shared modals and toast. Each one reads var(--m-x, <original>),
+ *          so the desktop - which never gets a data-skin - is unchanged, and so
+ *          is the cassette skin, which sets none of them.
+ *
+ * Players are separate components per skin and carry their own styles.
+ */
+
+/* ---------------------------------------------------------------- radio -- */
+html[data-skin="radio"] {
+    --s-bg: repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg, #2c1c10, #1c110a);
+    --s-font: "Zilla Slab", Georgia, serif;
+    --s-font-display: "Zilla Slab", Georgia, serif;
+    --s-fg: #2b1a0f;
+    --s-dim: rgba(43, 26, 15, 0.6);
+    --s-accent: #c7731f;
+    --s-accent2: #a8321e;
+    --s-hi: #a8321e;
+    --s-panel: radial-gradient(ellipse at 50% 30%, #f4e8cc, #e3d2ab 75%);
+    --s-panel-border: 3px solid #140b05;
+    --s-panel-shadow: inset 0 0 0 6px #6b4424, inset 0 0 0 8px #140b05, 0 10px 24px rgba(0, 0, 0, 0.55);
+    --s-panel-radius: 22px;
+    --s-scan: none;
+    --s-sleeve-bg: #3a2414;
+    --s-sleeve-border: 3px solid #140b05;
+    --s-sleeve-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    --s-sleeve-radius: 12px;
+
+    --m-font: "Zilla Slab", Georgia, serif;
+    --m-font-input: "Zilla Slab", Georgia, serif;
+    --m-backdrop: rgba(20, 11, 5, 0.6);
+    --m-card: #eadcbd;
+    --m-line: #140b05;
+    --m-bw: 2px;
+    --m-radius: 16px;
+    --m-radius-sm: 10px;
+    --m-shadow-lg: 0 14px 34px rgba(0, 0, 0, 0.6);
+    --m-shadow-md: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    --m-shadow-sm: 0 2px 0 #140b05;
+    --m-head: #3a2414;
+    --m-head-fg: #f3e6c8;
+    --m-head-dim: rgba(243, 230, 200, 0.45);
+    --m-ink: #2b1a0f;
+    --m-btn: #7a4a26;
+    --m-btn-fg: #f8ecd2;
+    --m-btn-hover: #8f5a30;
+    --m-btn-current: #a8321e;
+    --m-danger: #a8321e;
+    --m-input: #fff8e8;
+    --m-input-fg: #2b1a0f;
+    --m-input-ph: rgba(43, 26, 15, 0.45);
+    --m-input-focus: #fffdf5;
+    --m-input-focus-fg: #2b1a0f;
+    --m-input-ring: #c7731f;
+    --m-panel: #f6ecd4;
+    --m-panel-fg: #2b1a0f;
+    --m-panel-muted: rgba(43, 26, 15, 0.6);
+    --m-accent: #e0912f;
+    --m-accent2: #a8321e;
+    --m-sleeve: #3a2414;
+    --m-screen: #2b1a0f;
+    --m-screen-fg: #f3dca0;
+    --m-screen-dim: rgba(243, 220, 160, 0.5);
+    --m-screen-line: rgba(243, 220, 160, 0.1);
+    --m-screen-accent: #e0912f;
+    --m-hi: #e0912f;
+}
+
+/* ---------------------------------------------------------------- vinyl -- */
+html[data-skin="vinyl"] {
+    --s-bg: radial-gradient(circle at 50% 0%, #17392e, #0b1f19 70%);
+    --s-font: "Playfair Display", Georgia, serif;
+    --s-font-display: "Playfair Display", Georgia, serif;
+    --s-fg: #f3ead2;
+    --s-dim: rgba(243, 234, 210, 0.55);
+    --s-accent: #c9a45c;
+    --s-accent2: #e8a87c;
+    --s-hi: #c9a45c;
+    --s-panel: #12342a;
+    --s-panel-border: 1px solid #c9a45c;
+    --s-panel-shadow: inset 0 0 0 5px #12342a, inset 0 0 0 6px rgba(201, 164, 92, 0.45), 0 12px 28px rgba(0, 0, 0, 0.45);
+    --s-panel-radius: 4px;
+    --s-scan: none;
+    --s-sleeve-bg: #0b1f19;
+    --s-sleeve-border: 1px solid #c9a45c;
+    --s-sleeve-shadow: 10px 10px 0 -2px #0b1f19, 10px 10px 0 -1px rgba(201, 164, 92, 0.5);
+    --s-sleeve-radius: 2px;
+
+    --m-font: "Playfair Display", Georgia, serif;
+    --m-font-input: "Playfair Display", Georgia, serif;
+    --m-backdrop: rgba(5, 15, 12, 0.65);
+    --m-card: #f3ead2;
+    --m-line: #0b1f19;
+    --m-bw: 1px;
+    --m-radius: 4px;
+    --m-radius-sm: 999px;
+    --m-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+    --m-shadow-md: none;
+    --m-shadow-sm: none;
+    --m-head: #0f2a22;
+    --m-head-fg: #f3ead2;
+    --m-head-dim: rgba(243, 234, 210, 0.45);
+    --m-ink: #0f2a22;
+    --m-btn: #143a2e;
+    --m-btn-fg: #f3ead2;
+    --m-btn-hover: #1d4a3b;
+    --m-btn-current: #8a6a2c;
+    --m-danger: #7a2a1a;
+    --m-input: #fffaf0;
+    --m-input-fg: #0f2a22;
+    --m-input-ph: rgba(15, 42, 34, 0.45);
+    --m-input-focus: #fffdf7;
+    --m-input-focus-fg: #0f2a22;
+    --m-input-ring: #c9a45c;
+    --m-panel: #fffaf0;
+    --m-panel-fg: #0f2a22;
+    --m-panel-muted: rgba(15, 42, 34, 0.6);
+    --m-accent: #c9a45c;
+    --m-accent2: #8b3a1a;
+    --m-sleeve: #0f2a22;
+    --m-screen: #0b1f19;
+    --m-screen-fg: #f3ead2;
+    --m-screen-dim: rgba(243, 234, 210, 0.5);
+    --m-screen-line: rgba(201, 164, 92, 0.18);
+    --m-screen-accent: #c9a45c;
+    --m-hi: #c9a45c;
+}
+
+/* ----------------------------------------------------------------- hifi -- */
+html[data-skin="hifi"] {
+    --s-bg: linear-gradient(180deg, #161719, #0a0a0b 60%);
+    --s-font: "VT323", "Courier New", monospace;
+    --s-font-display: "VT323", "Courier New", monospace;
+    --s-fg: #5ff5d2;
+    --s-dim: rgba(95, 245, 210, 0.45);
+    --s-accent: #5ff5d2;
+    --s-accent2: #ffb347;
+    --s-hi: #ffb347;
+    --s-panel: radial-gradient(ellipse at 50% 40%, #082a24, #03100d 80%);
+    --s-panel-border: 2px solid #2a2c30;
+    --s-panel-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 0 0 6px #141517, 0 0 0 7px #34363b;
+    --s-panel-radius: 6px;
+    --s-scan: repeating-linear-gradient(to bottom, rgba(95, 245, 210, 0.04) 0 1px, transparent 1px 3px);
+    --s-glow: 0 0 6px rgba(95, 245, 210, 0.55);
+    --s-station-size: 24px;
+    --s-sleeve-bg: #020807;
+    --s-sleeve-border: 1px solid rgba(95, 245, 210, 0.35);
+    --s-sleeve-shadow: 0 0 18px rgba(95, 245, 210, 0.15);
+    --s-sleeve-radius: 4px;
+
+    --m-font: "VT323", "Courier New", monospace;
+    --m-font-input: "VT323", "Courier New", monospace;
+    --m-backdrop: rgba(0, 0, 0, 0.7);
+    --m-card: #141517;
+    --m-line: #34363b;
+    --m-bw: 1px;
+    --m-radius: 6px;
+    --m-radius-sm: 3px;
+    --m-shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.8);
+    --m-shadow-md: none;
+    --m-shadow-sm: 0 2px 0 #000;
+    --m-head: #04110f;
+    --m-head-fg: #5ff5d2;
+    --m-head-dim: rgba(95, 245, 210, 0.4);
+    --m-ink: #b9c2c9;
+    --m-btn: #1e2024;
+    --m-btn-fg: #5ff5d2;
+    --m-btn-hover: #263a36;
+    --m-btn-current: #0a5a4b;
+    --m-danger: #5a1d22;
+    --m-input: #04110f;
+    --m-input-fg: #5ff5d2;
+    --m-input-ph: rgba(95, 245, 210, 0.4);
+    --m-input-focus: #020807;
+    --m-input-focus-fg: #5ff5d2;
+    --m-input-ring: #5ff5d2;
+    --m-panel: #04110f;
+    --m-panel-fg: #5ff5d2;
+    --m-panel-muted: rgba(95, 245, 210, 0.5);
+    --m-accent: #5ff5d2;
+    --m-accent2: #ffb347;
+    --m-sleeve: #020807;
+    --m-screen: #020807;
+    --m-screen-fg: #5ff5d2;
+    --m-screen-dim: rgba(95, 245, 210, 0.45);
+    --m-screen-line: rgba(95, 245, 210, 0.1);
+    --m-screen-accent: #ffb347;
+    --m-hi: #ffb347;
+}
+
+/* ------------------------------------------------------------------ lcd -- */
+html[data-skin="lcd"] {
+    --s-bg: linear-gradient(180deg, #2a2e33, #1c1f22);
+    --s-font: "Silkscreen", "Press Start 2P", monospace;
+    --s-font-display: "Silkscreen", "Press Start 2P", monospace;
+    --s-fg: #1e2416;
+    --s-dim: #4e5a3a;
+    --s-accent: #1e2416;
+    --s-accent2: #2f3a22;
+    --s-hi: #1e2416;
+    --s-panel: #c7d3a0;
+    --s-panel-border: 4px solid #1e2416;
+    --s-panel-shadow: 0 0 0 12px #3b3f45, 0 0 0 14px #15171a, inset 0 0 22px rgba(30, 36, 22, 0.35);
+    --s-panel-radius: 4px;
+    --s-panel-margin: 16px 26px 26px;
+    --s-station-size: 13px;
+    --s-scan: repeating-linear-gradient(to bottom, rgba(30, 36, 22, 0.06) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(30, 36, 22, 0.06) 0 1px, transparent 1px 3px);
+    --s-sleeve-bg: #9aa77a;
+    --s-sleeve-border: 4px solid #1e2416;
+    --s-sleeve-shadow: none;
+    --s-sleeve-radius: 0;
+    --s-art-filter: grayscale(1) contrast(1.3) sepia(0.6) hue-rotate(40deg) saturate(0.8) brightness(0.9);
+
+    --m-font: "Silkscreen", "Press Start 2P", monospace;
+    --m-font-input: "Silkscreen", "Press Start 2P", monospace;
+    --m-backdrop: rgba(15, 17, 19, 0.7);
+    --m-card: #c7d3a0;
+    --m-line: #1e2416;
+    --m-bw: 3px;
+    --m-radius: 0;
+    --m-radius-sm: 0;
+    --m-shadow-lg: 8px 8px 0 #0f1113;
+    --m-shadow-md: 4px 4px 0 #4e5a3a;
+    --m-shadow-sm: 2px 2px 0 #1e2416;
+    --m-head: #4e5a3a;
+    --m-head-fg: #c7d3a0;
+    --m-head-dim: rgba(199, 211, 160, 0.5);
+    --m-ink: #1e2416;
+    --m-btn: #4e5a3a;
+    --m-btn-fg: #dfe8bd;
+    --m-btn-hover: #3d482d;
+    --m-btn-current: #1e2416;
+    --m-danger: #1e2416;
+    --m-input: #dfe8bd;
+    --m-input-fg: #1e2416;
+    --m-input-ph: #6d7a52;
+    --m-input-focus: #dfe8bd;
+    --m-input-focus-fg: #1e2416;
+    --m-input-ring: #1e2416;
+    --m-panel: #dfe8bd;
+    --m-panel-fg: #1e2416;
+    --m-panel-muted: #4e5a3a;
+    --m-accent: #c7d3a0;
+    --m-accent2: #2f3a22;
+    --m-sleeve: #4e5a3a;
+    --m-screen: #c7d3a0;
+    --m-screen-fg: #1e2416;
+    --m-screen-dim: #4e5a3a;
+    --m-screen-line: rgba(30, 36, 22, 0.2);
+    --m-screen-accent: #2f3a22;
+    --m-hi: #1e2416;
+}
+
+/* Fonts that run small at the same size get a nudge. */
+html[data-skin="hifi"] .modal-backdrop .card {
+    font-size: 1.1em;
+    letter-spacing: 0.5px;
+}
+
+html[data-skin="lcd"] .modal-backdrop .card {
+    letter-spacing: 0.3px;
+}
+
+/* No lit screen behind the lyrics on a monochrome LCD. */
+html[data-skin="lcd"] .lyrics-window::after {
+    display: none;
+}
+
+html[data-skin="lcd"] .lyric-line {
+    font-family: "Silkscreen", monospace;
+    font-size: 15px;
+}
+
+html[data-skin="hifi"] .lyric-line {
+    font-family: "VT323", monospace;
+    font-size: 22px;
+    text-shadow: 0 0 6px rgba(95, 245, 210, 0.5);
+}
+
+html[data-skin="radio"] .lyric-line,
+html[data-skin="vinyl"] .lyric-line {
+    font-family: inherit;
+    font-style: italic;
+    font-size: 17px;
+}
+
+/* Hover sticks after a tap on a touch screen, and the cards' "lift" on hover
+   reads as a glitch there. */
+html[data-skin] .modal-backdrop .card:hover {
+    translate: -6px -6px;
+}
+
+html[data-skin]:not([data-skin="cassette"]) .modal-backdrop .card {
+    translate: none;
+}
+
+html[data-skin]:not([data-skin="cassette"]) .modal-backdrop .card:hover {
+    translate: none;
+}
+
+/* The phone screen's own text, where a skin's font runs small or wide. */
+html[data-skin="hifi"] .screen .track,
+html[data-skin="hifi"] .screen .album,
+html[data-skin="hifi"] .screen .warn {
+    font-size: 18px;
+    font-weight: 400;
+}
+
+html[data-skin="hifi"] .screen .on-air {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 4px;
+}
+
+html[data-skin="lcd"] .screen .track,
+html[data-skin="lcd"] .screen .album,
+html[data-skin="lcd"] .screen .warn {
+    font-size: 11px;
+    font-weight: 400;
+}
+
+html[data-skin="lcd"] .screen .station {
+    font-weight: 700;
+}
+
+html[data-skin="radio"] .screen .station,
+html[data-skin="vinyl"] .screen .station {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+html[data-skin="vinyl"] .screen .track {
+    font-style: italic;
+    font-size: 15px;
+}
+
+html[data-skin="radio"] .screen .track {
+    font-size: 15px;
+}

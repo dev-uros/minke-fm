@@ -183,7 +183,7 @@ const clearHistory = () => {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--m-backdrop, rgba(0, 0, 0, 0.3));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -191,33 +191,34 @@ const clearHistory = () => {
 }
 
 .card {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   width: min(540px, 92vw);
   translate: -6px -6px;
-  background: rgb(242, 188, 0);
-  border: 3px solid #000000;
-  box-shadow: 12px 12px 0 #000000;
+  background: var(--m-card, rgb(242, 188, 0));
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-lg, 12px 12px 0 #000);
   overflow: hidden;
   transition: all 0.3s ease;
   padding: 20px;
+  border-radius: var(--m-radius, 0);
 }
 
 .head {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   font-size: 14px;
   font-weight: 900;
   width: 100%;
   height: 32px;
-  background: #ffffff;
+  background: var(--m-head, #ffffff);
   padding: 5px 12px;
-  color: #000000;
-  border-bottom: 3px solid #000000;
+  color: var(--m-head-fg, #000000);
+  border-bottom: var(--m-bw, 3px) solid var(--m-line, #000);
 }
 
 /* The cassette's own cream label, so the panel reads as part of the deck. */
 .track-panel {
-  background: #FFFDD0;
-  border: 3px solid #000;
+  background: var(--m-panel, #FFFDD0);
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
   border-top: none;
   padding: 14px;
 }
@@ -226,9 +227,9 @@ const clearHistory = () => {
   width: 84px;
   height: 84px;
   flex: none;
-  border: 3px solid #000;
-  box-shadow: 4px 4px 0 #000;
-  background: #252525;
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-md, 4px 4px 0 #000);
+  background: var(--m-sleeve, #252525);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -242,28 +243,28 @@ const clearHistory = () => {
 }
 
 .sleeve-empty {
-  color: rgb(242, 188, 0);
+  color: var(--m-accent, rgb(242, 188, 0));
   font-size: 34px;
 }
 
 .song {
   font-weight: 900;
   font-size: 17px;
-  color: #000;
+  color: var(--m-panel-fg, #000);
   overflow-wrap: anywhere;
 }
 
 .artist {
   font-weight: 700;
   font-size: 13px;
-  color: rgb(241, 90, 37);
+  color: var(--m-accent2, rgb(241, 90, 37));
   overflow-wrap: anywhere;
 }
 
 .album {
   font-size: 11px;
   font-weight: 600;
-  color: #444;
+  color: var(--m-panel-muted, #444);
   overflow-wrap: anywhere;
 }
 
@@ -272,8 +273,8 @@ const clearHistory = () => {
   position: relative;
   height: 280px;
   margin-top: 12px;
-  background: #171717;
-  border: 3px solid #000;
+  background: var(--m-screen, #171717);
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.9);
   overflow: hidden;
 }
@@ -308,15 +309,15 @@ const clearHistory = () => {
   font-size: 19px;
   line-height: 1.6;
   text-align: center;
-  color: rgba(255, 253, 208, 0.82);
+  color: var(--m-screen-fg, rgba(255, 253, 208, 0.82));
 }
 
 .empty-note {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   font-size: 11px;
   font-weight: 700;
   text-align: center;
-  color: rgba(255, 253, 208, 0.45);
+  color: var(--m-screen-dim, rgba(255, 253, 208, 0.45));
   letter-spacing: 0.5px;
   height: 100%;
   display: flex;
@@ -331,34 +332,35 @@ const clearHistory = () => {
 
 .tab-button {
   font-weight: 900;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--m-head-dim, rgba(0, 0, 0, 0.35));
   cursor: pointer;
 }
 
 .tab-button.active {
-  color: #000;
+  color: var(--m-head-fg, #000);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
 .history-bar {
-  background: #FFFDD0;
-  border: 3px solid #000;
+  background: var(--m-panel, #FFFDD0);
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
   border-top: none;
   padding: 8px 14px;
   font-size: 11px;
   font-weight: 700;
-  color: #444;
+  color: var(--m-panel-muted, #444);
 }
 
 .clear-button {
   padding: 2px 10px;
-  border: 2px solid #000;
-  box-shadow: 2px 2px 0 #000;
-  background: rgb(241, 90, 37);
-  color: white;
+  border: 2px solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-sm, 2px 2px 0 #000);
+  background: var(--m-btn, rgb(241, 90, 37));
+  color: var(--m-btn-fg, white);
   font-weight: 800;
   cursor: pointer;
+  border-radius: var(--m-radius-sm, 0);
 }
 
 /* Taller than the lyrics by what the track panel takes, less the bar above
@@ -376,7 +378,7 @@ const clearHistory = () => {
   padding: 8px;
   text-align: left;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 253, 208, 0.08);
+  border-bottom: 1px solid var(--m-screen-line, rgba(255, 253, 208, 0.08));
 }
 
 .heard:hover {
@@ -387,8 +389,8 @@ const clearHistory = () => {
   width: 40px;
   height: 40px;
   flex: none;
-  border: 2px solid #000;
-  background: #252525;
+  border: 2px solid var(--m-line, #000);
+  background: var(--m-sleeve, #252525);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,7 +404,7 @@ const clearHistory = () => {
 }
 
 .thumb-empty {
-  color: rgb(242, 188, 0);
+  color: var(--m-accent, rgb(242, 188, 0));
   font-size: 18px;
 }
 
@@ -418,30 +420,30 @@ const clearHistory = () => {
 .heard-song {
   font-size: 13px;
   font-weight: 800;
-  color: #FFFDD0;
+  color: var(--m-screen-fg, #FFFDD0);
 }
 
 .heard-artist {
   font-size: 12px;
   font-weight: 700;
-  color: rgb(241, 90, 37);
+  color: var(--m-screen-accent, rgb(241, 90, 37));
 }
 
 .heard-meta {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(255, 253, 208, 0.45);
+  color: var(--m-screen-dim, rgba(255, 253, 208, 0.45));
 }
 
 .heard-when {
   font-size: 11px;
   font-weight: 800;
-  color: #67e8f9;
+  color: var(--m-hi, #67e8f9);
 }
 
 .heard-station {
   font-size: 10px;
   font-weight: 600;
-  color: rgba(255, 253, 208, 0.45);
+  color: var(--m-screen-dim, rgba(255, 253, 208, 0.45));
 }
 </style>

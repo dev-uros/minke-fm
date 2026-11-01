@@ -74,14 +74,15 @@ const visible = ref(false);
 
 .card {
   pointer-events: auto; /* allow interacting with card itself */
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   width: auto;
   translate: -6px -6px;
-  background: rgb(242, 188, 0);
-  border: 3px solid #000000;
-  box-shadow: 12px 12px 0 #000000;
+  background: var(--m-card, rgb(242, 188, 0));
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-lg, 12px 12px 0 #000);
   overflow: hidden;
   transition: all 0.3s ease;
+  border-radius: var(--m-radius, 0);
 }
 
 .head {
@@ -89,16 +90,16 @@ const visible = ref(false);
   font-weight: 900;
   width: 100%;
   height: 32px;
-  background: #ffffff;
+  background: var(--m-head, #ffffff);
   padding: 5px 12px;
-  color: #000000;
-  border-bottom: 3px solid #000000;
+  color: var(--m-head-fg, #000000);
+  border-bottom: var(--m-bw, 3px) solid var(--m-line, #000);
 }
 
 .content {
   padding: 8px 12px;
   font-size: 14px;
   font-weight: 600;
-  color: black;
+  color: var(--m-ink, black);
 }
 </style>

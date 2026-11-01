@@ -111,7 +111,7 @@ const grouped = computed(() => {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--m-backdrop, rgba(0, 0, 0, 0.3));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -119,34 +119,35 @@ const grouped = computed(() => {
 }
 
 .card {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   width: min(560px, 92vw);
   translate: -6px -6px;
-  background: rgb(242, 188, 0);
-  border: 3px solid #000000;
-  box-shadow: 12px 12px 0 #000000;
+  background: var(--m-card, rgb(242, 188, 0));
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-lg, 12px 12px 0 #000);
   overflow: hidden;
   transition: all 0.3s ease;
   padding: 20px;
+  border-radius: var(--m-radius, 0);
 }
 
 .head {
-  font-family: Montserrat, sans-serif;
+  font-family: var(--m-font, Montserrat, sans-serif);
   font-size: 14px;
   font-weight: 900;
   width: 100%;
   height: 32px;
-  background: #ffffff;
+  background: var(--m-head, #ffffff);
   padding: 5px 12px;
-  color: #000000;
-  border-bottom: 3px solid #000000;
+  color: var(--m-head-fg, #000000);
+  border-bottom: var(--m-bw, 3px) solid var(--m-line, #000);
 }
 
 .search-head {
   width: 100%;
-  background: #ffffff;
+  background: var(--m-head, #ffffff);
   padding: 16px;
-  border-bottom: 3px solid #000000;
+  border-bottom: var(--m-bw, 3px) solid var(--m-line, #000);
 }
 
 .content {
@@ -166,27 +167,28 @@ const grouped = computed(() => {
   font-weight: 900;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #000;
+  color: var(--m-ink, #000);
   opacity: 0.55;
   margin-bottom: 6px;
 }
 
 .button {
   padding: 5px 10px;
-  border: 3px solid #000000;
-  box-shadow: 3px 3px 0 #000000;
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  box-shadow: var(--m-shadow-sm, 3px 3px 0 #000);
   font-weight: 750;
   font-size: 13px;
-  background: rgb(241, 90, 37);
+  background: var(--m-btn, rgb(241, 90, 37));
   transition: all 0.3s ease;
   cursor: pointer;
-  color: white;
+  color: var(--m-btn-fg, white);
+  border-radius: var(--m-radius-sm, 0);
 }
 
 .button:hover {
   translate: 1.5px 1.5px;
-  box-shadow: 1.5px 1.5px 0 #000000;
-  background: #1ac2ff;
+  box-shadow: var(--m-shadow-sm, 1.5px 1.5px 0 #000);
+  background: var(--m-btn-hover, #1ac2ff);
 }
 
 .button:active {
@@ -195,14 +197,14 @@ const grouped = computed(() => {
 }
 
 .button-current {
-  background: #252525;
+  background: var(--m-btn-current, #252525);
 }
 
 .custom {
   display: block;
   width: 100%;
   margin-bottom: 14px;
-  background: #1ac2ff;
+  background: var(--m-btn-hover, #1ac2ff);
   color: #000;
 }
 
@@ -218,28 +220,28 @@ const grouped = computed(() => {
   height: 52px;
   padding: 12px;
   font-size: 17px;
-  font-family: "Courier New", monospace;
-  color: #000;
-  background-color: #fff;
-  border: 4px solid #000;
+  font-family: var(--m-font-input, "Courier New", monospace);
+  color: var(--m-input-fg, #000);
+  background-color: var(--m-input, #fff);
+  border: 4px solid var(--m-line, #000);
   border-radius: 0;
   outline: none;
   transition: all 0.3s ease;
-  box-shadow: 8px 8px 0 #000;
+  box-shadow: var(--m-shadow-md, 8px 8px 0 #000);
 }
 
 .fancy-input::placeholder {
-  color: #888;
+  color: var(--m-input-ph, #888);
 }
 
 .fancy-input:focus {
-  background-color: #010101;
-  color: #fff;
-  border-color: #d6d9dd;
+  background-color: var(--m-input-focus, #010101);
+  color: var(--m-input-focus-fg, #fff);
+  border-color: var(--m-input-ring, #d6d9dd);
 }
 
 .fancy-input:focus::placeholder {
-  color: #fff;
+  color: var(--m-input-focus-fg, #fff);
 }
 
 .card:hover {

@@ -14,6 +14,13 @@ const isSecure = (url: string) => url.startsWith('https://');
 const isPlaylistFile = (url: string) => /\.(pls|m3u|asx)(\?|$)/i.test(url);
 
 /**
+ * DASH and Smooth Streaming manifests: no platform the app runs on plays them in an
+ * <audio> element or the native players as they are set up, so they are left out
+ * rather than tried, failed and skipped.
+ */
+const isUnsupportedManifest = (url: string) => /\.(mpd|ism)(\/|\?|$)/i.test(url);
+
+/**
  * Broadcasters register the same station many times over - different mounts,
  * bitrates or mirrors - so "Radio Swiss Jazz" turns up four times in one genre
  * and "ROCK FM" three. Deduplicating by URL misses all of those, because the
@@ -34,6 +41,7 @@ export function formatStations(stations: Station[], type: Genre): FormattedStati
         if (!url || !/^https?:\/\//i.test(url)) continue;
         if (station.lastcheckok === 0) continue;
         if (isPlaylistFile(url)) continue;
+        if (isUnsupportedManifest(url)) continue;
         if (seenUrls.has(url)) continue;
 
         const name = station.name?.trim() || 'Unknown station';

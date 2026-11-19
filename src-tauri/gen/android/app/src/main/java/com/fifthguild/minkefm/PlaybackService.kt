@@ -395,6 +395,40 @@ class PlaybackService : MediaLibraryService() {
             onStationChange?.invoke(false)
         }
 
+        /*
+         * A stream this player has no source for (a manifest format it lacks a module for)
+         * throws while the item is being set, before anything replaces the station that is
+         * playing. Left alone, the old station played on under the new one's name and nothing
+         * told the app. Instead: stop, clear, and report it, so the app moves on.
+         */
+        private fun settingItems(items: List<MediaItem>, set: () -> Unit) {
+            try {
+                set()
+            } catch (e: IllegalStateException) {
+                wrappedPlayer.stop()
+                wrappedPlayer.clearMediaItems()
+                onUnplayable?.invoke(items.firstOrNull()?.localConfiguration?.uri?.toString() ?: "")
+            }
+        }
+
+        override fun setMediaItem(mediaItem: MediaItem) =
+            settingItems(listOf(mediaItem)) { super.setMediaItem(mediaItem) }
+
+        override fun setMediaItem(mediaItem: MediaItem, resetPosition: Boolean) =
+            settingItems(listOf(mediaItem)) { super.setMediaItem(mediaItem, resetPosition) }
+
+        override fun setMediaItem(mediaItem: MediaItem, startPositionMs: Long) =
+            settingItems(listOf(mediaItem)) { super.setMediaItem(mediaItem, startPositionMs) }
+
+        override fun setMediaItems(mediaItems: MutableList<MediaItem>) =
+            settingItems(mediaItems) { super.setMediaItems(mediaItems) }
+
+        override fun setMediaItems(mediaItems: MutableList<MediaItem>, resetPosition: Boolean) =
+            settingItems(mediaItems) { super.setMediaItems(mediaItems, resetPosition) }
+
+        override fun setMediaItems(mediaItems: MutableList<MediaItem>, startIndex: Int, startPositionMs: Long) =
+            settingItems(mediaItems) { super.setMediaItems(mediaItems, startIndex, startPositionMs) }
+
         override fun play() {
             wakeIfFading()
             super.play()
@@ -540,6 +574,10 @@ class PlaybackService : MediaLibraryService() {
          */
         @Volatile
         var onStationChange: ((Boolean) -> Unit)? = null
+
+        /** Set by the plugin. A station's stream is one this player cannot play at all. */
+        @Volatile
+        var onUnplayable: ((String) -> Unit)? = null
 
         /** Set by the plugin. Carries the station's announced track title. */
         @Volatile

@@ -101,6 +101,13 @@ class PlayerPlugin(private val activity: Activity) : Plugin(activity) {
             trigger("title", JSObject().put("title", title))
         }
 
+        PlaybackService.onUnplayable = { url ->
+            trigger(
+                "error",
+                JSObject().put("code", "UNPLAYABLE").put("message", "No player for this stream: $url")
+            )
+        }
+
         PlaybackService.onSleepTimerOver = { paused ->
             trigger("sleep", JSObject().put("paused", paused))
         }

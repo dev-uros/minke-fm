@@ -121,9 +121,21 @@ export function useNativePlayer(options: NativePlayerOptions): AudioEngine {
      * What stays here is the one decision the service cannot make: giving up on
      * a station, which needs the station list this side owns.
      */
-    void addPluginListener('player', 'error', (_payload: PlayerError) => {
+    void addPluginListener('player', 'error', (payload: PlayerError) => {
         const source = currentSource.value;
         if (!source || userPaused) return;
+
+        // A stream the player has no way to play: retrying or waiting for the network
+        // will not change that, so the station is given up on at once.
+        if (payload.code === 'UNPLAYABLE') {
+            const played = everPlayed;
+            currentSource.value = null;
+            state.value = 'idle';
+            errorCount = 0;
+            attempt.value = 0;
+            options.onStationDead(source, played);
+            return;
+        }
 
         attempt.value += 1;
         options.onUnreachable();

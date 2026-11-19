@@ -90,6 +90,9 @@ dependencies {
     implementation("androidx.webkit:webkit:1.14.0")
     // Playback that survives backgrounding, plus the lock screen controls.
     implementation("androidx.media3:media3-exoplayer:1.11.0")
+    // HLS (.m3u8): plenty of stations stream this way, SBC Radyo Sesel among them. Without the
+    // module the player could not even set the station up, and the last one played on.
+    implementation("androidx.media3:media3-exoplayer-hls:1.11.0")
     implementation("androidx.media3:media3-session:1.11.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.activity:activity-ktx:1.10.1")

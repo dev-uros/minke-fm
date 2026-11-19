@@ -9,6 +9,10 @@
 
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
+    <!-- The activity is locked to portrait, from which Android infers a required
+         portrait screen and Play hides the app from devices without one. Portrait is
+         how it is shown, not something the device must have. -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
 
     <application
         android:icon="@mipmap/ic_launcher"

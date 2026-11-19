@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {Genre, GenreOption} from "../types";
 import {normalizeGenreInput, useGenres} from "../services/useGenres.ts";
 import {countryGenre, isCountryGenre, useCountries} from "../services/useCountries.ts";
+import {searchBy} from "../services/search.ts";
 import {useRememberedScroll} from "../services/useRememberedScroll.ts";
 import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 
@@ -53,20 +54,10 @@ const spinGlobe = () => {
 
 const search = ref('');
 
-const countryMatches = computed(() => {
-  const query = search.value.trim().toLowerCase();
-  if (!query) return countries.value;
-  return countries.value.filter(option =>
-      option.name.toLowerCase().includes(query) || option.code.toLowerCase() === query);
-});
+const countryMatches = computed(() =>
+    searchBy(countries.value, search.value, option => [option.name, option.code, ...option.aliases]));
 
-const matches = computed(() => {
-  const query = normalizeGenreInput(search.value);
-  if (!query) return genres.value;
-  return genres.value.filter(option =>
-      option.name.includes(query) || option.label.toLowerCase().includes(query)
-  );
-});
+const matches = computed(() => searchBy(genres.value, search.value, option => [option.label, option.name]));
 
 /**
  * Any radio-browser tag is playable, so a search with no catalogue match is
@@ -104,8 +95,10 @@ const grouped = computed(() => {
           <button role="tab" class="source-tab" :aria-selected="tab === 'genres'" @click="showTab('genres')">Genres</button>
           <button role="tab" class="source-tab" :aria-selected="tab === 'countries'" @click="showTab('countries')">Countries</button>
         </div>
+        <!-- Not v-model: it waits for a phone keyboard to finish the word. -->
         <input
-            v-model="search"
+            :value="search"
+            @input="search = ($event.target as HTMLInputElement).value"
             class="fancy-input"
             type="text"
             :placeholder="tab === 'countries' ? 'Search a country...' : 'Search or type any genre...'"

@@ -4,6 +4,7 @@ import {computed, ref, watch} from "vue";
 import {useRememberedScroll} from "../services/useRememberedScroll.ts";
 import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 import {genreLabel} from "../services/useGenres.ts";
+import {searchBy} from "../services/search.ts";
 
 interface Props {
   stations: FormattedStation[]
@@ -32,13 +33,7 @@ const {container} = useRememberedScroll(() => `stations:${props.stations[0]?.typ
 const searchInput = ref('');
 // Derived, so the list stays in sync when a dead station gets pruned while the
 // modal is open.
-const allStations = computed(() => {
-  const query = searchInput.value.toLowerCase().trim();
-  if (!query) return props.stations;
-  return props.stations.filter(station =>
-      station.name.toLowerCase().includes(query)
-  );
-})
+const allStations = computed(() => searchBy(props.stations, searchInput.value, station => [station.name]));
 
 /**
  * Only the rows on screen are rendered.
@@ -95,8 +90,11 @@ watch(() => allStations.value.length, () => {
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
       <div class="search-head flex justify-between items-center">
+        <!-- Not v-model: it waits for a phone keyboard to finish the word, so "Slo" filtered
+             nothing until the word was done. :value + @input follows every letter. -->
         <input
-            v-model="searchInput"
+            :value="searchInput"
+            @input="searchInput = ($event.target as HTMLInputElement).value"
             class="fancy-input"
             name="text"
             type="text"

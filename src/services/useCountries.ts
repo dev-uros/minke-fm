@@ -47,8 +47,28 @@ export function countryName(code: string): string {
 export interface CountryOption {
     code: string;
     name: string;
+    /** Other names people search by: the country's own, and the everyday short ones. */
+    aliases: string[];
     stationCount: number;
 }
+
+/**
+ * What someone might type instead of the English name: the name in the country's own
+ * language, and the short forms everyone uses. Not every country, just the ones where
+ * the English name would otherwise come up empty for a lot of people.
+ */
+const ALIASES: Record<string, string[]> = {
+    US: ['USA', 'America'], GB: ['UK', 'Britain', 'England', 'Scotland', 'Wales'], AE: ['UAE', 'Emirates'],
+    NL: ['Holland', 'Nederland'], CZ: ['Czechia', 'Česko'], KR: ['Korea'], CI: ['Ivory Coast'],
+    RS: ['Srbija', 'Србија'], HR: ['Hrvatska'], SI: ['Slovenija'], BA: ['Bosna', 'Bosnia', 'BiH'],
+    ME: ['Crna Gora'], MK: ['Makedonija', 'Macedonia'], AL: ['Shqipëria'], BG: ['България'],
+    DE: ['Deutschland'], AT: ['Österreich'], CH: ['Schweiz', 'Suisse', 'Svizzera'],
+    ES: ['España'], IT: ['Italia'], PT: ['Portugal'], FR: ['France'], BE: ['België', 'Belgique'],
+    PL: ['Polska'], HU: ['Magyarország'], RO: ['România'], GR: ['Ελλάδα', 'Hellas'],
+    RU: ['Россия', 'Rossiya'], UA: ['Україна'], SE: ['Sverige'], NO: ['Norge'], DK: ['Danmark'],
+    FI: ['Suomi'], IS: ['Ísland'], TR: ['Turkey'], JP: ['Nippon', '日本'], CN: ['中国'],
+    BR: ['Brasil'], MX: ['México'], IR: ['Iran'], IN: ['Bharat'],
+};
 
 const COUNTRIES_PATH = '/json/countrycodes?hidebroken=true';
 const API_HOSTS = ['https://de1.api.radio-browser.info', 'https://de2.api.radio-browser.info'];
@@ -105,6 +125,7 @@ const toOptions = (counts: CountryCount[]): CountryOption[] =>
         .map(entry => ({
             code: entry.name,
             name: countryName(entry.name),
+            aliases: ALIASES[entry.name] ?? [],
             stationCount: entry.stationcount
         }))
         // A code the system has no name for is not a country anyone is looking for.

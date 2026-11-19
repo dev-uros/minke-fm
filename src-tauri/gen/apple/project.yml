@@ -64,7 +64,7 @@ targets:
         # The app is dark, so the clock and battery stay light.
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UIViewControllerBasedStatusBarAppearance: false
-        CFBundleShortVersionString: 0.1.0
+        CFBundleShortVersionString: 1.0.0
         CFBundleVersion: "0.1.0"
     entitlements:
       path: minke-fm_iOS/minke-fm_iOS.entitlements

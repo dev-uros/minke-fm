@@ -12,7 +12,7 @@ import "./skins.css";
 import StreamLoading from "./components/StreamLoading.vue";
 import ToastMessage from "./components/ToastMessage.vue";
 import FavoritesListModal from "./components/FavoritesListModal.vue";
-import HelpModal from "./components/HelpModal.vue";
+import PhoneGuide from "./components/PhoneGuide.vue";
 import StationListModal from "./components/StationListModal.vue";
 import NowPlayingModal from "./components/NowPlayingModal.vue";
 import ExitConfirmModal from "./components/ExitConfirmModal.vue";
@@ -256,6 +256,9 @@ const reset = () => void resetAll();
       <!-- In the corner, so it costs the layout nothing; it only grows to show
            the time while a timer is running. -->
       <button class="theme-button" aria-label="Theme" @click="themeModal = true">&#9680;</button>
+      <!-- The cassette has its own "?" on the deck; the other decks have none, so the
+           guide sits here, beside the skins. -->
+      <button v-if="skinnedPlayer" class="help-button" aria-label="How it works" @click="helpModal = true">?</button>
       <button class="sleep-timer" :class="{ on: sleepTimeLeft }" @click="tapSleepTimer">
         &#9790;<span v-if="sleepTimeLeft"> {{ sleepTimeLeft }}</span>
       </button>
@@ -351,7 +354,7 @@ const reset = () => void resetAll();
                       @set-station="playStation" @close-modal="stationListModal = false"/>
     <NowPlayingModal v-if="nowPlayingModal" :now-playing="nowPlaying" :lyrics="lyrics"
                      @close-modal="nowPlayingModal = false"/>
-    <HelpModal v-if="helpModal" @close-modal="helpModal = false"/>
+    <PhoneGuide v-if="helpModal" @close-modal="helpModal = false"/>
     <GenreSwitcher v-if="genreModal" :current="currentGenre" @set-genre="pickGenre"
                    @close-modal="genreModal = false"/>
     <ThemePicker v-if="themeModal" @close-modal="themeModal = false"/>
@@ -608,6 +611,23 @@ const reset = () => void resetAll();
   background: none;
   border: none;
   font-size: 18px;
+  line-height: 36px;
+  color: var(--s-dim, rgba(255, 253, 208, 0.35));
+  cursor: pointer;
+}
+
+.help-button {
+  position: absolute;
+  top: 8px;
+  left: 44px;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
   line-height: 36px;
   color: var(--s-dim, rgba(255, 253, 208, 0.35));
   cursor: pointer;

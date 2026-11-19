@@ -24,6 +24,15 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("ios") {
         link_ios_player();
     }
+
+    // Google Play requires native code to support 16 KB memory pages (Android 15+
+    // devices). Rust does not ask the linker for that alignment, so the library
+    // came out aligned to 4 KB and Play refused the bundle. A link argument from
+    // here reaches the linker whatever RUSTFLAGS the Tauri CLI sets (a rustflags
+    // entry in .cargo/config.toml did not).
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("android") {
+        println!("cargo:rustc-link-arg=-Wl,-z,max-page-size=16384");
+    }
 }
 
 /// Builds `ios/` - the Swift player - into the Rust library.

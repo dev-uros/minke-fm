@@ -1,0 +1,7 @@
+# Read by Cloudflare. What Astro writes into /_astro/ is named by its content, so it never changes under its name.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

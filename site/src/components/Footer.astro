@@ -1,0 +1,37 @@
+---
+import { CONTACT, NAME } from '../constants'
+---
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <p class="footer__brand">{NAME}</p>
+    <p>Made by Fifth Guild in Serbia. © {new Date().getFullYear()} · <a href="/privacy/">Privacy</a> · <a href={`mailto:${CONTACT}`}>Contact</a></p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: 32px 44px;
+    border-top: var(--bw) solid var(--line);
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    color: var(--dim);
+    font-size: 15px;
+  }
+  .footer__inner a {
+    color: inherit;
+  }
+  .footer__brand {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: var(--display-weight);
+    text-shadow: var(--glow);
+  }
+</style>

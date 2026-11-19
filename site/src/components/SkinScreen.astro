@@ -1,0 +1,59 @@
+---
+/**
+ * One of the app's screens in a phone, in whichever skin the page wears: five pictures,
+ * each shown only under its own html[data-skin], like the hero's phone. Below the fold,
+ * so all five wait for the reader to scroll near them.
+ */
+import type { ImageMetadata } from 'astro'
+import { Image } from 'astro:assets'
+import { SKINS } from '../skins'
+import Phone from './Phone.astro'
+
+interface Props {
+  /** The pictures' file prefix in assets/shots: `${kind}-${skin}.png`. */
+  kind: 'countries'
+  alt: string
+}
+
+const { kind, alt } = Astro.props
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/shots/*-*.png', { eager: true })
+const shot = (skin: string) => files[`../assets/shots/${kind}-${skin}.png`].default
+---
+
+<Phone class="skin-screen">
+  {
+    SKINS.map(skin => (
+      <Image
+        src={shot(skin.id)}
+        widths={[260, 360, 440, 520, 780]}
+        sizes="(max-width: 420px) calc(68vw - 18px), 262px"
+        format="webp"
+        alt={`${alt}, in the ${skin.name} skin`}
+        class:list={['skin-screen__shot', `skin-screen__shot--${skin.id}`]}
+        loading="lazy"
+        decoding="async"
+      />
+    ))
+  }
+</Phone>
+
+<style>
+  .skin-screen {
+    width: min(68vw, 280px);
+  }
+  .skin-screen :global(.skin-screen__shot) {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .skin-screen :global(.skin-screen__shot) {
+      transition: opacity 0.3s ease;
+    }
+  }
+  html[data-skin='cassette'] .skin-screen :global(.skin-screen__shot--cassette),
+  html[data-skin='radio'] .skin-screen :global(.skin-screen__shot--radio),
+  html[data-skin='vinyl'] .skin-screen :global(.skin-screen__shot--vinyl),
+  html[data-skin='hifi'] .skin-screen :global(.skin-screen__shot--hifi),
+  html[data-skin='lcd'] .skin-screen :global(.skin-screen__shot--lcd) {
+    opacity: 1;
+  }
+</style>

@@ -1,0 +1,30 @@
+{
+  "name": "minke-fm-site",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "MinkeFM's site: what the app is, its skins, where to get it, and its privacy policy",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "astro build",
+    "preview": "astro preview --port 4321",
+    "og": "node scripts/og.mjs",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource/montserrat": "5.3.0",
+    "@fontsource/playfair-display": "5.3.0",
+    "@fontsource/silkscreen": "5.3.0",
+    "@fontsource/vt323": "5.3.0",
+    "@fontsource/zilla-slab": "5.3.0",
+    "astro": "7.3.6",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "playwright": "1.63.0",
+    "typescript": "^5.9.3",
+    "wrangler": "4.148.0"
+  }
+}

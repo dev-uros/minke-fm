@@ -1,0 +1,137 @@
+---
+/**
+ * A tuning dial across the page: a scale, a needle in the middle, and real stations from the
+ * app's directory sliding under it, as if someone were turning the knob. The band is the
+ * skin's second colour, the one place on the page that uses it so loudly.
+ *
+ * Names, countries and bitrates are as radio-browser listed them in November 2026.
+ */
+const stations = [
+  { name: 'Jazz Sakura', place: 'Japan', kbps: 128 },
+  { name: 'Naxi ExYu Radio', place: 'Serbia', kbps: 128 },
+  { name: 'Rás 2', place: 'Iceland', kbps: 128 },
+  { name: 'Rádio Jovem Pan 100.9', place: 'Brazil', kbps: 128 },
+  { name: 'Lofi 24/7', place: 'United States', kbps: 128 },
+  { name: 'Wazobia FM', place: 'Nigeria', kbps: 128 },
+  { name: 'KBS Classic FM', place: 'South Korea' },
+  { name: '24/7 Bossa Nova Radio', place: 'United Kingdom', kbps: 64 },
+  { name: 'Intense Radio', place: 'Netherlands', kbps: 256 },
+  { name: 'Radio Cafè', place: 'Italy', kbps: 96 },
+  { name: 'Útvarp Saga', place: 'Iceland', kbps: 192 },
+  { name: 'Only Hits K-Pop', place: 'United States', kbps: 128 },
+  { name: 'Sertaneja 106.7', place: 'Brazil', kbps: 128 },
+  { name: 'Cool Radio Serbia', place: 'Serbia', kbps: 320 },
+  { name: 'AshiyaRadio', place: 'Japan', kbps: 192 },
+  { name: 'WALM 2 HD', place: 'United States', kbps: 320 },
+]
+---
+
+<section class="dial" aria-label="Some of the stations in MinkeFM">
+  <div class="dial__scale" aria-hidden="true"></div>
+  <div class="dial__track">
+    <ul class="dial__stations">
+      {
+        [0, 1].map(copy => stations.map(s => (
+          <li aria-hidden={copy === 1 ? 'true' : undefined}>
+            <span class="dial__name">{s.name}</span>
+            <span class="dial__meta">{s.place}{s.kbps && ` · ${s.kbps} kbps`}</span>
+          </li>
+        )))
+      }
+    </ul>
+  </div>
+  <div class="dial__needle" aria-hidden="true"></div>
+</section>
+
+<style>
+  .dial {
+    position: relative;
+    overflow: hidden;
+    background: var(--accent2);
+    color: var(--accent2-ink);
+    border-block: var(--bw) solid var(--line);
+  }
+  /* The scale: a short tick every 12px, a long one every 60px, as on a tuning dial. */
+  .dial__scale {
+    height: 22px;
+    background:
+      repeating-linear-gradient(90deg, currentColor 0 2px, transparent 2px 60px) 0 0 / 100% 18px no-repeat,
+      repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 12px) 0 0 / 100% 9px no-repeat;
+    opacity: 0.55;
+  }
+  .dial__track {
+    overflow: hidden;
+    padding-block: 10px 18px;
+  }
+  .dial__stations {
+    display: flex;
+    gap: 56px;
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dial__stations li {
+    display: grid;
+    gap: 2px;
+    white-space: nowrap;
+  }
+  .dial__name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: var(--display-weight);
+    line-height: 1.15;
+  }
+  html[data-skin='hifi'] .dial__name {
+    font-size: 30px;
+  }
+  html[data-skin='lcd'] .dial__name {
+    font-size: 16px;
+  }
+  .dial__meta {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dial__needle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    background: currentColor;
+    transform: translateX(-50%);
+  }
+  .dial__needle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border: 7px solid transparent;
+    border-top-color: currentColor;
+    transform: translateX(-50%);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .dial__stations {
+      animation: tune 80s linear infinite;
+    }
+    .dial:hover .dial__stations {
+      animation-play-state: paused;
+    }
+  }
+  /* For those who would rather nothing moved: the dial stands still and scrolls by hand. */
+  @media (prefers-reduced-motion: reduce) {
+    .dial__track {
+      overflow-x: auto;
+    }
+    .dial__stations li[aria-hidden='true'] {
+      display: none;
+    }
+  }
+  @keyframes tune {
+    to {
+      transform: translateX(calc(-50% - 28px));
+    }
+  }
+</style>

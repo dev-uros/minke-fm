@@ -1,0 +1,61 @@
+---
+/**
+ * A phone held up to the camera. The shots are whole screens taken on the iPhone
+ * simulator (status bar and island included), so the frame only adds the body around them.
+ */
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+---
+
+<div class:list={['phone', className]}>
+  <div class="phone__screen">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .phone {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    padding: 9px;
+    border-radius: 15% / 7%;
+    background: linear-gradient(150deg, #44464b, #1b1c1f 45%, #2b2c30);
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255, 255, 255, 0.14),
+      inset 0 0 0 4px #0c0c0d,
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      0 40px 70px -24px rgba(0, 0, 0, 0.75);
+  }
+  /* The side buttons, as a line of light along the frame. */
+  .phone::after {
+    content: '';
+    position: absolute;
+    top: 22%;
+    right: -3px;
+    width: 3px;
+    height: 14%;
+    border-radius: 0 3px 3px 0;
+    background: #2f3034;
+  }
+  .phone__screen {
+    position: relative;
+    aspect-ratio: 1206 / 2622;
+    overflow: hidden;
+    border-radius: 13% / 6%;
+    background: #000;
+  }
+  .phone__screen :global(picture) {
+    display: contents;
+  }
+  .phone__screen :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>

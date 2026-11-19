@@ -1,0 +1,39 @@
+---
+import Footer from '../components/Footer.astro'
+import Nav from '../components/Nav.astro'
+import { NAME } from '../constants'
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title={`Off the dial · ${NAME}`} description="This page does not exist.">
+  <Nav />
+  <main class="wrap lost">
+    <div class="lost__panel panel">
+      <p class="eyebrow">404</p>
+      <h1>Nothing on this frequency.</h1>
+      <p>There is no page at this address. <a href="/">Go to the home page</a>.</p>
+    </div>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .lost {
+    display: grid;
+    place-items: center;
+    min-height: 60vh;
+    padding-block: 40px 80px;
+  }
+  .lost__panel {
+    max-width: 640px;
+    padding: clamp(32px, 6vw, 56px);
+    text-align: center;
+  }
+  .lost__panel h1 {
+    margin-bottom: 16px;
+    color: var(--card-ink);
+  }
+  .lost__panel .eyebrow {
+    color: var(--card-dim);
+  }
+</style>

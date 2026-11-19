@@ -1,0 +1,261 @@
+---
+/**
+ * The phone in the hero, playing the same song in all five skins. Tapping it, or a
+ * swatch under it, puts the next skin on the phone and on the whole page: the page
+ * reads html[data-skin], and each shot is shown only under its own skin.
+ */
+import { Image } from 'astro:assets'
+import cassette from '../assets/shots/phone-cassette.png'
+import hifi from '../assets/shots/phone-hifi.png'
+import lcd from '../assets/shots/phone-lcd.png'
+import radio from '../assets/shots/phone-radio.png'
+import vinyl from '../assets/shots/phone-vinyl.png'
+import { SKINS, STORAGE_KEY } from '../skins'
+import Phone from './Phone.astro'
+
+const shots = { cassette, radio, vinyl, hifi, lcd }
+// As wide as the screen inside the phone frame (300px less the 9px bezels), up to three times as dense.
+const widths = [300, 400, 500, 640, 800, 960]
+const sizes = '(max-width: 420px) calc(72vw - 18px), 282px'
+// WebP only, no AVIF: five AVIF shots took a throttled phone four seconds of main thread to
+// decode (Lighthouse: total blocking time 4 s, performance 70). The same shots in WebP: 0 ms.
+const themeColors = Object.fromEntries(SKINS.map(s => [s.id, s.themeColor]))
+const faces = Object.fromEntries(SKINS.map(s => [s.id, s.faces]))
+---
+
+<div class="skin-phone">
+  <button class="skin-phone__tap" type="button" data-skin-next aria-label="Show the next skin">
+    <Phone class="skin-phone__phone">
+      {
+        SKINS.map((skin, i) => (
+          <Image
+            src={shots[skin.id]}
+            widths={widths}
+            sizes={sizes}
+            format="webp"
+            alt={`MinkeFM playing a song in the ${skin.name} skin`}
+            class:list={['skin-phone__shot', `skin-phone__shot--${skin.id}`]}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 ? 'high' : 'auto'}
+            decoding="async"
+          />
+        ))
+      }
+    </Phone>
+  </button>
+  <p class="skin-phone__hint" aria-hidden="true">Tap the phone to change the deck</p>
+
+  <div class="skin-phone__picker" role="group" aria-label="Skins">
+    {
+      SKINS.map(skin => (
+        <button type="button" class="swatch" data-skin-pick={skin.id} aria-pressed={skin.id === 'cassette' ? 'true' : 'false'} title={skin.name}>
+          <span class="swatch__chip" aria-hidden="true" style={`--a:${skin.swatch[0]};--b:${skin.swatch[1]};--c:${skin.swatch[2]};--d:${skin.swatch[3]}`} />
+          <span class="swatch__name">{skin.name}</span>
+        </button>
+      ))
+    }
+  </div>
+  <p class="skin-phone__now" aria-live="polite">
+    {SKINS.map(skin => <span class={`skin-phone__blurb skin-phone__blurb--${skin.id}`}><strong>{skin.name}.</strong> {skin.blurb}.</span>)}
+  </p>
+</div>
+
+<script define:vars={{ ids: SKINS.map(s => s.id), key: STORAGE_KEY, themeColors, faces }} is:inline>
+  const root = document.documentElement
+  const picks = document.querySelectorAll('[data-skin-pick]')
+  const sync = () => {
+    for (const pick of picks) pick.setAttribute('aria-pressed', String(pick.dataset.skinPick === root.dataset.skin))
+  }
+  // A skin's faces are in hand before it goes on, so its text is laid out once, not once in a
+  // fallback face and again when the real one arrives. They are fetched while the page is idle,
+  // and a click waits for them at most a moment.
+  const loadFaces = (id) => Promise.race([
+    Promise.all(faces[id].map(face => document.fonts.load(face))),
+    new Promise(resolve => setTimeout(resolve, 400)),
+  ]).catch(() => {})
+  const warm = () => ids.forEach(loadFaces)
+  if ('requestIdleCallback' in window) requestIdleCallback(warm, { timeout: 4000 })
+  else setTimeout(warm, 2500)
+
+  // Each skin sets its text in other faces, so the text above the phone grows or shrinks (on a
+  // phone the hero's copy sits above it). The page is scrolled by that much, so what was tapped
+  // stays under the finger instead of jumping away.
+  const apply = async (id, anchor) => {
+    await loadFaces(id)
+    const before = anchor.getBoundingClientRect().top
+    root.classList.add('skin-fade')
+    root.dataset.skin = id
+    document.querySelector('meta[name="theme-color"]').content = themeColors[id]
+    sync()
+    const moved = anchor.getBoundingClientRect().top - before
+    if (moved) window.scrollBy({ top: moved, behavior: 'instant' })
+    try { localStorage.setItem(key, id) }
+    catch {}
+    clearTimeout(apply.timer)
+    apply.timer = setTimeout(() => root.classList.remove('skin-fade'), 400)
+  }
+  sync()
+  const phone = document.querySelector('[data-skin-next]')
+  phone.addEventListener('click', () => {
+    apply(ids[(ids.indexOf(root.dataset.skin) + 1) % ids.length], phone)
+  })
+  for (const pick of picks) pick.addEventListener('click', () => apply(pick.dataset.skinPick, pick))
+</script>
+
+<style>
+  .skin-phone {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+  }
+  .skin-phone__tap {
+    display: block;
+    width: min(72vw, 300px);
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    border-radius: 15% / 7%;
+  }
+  .skin-phone__phone {
+    max-width: none;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .skin-phone__tap {
+      transition: transform 0.25s ease;
+    }
+    .skin-phone__tap:hover {
+      transform: rotate(-1.5deg) translateY(-4px);
+    }
+  }
+  .skin-phone__tap:active {
+    transform: scale(0.985);
+  }
+  .skin-phone__shot {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .skin-phone__shot {
+      transition: opacity 0.3s ease;
+    }
+  }
+  html[data-skin='cassette'] .skin-phone__shot--cassette,
+  html[data-skin='radio'] .skin-phone__shot--radio,
+  html[data-skin='vinyl'] .skin-phone__shot--vinyl,
+  html[data-skin='hifi'] .skin-phone__shot--hifi,
+  html[data-skin='lcd'] .skin-phone__shot--lcd {
+    opacity: 1;
+  }
+
+  /* Below the phone, every line has a set height: the skins set it in faces of different
+     sizes, and nothing here may grow or shrink when one changes. */
+  .skin-phone__hint {
+    height: 20px;
+    color: var(--dim);
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: 0.04em;
+  }
+  .skin-phone__hint::before {
+    content: '↑ ';
+  }
+
+  .skin-phone__picker {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 70px));
+    justify-content: center;
+    gap: 4px;
+  }
+  .swatch {
+    display: grid;
+    grid-template-rows: 38px 28px;
+    justify-items: center;
+    align-items: start;
+    gap: 6px;
+    padding: 8px 2px 6px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: none;
+    color: var(--dim);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 14px;
+    cursor: pointer;
+  }
+  .swatch__name {
+    text-align: center;
+  }
+  /* On a narrow phone five names share 330px: "Transistor" would touch "Turntable".
+     The monospaced skins run widest. */
+  html[data-skin='hifi'] .swatch,
+  html[data-skin='lcd'] .swatch {
+    font-size: 10.5px;
+    letter-spacing: -0.02em;
+  }
+  @media (max-width: 420px) {
+    .skin-phone__picker {
+      gap: 2px;
+    }
+    .swatch {
+      padding-inline: 0;
+      font-size: 9.5px;
+    }
+    html[data-skin='hifi'] .swatch,
+    html[data-skin='lcd'] .swatch {
+      font-size: 9px;
+      letter-spacing: -0.04em;
+    }
+  }
+  .swatch[aria-pressed='true'] {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  /* The app's own swatch from its theme picker: background, panel, two accents. */
+  .swatch__chip {
+    display: grid;
+    grid-template: 1fr 1fr / 1fr 1fr;
+    gap: 3px;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+    border-radius: 8px;
+    background: var(--a);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  }
+  .swatch__chip::before,
+  .swatch__chip::after {
+    content: '';
+    border-radius: 3px;
+  }
+  .swatch__chip::before {
+    grid-column: 1 / -1;
+    background: var(--b);
+  }
+  .swatch__chip::after {
+    background: linear-gradient(90deg, var(--c) 0 calc(50% - 1.5px), transparent 0 calc(50% + 1.5px), var(--d) 0);
+    grid-column: 1 / -1;
+  }
+
+  .skin-phone__now {
+    max-width: 320px;
+    height: 48px;
+    color: var(--dim);
+    font-size: 15px;
+    line-height: 24px;
+    text-align: center;
+  }
+  .skin-phone__blurb {
+    display: none;
+  }
+  .skin-phone__blurb strong {
+    color: var(--ink);
+  }
+  html[data-skin='cassette'] .skin-phone__blurb--cassette,
+  html[data-skin='radio'] .skin-phone__blurb--radio,
+  html[data-skin='vinyl'] .skin-phone__blurb--vinyl,
+  html[data-skin='hifi'] .skin-phone__blurb--hifi,
+  html[data-skin='lcd'] .skin-phone__blurb--lcd {
+    display: inline;
+  }
+</style>

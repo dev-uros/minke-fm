@@ -1,0 +1,94 @@
+---
+import montserrat from '@fontsource/montserrat/files/montserrat-latin-400-normal.woff2?url'
+import montserratBold from '@fontsource/montserrat/files/montserrat-latin-700-normal.woff2?url'
+import montserratBlack from '@fontsource/montserrat/files/montserrat-latin-800-normal.woff2?url'
+import ogImage from '../assets/og.png'
+import { CONTACT, DESCRIPTION, NAME, TAGLINE } from '../constants'
+import { SKINS, STORAGE_KEY } from '../skins'
+import '@fontsource/montserrat/latin-400.css'
+import '@fontsource/montserrat/latin-700.css'
+import '@fontsource/montserrat/latin-800.css'
+import '@fontsource/zilla-slab/latin-400.css'
+import '@fontsource/zilla-slab/latin-700.css'
+import '@fontsource/playfair-display/latin-400.css'
+import '@fontsource/playfair-display/latin-700.css'
+import '@fontsource/vt323/latin-400.css'
+import '@fontsource/silkscreen/latin-400.css'
+import '../styles/skins.css'
+import '../styles/site.css'
+
+interface Props {
+  title?: string
+  description?: string
+  /** Kept out of search: a page whose content is in its link, not in the page. */
+  hidden?: boolean
+}
+
+const { title = `${NAME}: ${TAGLINE}`, description = DESCRIPTION, hidden = false } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const og = new URL(ogImage.src, Astro.site)
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'MobileApplication',
+  'name': NAME,
+  description,
+  'applicationCategory': 'MultimediaApplication',
+  'operatingSystem': 'iOS, Android',
+  'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'USD' },
+  'publisher': { '@type': 'Organization', 'name': 'Fifth Guild', 'email': CONTACT },
+}
+
+// Only the ids and colours go to the browser: enough to put the saved skin on before the first paint.
+const themeColors = Object.fromEntries(SKINS.map(s => [s.id, s.themeColor]))
+---
+
+<!doctype html>
+<html lang="en" data-skin="cassette">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {hidden && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <!-- The cassette's face is the first one shown; the other skins' faces are fetched only when picked. -->
+    <link rel="preload" href={montserrat} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={montserratBold} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={montserratBlack} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#1a1a1a" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={og} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(app)} />
+    <!-- The skin last picked here comes back before anything is drawn, so the page never flashes the cassette first.
+         A link may name one instead (?skin=vinyl), to show someone a particular deck. -->
+    <script is:inline define:vars={{ key: STORAGE_KEY, themeColors }}>
+      try {
+        const saved = new URLSearchParams(location.search).get('skin') || localStorage.getItem(key)
+        if (saved && themeColors[saved]) {
+          document.documentElement.dataset.skin = saved
+          document.querySelector('meta[name="theme-color"]').content = themeColors[saved]
+        }
+      }
+      catch {}
+    </script>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

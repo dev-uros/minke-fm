@@ -1,0 +1,232 @@
+/*
+ * The page's bones. Every colour, face and shape comes from the skin (skins.css),
+ * so changing the skin changes the page without a rule here knowing about it.
+ */
+:root {
+  --measure: 1120px;
+  /* A hairline in the page's own ink, whatever the skin. */
+  --rule: color-mix(in srgb, var(--ink) 16%, transparent);
+  --gutter: clamp(16px, 4vw, 40px);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--bg-solid);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+body {
+  position: relative;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+/* The skin's grain, scan lines or pixel grid, over the whole page and under nothing that is clicked. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--texture);
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* The change of skin fades rather than snaps. */
+@media (prefers-reduced-motion: no-preference) {
+  html.skin-fade body,
+  html.skin-fade body * {
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+img {
+  display: block;
+  height: auto;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: var(--display-spacing);
+  text-transform: var(--display-case, none);
+  text-shadow: var(--glow);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(40px, 6.4vw, 72px);
+}
+
+h2 {
+  font-size: clamp(32px, 4.6vw, 52px);
+}
+
+h3 {
+  font-size: clamp(21px, 2.4vw, 25px);
+  line-height: 1.2;
+}
+
+html[data-skin='hifi'] h1 {
+  font-size: clamp(54px, 8.4vw, 96px);
+}
+
+html[data-skin='hifi'] h2 {
+  font-size: clamp(42px, 6vw, 68px);
+}
+
+html[data-skin='hifi'] h3 {
+  font-size: clamp(28px, 3.2vw, 34px);
+}
+
+/* Silkscreen runs wide: the same words need less size to fit. */
+html[data-skin='lcd'] h1 {
+  font-size: clamp(30px, 4.8vw, 54px);
+  line-height: 1.2;
+}
+
+html[data-skin='lcd'] h2 {
+  font-size: clamp(25px, 3.6vw, 40px);
+  line-height: 1.2;
+}
+
+html[data-skin='lcd'] h3 {
+  font-size: clamp(16px, 1.8vw, 19px);
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--link);
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--measure));
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.eyebrow {
+  margin-bottom: 14px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lead {
+  color: var(--dim);
+  font-size: clamp(18px, 1.6vw, 20px);
+}
+
+/* The app's display panel, as a box on the page. */
+.panel {
+  background: var(--card);
+  color: var(--card-ink);
+  border: var(--bw) solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.panel a {
+  color: var(--card-link);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 10px 22px;
+  border: var(--bw) solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .button {
+    transition: translate 0.15s ease;
+  }
+  .button:hover {
+    translate: 0 -2px;
+  }
+}
+
+.section {
+  padding-block: clamp(56px, 8vw, 96px);
+}
+
+.section__head {
+  max-width: 720px;
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.section__head .lead {
+  margin-top: 18px;
+}

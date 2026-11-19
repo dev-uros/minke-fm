@@ -1,0 +1,412 @@
+---
+import Dial from '../components/Dial.astro'
+import Footer from '../components/Footer.astro'
+import Nav from '../components/Nav.astro'
+import SkinPhone from '../components/SkinPhone.astro'
+import SkinScreen from '../components/SkinScreen.astro'
+import StoreButtons from '../components/StoreButtons.astro'
+import Layout from '../layouts/Layout.astro'
+
+/*
+ * A handful of the 172 genres in the app's catalogue (src/services/useGenres.ts), sized by
+ * how many stations radio-browser lists under each: 1 is a few hundred, 3 is thousands.
+ */
+const genres: [string, 1 | 2 | 3][] = [
+  ['pop', 3], ['lofi', 2], ['jazz', 3], ['deep house', 2], ['bossa nova', 1], ['classical', 3],
+  ['synthwave', 1], ['black metal', 1], ['reggae', 2], ['k-pop', 1], ['drum & bass', 1], ['country', 2],
+  ['ambient', 2], ['80s', 3], ['techno', 2], ['afrobeats', 1], ['blues', 2], ['flamenco', 1],
+  ['hip hop', 3], ['chillout', 2], ['soul', 2], ['tango', 1], ['psytrance', 1], ['rock', 3],
+  ['gospel', 2], ['vaporwave', 1], ['salsa', 1], ['oldies', 3], ['anime', 1], ['celtic', 1],
+]
+
+// What else it does, as a hi-fi's manual lists it: the thing, then what it does.
+const details = [
+  ['Song titles', 'Shown when the station sends a real artist and title. If it sends an ad or a slogan instead, you see the station’s name.'],
+  ['Album covers', 'Added when the song can be matched for certain.'],
+  ['Lyrics', 'Tap the song to read along, when the lyrics exist.'],
+  ['History', 'Every song you’ve heard, with the station and the time.'],
+  ['Sleep timer', '15, 30, 60 or 90 minutes. The last 30 seconds fade out, and it keeps counting with the screen locked.'],
+  ['Lock screen', 'Play, pause and change stations from the lock screen or your headphones.'],
+  ['Dead stations', 'If a station stops answering, MinkeFM moves on to the next one.'],
+  ['Directory down', 'A built-in list of tested stations keeps the music going.'],
+  ['Favourites', 'Tap the star to keep a station. Favourites stay on your phone.'],
+]
+
+const faq = [
+  {
+    q: 'Is it free?',
+    a: 'Yes. There are no ads, no account and nothing to buy.',
+  },
+  {
+    q: 'Where do the stations come from?',
+    a: 'From <a href="https://www.radio-browser.info/">radio-browser.info</a>, a free directory that listeners keep up to date. MinkeFM plays each station straight from the station’s own server.',
+  },
+  {
+    q: 'Why is there no song title on some stations?',
+    a: 'Some stations don’t send one, and many send an ad or their slogan in its place. When MinkeFM can’t tell a real artist and title, it shows the station’s name rather than a wrong guess.',
+  },
+  {
+    q: 'Does it play with the screen off?',
+    a: 'Yes. Lock the phone or open another app and the radio keeps going until you stop it or the sleep timer does.',
+  },
+  {
+    q: 'How much data does it use?',
+    a: 'Each station sets its own quality, usually 30 to 150 MB an hour. On mobile data, stations at 64 or 128 kbps go furthest.',
+  },
+  {
+    q: 'What do you know about me?',
+    a: 'Nothing. There is no account and no analytics, and your favourites and history stay on your phone. The <a href="/privacy/">privacy policy</a> lists every server the app talks to.',
+  },
+]
+---
+
+<Layout>
+  <Nav sections />
+
+  <main>
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <p class="eyebrow">Free for iPhone and Android</p>
+        <h1 id="hero-title">Radio from everywhere, on a deck you can hold.</h1>
+        <p class="lead">
+          Pick a genre or a country and press play. MinkeFM finds the stations, shows what’s playing and skips the ones that have gone quiet.
+        </p>
+        <p class="lead">
+          Choose a cassette, a transistor, a turntable, a hi-fi or a pocket LCD, and the whole app changes with it. Tap the phone to try one.
+        </p>
+        <StoreButtons />
+        <ul class="hero__promises">
+          <li>Free</li>
+          <li>No account</li>
+          <li>No ads</li>
+        </ul>
+      </div>
+      <SkinPhone />
+    </section>
+
+    <Dial />
+
+    <section id="genres" class="section genres" aria-labelledby="genres-title">
+      <div class="wrap genres__grid">
+        <div class="genres__copy">
+          <h2 id="genres-title">172 genres, lofi to black metal</h2>
+          <p class="lead">
+            Each genre holds every station that plays it, the busiest first. Next and previous step through them, and search finds one by name.
+          </p>
+        </div>
+        <ul class="genre-cloud" aria-label="Some of the genres">
+          {genres.map(([name, size]) => <li class={`genre-cloud__g genre-cloud__g--${size}`}>{name}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <section id="countries" class="section countries" aria-labelledby="countries-title">
+      <div class="wrap countries__grid">
+        <SkinScreen kind="countries" alt="The country picker in MinkeFM, with Spin the globe at the top" />
+        <div class="countries__copy">
+          <h2 id="countries-title">Or pick a country</h2>
+          <p class="lead">
+            Nearly 200 of them, each with every station that broadcasts from there. Hear what Lagos, Reykjavík or São Paulo is listening to right now.
+          </p>
+          <p class="lead">
+            Can’t decide? Tap <strong>Spin the globe</strong> and MinkeFM picks a country for you.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="details" class="section details" aria-labelledby="details-title">
+      <div class="wrap">
+        <h2 id="details-title">What else it does</h2>
+        <dl class="spec">
+          {
+            details.map(([term, text]) => (
+              <div class="spec__row">
+                <dt>{term}</dt>
+                <dd>{text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </section>
+
+    <section id="faq" class="section faq" aria-labelledby="faq-title">
+      <div class="wrap faq__grid">
+        <h2 id="faq-title">Questions</h2>
+        <div class="faq__list">
+          {
+            faq.map(item => (
+              <details class="faq__item">
+                <summary>{item.q}</summary>
+                <p set:html={item.a} />
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="get" class="get" aria-labelledby="get-title">
+      <div class="wrap get__inner">
+        <div>
+          <h2 id="get-title">Free for iPhone and Android</h2>
+          <p>No account, no ads, nothing to buy.</p>
+        </div>
+        <StoreButtons />
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* Both columns hang from the top, not the middle: the skins set the copy in faces of
+     different heights, and a centred column would move every time the skin changes. */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: clamp(40px, 6vw, 80px);
+    padding-block: clamp(24px, 5vw, 64px) clamp(48px, 7vw, 80px);
+  }
+  .hero__copy {
+    display: grid;
+    gap: 22px;
+    justify-items: start;
+    padding-top: clamp(0px, 8vw - 20px, 80px);
+  }
+  .hero__copy .eyebrow {
+    margin-bottom: -8px;
+  }
+  .hero__copy .lead + .lead {
+    margin-top: -8px;
+  }
+  .hero__promises {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--dim);
+    font-size: 16px;
+  }
+  .hero__promises li::before {
+    content: '✓ ';
+    color: var(--accent);
+    font-weight: 700;
+  }
+  @media (max-width: 820px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero__copy {
+      padding-top: 0;
+    }
+  }
+
+  /* Genres: the names themselves are the picture. */
+  .genres__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+  }
+  .genres__copy {
+    display: grid;
+    gap: 18px;
+  }
+  .genre-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    text-transform: var(--display-case, none);
+    line-height: 1.15;
+  }
+  .genre-cloud__g--1 {
+    color: var(--dim);
+    font-size: clamp(17px, 1.6vw, 20px);
+  }
+  .genre-cloud__g--2 {
+    color: var(--ink);
+    font-size: clamp(22px, 2.3vw, 30px);
+  }
+  .genre-cloud__g--3 {
+    color: var(--accent);
+    font-size: clamp(30px, 3.4vw, 44px);
+    text-shadow: var(--glow);
+  }
+  html[data-skin='hifi'] .genre-cloud__g--1 {
+    font-size: clamp(22px, 2vw, 26px);
+  }
+  html[data-skin='hifi'] .genre-cloud__g--2 {
+    font-size: clamp(28px, 2.9vw, 38px);
+  }
+  html[data-skin='hifi'] .genre-cloud__g--3 {
+    font-size: clamp(38px, 4.2vw, 56px);
+  }
+  html[data-skin='lcd'] .genre-cloud__g--1 {
+    font-size: 13px;
+  }
+  html[data-skin='lcd'] .genre-cloud__g--2 {
+    font-size: 17px;
+  }
+  html[data-skin='lcd'] .genre-cloud__g--3 {
+    font-size: clamp(21px, 2.3vw, 28px);
+  }
+
+  /* Countries: the app's own picker beside the words. */
+  .countries {
+    padding-top: 0;
+  }
+  .countries__grid {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(32px, 7vw, 96px);
+  }
+  .countries__copy {
+    display: grid;
+    gap: 18px;
+    max-width: 560px;
+  }
+  .countries__copy strong {
+    color: var(--ink);
+  }
+
+  /* What else it does: a spec sheet, term and line, hairlines between. */
+  .details h2 {
+    margin-bottom: clamp(24px, 4vw, 40px);
+  }
+  .spec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+    column-gap: clamp(32px, 5vw, 64px);
+    margin: 0;
+  }
+  .spec__row {
+    display: grid;
+    grid-template-columns: 9.5em minmax(0, 1fr);
+    gap: 16px;
+    padding-block: 16px;
+    border-top: 1px solid var(--rule);
+  }
+  .spec dt {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    text-transform: var(--display-case, none);
+    text-shadow: var(--glow);
+  }
+  html[data-skin='hifi'] .spec dt {
+    font-size: 24px;
+    line-height: 1.1;
+  }
+  html[data-skin='lcd'] .spec dt {
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .spec dd {
+    margin: 0;
+    color: var(--dim);
+  }
+
+  /* Questions: a plain list, opened one at a time. */
+  .faq__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.6fr) minmax(0, 1.4fr);
+    gap: clamp(24px, 5vw, 64px);
+    align-items: start;
+  }
+  .faq__item {
+    border-top: 1px solid var(--rule);
+  }
+  .faq__item:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+  .faq__item summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq__item summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq__item summary::after {
+    content: '+';
+    color: var(--accent);
+    font-size: 1.3em;
+    line-height: 1;
+  }
+  .faq__item[open] summary::after {
+    content: '−';
+  }
+  .faq__item p {
+    max-width: 62ch;
+    padding-bottom: 20px;
+    color: var(--dim);
+  }
+
+  /* The way out: the skin's main colour, edge to edge. */
+  .get {
+    padding-block: clamp(40px, 7vw, 72px);
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-top: var(--bw) solid var(--line);
+  }
+  .get__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px 40px;
+  }
+  .get h2 {
+    text-shadow: none;
+  }
+  .get p {
+    margin-top: 8px;
+    font-size: 18px;
+    opacity: 0.85;
+  }
+  .get :global(.store),
+  .get :global(.store--soon) {
+    color: var(--accent-ink);
+    border-color: var(--accent-ink);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  @media (max-width: 820px) {
+    .genres__grid,
+    .faq__grid {
+      grid-template-columns: 1fr;
+    }
+    .countries__grid {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .countries__copy {
+      order: -1;
+      justify-self: stretch;
+    }
+  }
+  @media (max-width: 520px) {
+    .spec__row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>

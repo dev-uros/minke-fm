@@ -1,0 +1,95 @@
+---
+/**
+ * Where to get the app. Until a store lists it, a button says it is coming rather than
+ * leading nowhere; filling in STORES (constants.ts) turns it into a link.
+ */
+import { STORES } from '../constants'
+
+const stores = [
+  {
+    href: STORES.appStore,
+    small: 'Download on the',
+    name: 'App Store',
+    icon: 'M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1ZM13.9 5c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5Z',
+  },
+  {
+    href: STORES.googlePlay,
+    small: 'Get it on',
+    name: 'Google Play',
+    icon: 'M3.6 1.8 13.4 12l-9.8 10.2c-.4-.2-.6-.7-.6-1.2V3c0-.5.2-1 .6-1.2Zm11 11.4 2.6 2.6-11.5 6.6 8.9-9.2Zm3.9-3.9 3 1.7c.9.5.9 1.5 0 2l-3 1.7-2.8-2.7 2.8-2.7Zm-12.8-7.7 11.5 6.6-2.6 2.6-8.9-9.2Z',
+  },
+]
+---
+
+<ul class="stores">
+  {
+    stores.map(store => (
+      <li>
+        {store.href
+          ? (
+              <a class="store" href={store.href}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d={store.icon} /></svg>
+                <span><small>{store.small}</small>{store.name}</span>
+              </a>
+            )
+          : (
+              <span class="store store--soon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d={store.icon} /></svg>
+                <span><small>Coming soon to</small>{store.name}</span>
+              </span>
+            )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .stores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .store {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 188px;
+    min-height: 58px;
+    padding: 8px 20px 8px 16px;
+    border: var(--bw) solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: var(--shadow-sm);
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.05;
+    text-decoration: none;
+  }
+  .store--soon {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--accent);
+    box-shadow: none;
+  }
+  html[data-skin='radio'] .store--soon,
+  html[data-skin='cassette'] .store--soon {
+    border-color: var(--accent);
+  }
+  .store svg {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+  }
+  .store small {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+  }
+</style>

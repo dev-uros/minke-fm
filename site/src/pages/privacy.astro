@@ -1,0 +1,154 @@
+---
+import Footer from '../components/Footer.astro'
+import Nav from '../components/Nav.astro'
+import { CONTACT, NAME } from '../constants'
+import Layout from '../layouts/Layout.astro'
+
+/*
+ * Written from what the app actually does (checked in its code on 19 November 2026).
+ * When the app starts talking to anyone new, this page changes in the same commit.
+ */
+const services = [
+  {
+    name: 'radio-browser.info',
+    href: 'https://www.radio-browser.info/',
+    what: 'The lists of stations for a genre or a country, and your searches.',
+  },
+  {
+    name: 'The radio stations themselves',
+    href: '',
+    what: 'The music and the song title, straight from the station you picked. Each station runs its own server, with its own rules.',
+  },
+  {
+    name: 'Apple’s iTunes Search',
+    href: 'https://www.apple.com/legal/privacy/',
+    what: 'When a song is playing, its artist and title are looked up here to find the album and its cover.',
+  },
+  {
+    name: 'LRCLIB',
+    href: 'https://lrclib.net/',
+    what: 'The same artist and title, to find the lyrics.',
+  },
+]
+---
+
+<Layout title={`Privacy · ${NAME}`} description={`What ${NAME} keeps about you (nothing), what stays on your phone, and who the app talks to.`}>
+  <Nav />
+  <main class="wrap privacy">
+    <article class="privacy__sheet panel">
+      <p class="eyebrow">Last changed 19 November 2026</p>
+      <h1>Privacy</h1>
+      <p class="privacy__lead">
+        {NAME} has no account, no analytics and no ads. Nothing you do in the app is sent to us, so we have nothing about you to keep, sell or lose.
+      </p>
+
+      <h2>What stays on your phone</h2>
+      <p>So it can pick up where you left off, the app keeps these on your phone, and only there:</p>
+      <ul>
+        <li>your favourite stations</li>
+        <li>the last station you played and its volume</li>
+        <li>the songs you have heard, with the time</li>
+        <li>station lists it has already downloaded, so they open quickly</li>
+        <li>the skin you picked, and the sleep timer while it runs</li>
+      </ul>
+      <p>Deleting the app deletes all of it.</p>
+
+      <h2>Who the app talks to</h2>
+      <p>
+        To play radio, the app connects to these services directly from your phone. We are not in between. Like any server, each one sees your phone’s IP address
+        and what the app asked for.
+      </p>
+      <dl class="privacy__services">
+        {
+          services.map(s => (
+            <div>
+              <dt>{s.href ? <a href={s.href}>{s.name}</a> : s.name}</dt>
+              <dd>{s.what}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p>They get nothing else: no name, no account, no ID for your phone. The app’s fonts are built in, so no font service is involved.</p>
+
+      <h2>Permissions</h2>
+      <p>
+        On Android, the app asks to show a notification. That notification is the player, with the station and buttons to pause or skip, and it lets the radio
+        keep playing with the screen off. On iPhone and Android the app plays audio in the background for the same reason. It asks for nothing else: no location,
+        contacts or microphone.
+      </p>
+
+      <h2>This site</h2>
+      <p>
+        This site sets no cookies. The skin you pick here is saved in your browser and goes nowhere else. Cloudflare hosts the site and keeps short request logs to
+        run and protect it. Visits are counted with Cloudflare Web Analytics, which uses no cookies and doesn’t track you across sites.
+      </p>
+
+      <h2>Children</h2>
+      <p>The app collects nothing from anyone, including children.</p>
+
+      <h2>Who we are</h2>
+      <p>
+        {NAME} is made by Fifth Guild, in Serbia. Questions about this page go to <a href={`mailto:${CONTACT}`}>{CONTACT}</a>, and we reply within a few days. You can also
+        complain to the data protection authority where you live.
+      </p>
+
+      <h2>Changes</h2>
+      <p>If the app ever starts keeping or sending anything new, this page will say so first, with a new date at the top.</p>
+    </article>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .privacy {
+    padding-block: clamp(16px, 4vw, 40px) clamp(56px, 8vw, 96px);
+  }
+  .privacy__sheet {
+    max-width: 780px;
+    margin-inline: auto;
+    padding: clamp(28px, 6vw, 64px);
+  }
+  .privacy__sheet h1 {
+    margin-bottom: 20px;
+    color: var(--card-ink);
+  }
+  .privacy__sheet h2 {
+    margin: 44px 0 14px;
+    color: var(--card-ink);
+    font-size: clamp(25px, 3vw, 32px);
+  }
+  html[data-skin='lcd'] .privacy__sheet h2 {
+    font-size: clamp(18px, 2.2vw, 22px);
+  }
+  .privacy__sheet p + p,
+  .privacy__sheet ul + p,
+  .privacy__sheet dl + p {
+    margin-top: 14px;
+  }
+  .privacy__sheet .eyebrow {
+    color: var(--card-dim);
+  }
+  .privacy__lead {
+    font-size: clamp(19px, 2vw, 22px);
+  }
+  .privacy__sheet ul {
+    margin: 12px 0 0;
+    padding-left: 1.2em;
+  }
+  .privacy__services {
+    display: grid;
+    gap: 14px;
+    margin: 18px 0 0;
+  }
+  .privacy__services div {
+    padding-left: 16px;
+    border-left: 3px solid var(--card-link);
+  }
+  .privacy__services dt {
+    font-weight: 700;
+  }
+  .privacy__services dd {
+    margin: 2px 0 0;
+    color: var(--card-dim);
+  }
+</style>

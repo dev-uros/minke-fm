@@ -1,0 +1,158 @@
+/*
+ * The whole page wears the skin the phone shows: html[data-skin] is set before the
+ * first paint (Layout.astro) and changed when the phone is tapped (Hero.astro).
+ * Colours are taken from the app's src/skins.css, so the site and the app match.
+ *
+ *   --bg         the page behind everything; --bg-solid where a gradient cannot go
+ *   --ink/--dim  text on the page
+ *   --card*      a panel on the page (the app's display panel)
+ *   --accent*    buttons and highlights; --accent-ink is the text on them
+ *   --line --bw  borders; --radius --shadow the panel's shape
+ *   --accent2    the second colour: the tuning dial's band; --accent2-ink is the text on it
+ *   --texture    laid over the page: wood grain, scan lines, an LCD's pixel grid
+ */
+
+html,
+html[data-skin='cassette'] {
+  --font-body: 'Montserrat', system-ui, sans-serif;
+  --font-display: 'Montserrat', system-ui, sans-serif;
+  --display-weight: 800;
+  --display-case: none;
+  --display-spacing: -0.02em;
+  --bg: #1a1a1a;
+  --bg-solid: #1a1a1a;
+  --ink: #fffdd0;
+  --dim: rgba(255, 253, 208, 0.72);
+  --card: #252525;
+  --card-ink: #fffdd0;
+  --card-dim: rgba(255, 253, 208, 0.72);
+  --accent: #f2bc00;
+  --accent-ink: #111;
+  --accent2-ink: #111;
+  --accent2: #f15a25;
+  --link: #f2bc00;
+  --card-link: #f2bc00;
+  --line: #000;
+  --bw: 3px;
+  --radius: 0;
+  --radius-sm: 0;
+  --shadow: 6px 6px 0 #000;
+  --shadow-sm: 4px 4px 0 #000;
+  --glow: none;
+  --texture: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 4px);
+}
+
+html[data-skin='radio'] {
+  --font-body: 'Zilla Slab', Georgia, serif;
+  --font-display: 'Zilla Slab', Georgia, serif;
+  --display-weight: 700;
+  --display-spacing: -0.01em;
+  --bg: linear-gradient(180deg, #2c1c10, #1c110a);
+  --bg-solid: #23160d;
+  --ink: #f3e6c8;
+  --dim: rgba(243, 230, 200, 0.75);
+  --card: radial-gradient(ellipse at 50% 30%, #f4e8cc, #e3d2ab 75%);
+  --card-ink: #2b1a0f;
+  --card-dim: rgba(43, 26, 15, 0.78);
+  --accent: #e0912f;
+  --accent-ink: #1c110a;
+  --accent2-ink: #f8ecd2;
+  --accent2: #a8321e;
+  --link: #e0912f;
+  --card-link: #8a2817;
+  --line: #140b05;
+  --bw: 3px;
+  --radius: 22px;
+  --radius-sm: 12px;
+  --shadow: inset 0 0 0 6px #6b4424, inset 0 0 0 8px #140b05, 0 10px 24px rgba(0, 0, 0, 0.55);
+  --shadow-sm: 0 3px 0 #140b05;
+  --glow: none;
+  --texture: repeating-linear-gradient(92deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 9px);
+}
+
+html[data-skin='vinyl'] {
+  --font-body: 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --display-weight: 700;
+  --display-spacing: 0;
+  --bg: radial-gradient(circle at 50% 0%, #17392e, #0b1f19 70%);
+  --bg-solid: #0f2a22;
+  --ink: #f3ead2;
+  --dim: rgba(243, 234, 210, 0.74);
+  --card: #12342a;
+  --card-ink: #f3ead2;
+  --card-dim: rgba(243, 234, 210, 0.74);
+  --accent: #c9a45c;
+  --accent-ink: #0b1f19;
+  --accent2-ink: #0b1f19;
+  --accent2: #e8a87c;
+  --link: #c9a45c;
+  --card-link: #d9b56c;
+  --line: #c9a45c;
+  --bw: 1px;
+  --radius: 4px;
+  --radius-sm: 999px;
+  --shadow: inset 0 0 0 5px #12342a, inset 0 0 0 6px rgba(201, 164, 92, 0.45), 0 12px 28px rgba(0, 0, 0, 0.45);
+  --shadow-sm: none;
+  --glow: none;
+  --texture: radial-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1.5px) 0 0 / 5px 5px;
+}
+
+html[data-skin='hifi'] {
+  --font-body: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-display: 'VT323', ui-monospace, monospace;
+  --display-weight: 400;
+  --display-case: uppercase;
+  --display-spacing: 0.02em;
+  --bg: linear-gradient(180deg, #161719, #0a0a0b 60%);
+  --bg-solid: #0b0b0c;
+  --ink: #c9d2d8;
+  --dim: rgba(201, 210, 216, 0.72);
+  --card: radial-gradient(ellipse at 50% 40%, #082a24, #03100d 80%);
+  --card-ink: #5ff5d2;
+  --card-dim: rgba(95, 245, 210, 0.72);
+  --accent: #5ff5d2;
+  --accent-ink: #03100d;
+  --accent2-ink: #111;
+  --accent2: #ffb347;
+  --link: #5ff5d2;
+  --card-link: #ffb347;
+  --line: #34363b;
+  --bw: 2px;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 0 0 6px #141517, 0 0 0 7px #34363b;
+  --shadow-sm: 0 0 0 1px #34363b;
+  --glow: 0 0 8px rgba(95, 245, 210, 0.55);
+  --texture: repeating-linear-gradient(to bottom, rgba(95, 245, 210, 0.03) 0 1px, transparent 1px 3px);
+}
+
+html[data-skin='lcd'] {
+  --font-body: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-display: 'Silkscreen', ui-monospace, monospace;
+  --display-weight: 400;
+  --display-case: none;
+  --display-spacing: 0;
+  --bg: linear-gradient(180deg, #2a2e33, #1c1f22);
+  --bg-solid: #1f2326;
+  --ink: #c7d3a0;
+  --dim: rgba(199, 211, 160, 0.78);
+  --card: #c7d3a0;
+  --card-ink: #1e2416;
+  --card-dim: #3a4428;
+  --accent: #c7d3a0;
+  --accent-ink: #1e2416;
+  --accent2-ink: #1e2416;
+  --accent2: #9aa77a;
+  --link: #c7d3a0;
+  --card-link: #1e2416;
+  --line: #1e2416;
+  --bw: 4px;
+  --radius: 4px;
+  --radius-sm: 0;
+  --shadow: 0 0 0 10px #3b3f45, 0 0 0 12px #15171a, inset 0 0 22px rgba(30, 36, 22, 0.35);
+  --shadow-sm: 0 0 0 3px #15171a;
+  --glow: none;
+  --texture: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(to right, rgba(0, 0, 0, 0.08) 0 1px, transparent 1px 3px);
+}

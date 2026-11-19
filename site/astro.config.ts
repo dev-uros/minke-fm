@@ -13,4 +13,6 @@ export default defineConfig({
   // The styles are a few kilobytes: inside the page they cost less than a request the phone waits on.
   build: { inlineStylesheets: 'always' },
   devToolbar: { enabled: false },
+  // /stations.json is the app's own src/assets/fallback-stations.json, one folder up.
+  vite: { server: { fs: { allow: ['..'] } } },
 })

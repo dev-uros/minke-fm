@@ -9,6 +9,7 @@ import {useNowPlaying} from "./useNowPlaying.ts";
 import {DEFAULT_GENRE, genreLabel} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 import {fallbackStations} from "./useFallbackStations.ts";
+import {refreshFallback} from "./useRemoteFallback.ts";
 import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
 import {useSleepTimer} from "./useSleepTimer.ts";
 import {recordTrack} from "./useTrackHistory.ts";
@@ -289,6 +290,10 @@ export function useStream(mobile = false) {
      * did, and without it the deck reads "(0)" stations until something asks.
      */
     const getStations = async () => {
+        // Once the radio has had a moment to start: this week's stand-in stations,
+        // if the ones on the device are older than that.
+        setTimeout(() => void refreshFallback(), 20_000);
+
         const last = loadLastStation();
         if (last) {
             await playStation(last);

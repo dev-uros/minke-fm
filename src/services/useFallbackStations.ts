@@ -1,10 +1,12 @@
 import type {FormattedStation, Genre} from "../types";
 import {useFavorites} from "./useFavorites.ts";
+import {savedFallback} from "./useRemoteFallback.ts";
 
 /**
- * What a genre plays when radio-browser cannot be reached and the genre was
- * never cached: the user's own favourites from it, then the top stations that
- * were streaming when `npm run fallback:stations` last ran.
+ * What a genre (or a country) plays when radio-browser cannot be reached and it
+ * was never cached: the user's own favourites from it, then the top stations that
+ * were streaming when `npm run fallback:stations` last ran - this week's run,
+ * downloaded from the site (useRemoteFallback.ts), or the one shipped in the app.
  *
  * The bundled file is loaded on first use rather than imported, so its few
  * hundred kilobytes stay out of the startup bundle.
@@ -32,7 +34,10 @@ export async function fallbackStations(genre: Genre): Promise<FormattedStation[]
         .map(station => ({...station}));
     const seen = new Set(list.map(station => station.id));
 
-    for (const station of (await loadBundled())[genre] ?? []) {
+    // This week's list from the site when the device has it and it covers this genre
+    // or country; the one shipped in the app otherwise.
+    const downloaded = (await savedFallback())?.[genre];
+    for (const station of downloaded ?? (await loadBundled())[genre] ?? []) {
         if (seen.has(station.id)) continue;
         seen.add(station.id);
         list.push({...station, urlResolved: station.url, type: genre});

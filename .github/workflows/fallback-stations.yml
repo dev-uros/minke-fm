@@ -1,0 +1,48 @@
+# Every Monday: rebuild the stand-in stations (per genre and per country) that the app plays
+# when the station directory is down, and commit them if they changed. The commit redeploys
+# the site, which serves them at /stations.json, and the app fetches that weekly.
+name: Stand-in stations
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  # Also runnable by hand: Actions -> Stand-in stations -> Run workflow.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fallback-stations
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # The script needs the catalogue and the formatting code, not the build tools' install steps.
+      - run: npm ci --ignore-scripts
+
+      - run: npm run fallback:stations
+
+      - name: Commit the list if it changed
+        run: |
+          if git diff --quiet -- src/assets/fallback-stations.json; then
+            echo "The list is unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/assets/fallback-stations.json
+          git commit -m "Refresh the stand-in stations ($(date -u +%F))"
+          # Someone may have pushed while the stations were being checked.
+          git pull --rebase origin main
+          git push origin HEAD:main

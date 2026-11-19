@@ -30,7 +30,10 @@ Predlozi iz pregleda koda (2026-10-23). Poređano po odnosu korist / trud.
   `src/assets/fallback-stations.json`, pravi se sa `npm run fallback:stations` (proverava
   da stanice stvarno sviraju). Žanr koji nije keširan odmah krene sa favoritima iz tog
   žanra + spiskom, pa se pun spisak zameni kad stigne. Ako radio-browser ne radi, ostaje
-  na tom spisku. Spisak povremeno osvežiti, jer stanice umiru.
+  na tom spisku. Od 2026-11-19 se osvežava sam: GitHub Actions svakog ponedeljka pravi novi
+  spisak (žanrovi i, po 10, zemlje; `.github/workflows/fallback-stations.yml`) i commituje
+  ga; sajt ga objavljuje na `/stations.json`, a aplikacija ga preuzima jednom nedeljno
+  (`useRemoteFallback.ts`). Spakovani fajl ostaje za prvo pokretanje bez interneta.
 
 - [ ] **Prijavljivanje klikova radio-browser-u** – poziv na `/json/url/{stationuuid}` kad
   stanica krene da svira. Pomaže njihovom `clickcount` rangiranju, na koje se oslanjamo.

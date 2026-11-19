@@ -5,3 +5,9 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+
+# The app's weekly stand-in station list: fetched from the app's own origin, so it needs CORS,
+# and it changes once a week, so an hour of caching is plenty.
+/stations.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=3600

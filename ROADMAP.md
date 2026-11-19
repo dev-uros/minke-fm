@@ -106,15 +106,16 @@ Plan od 2026-11-19. Stanje: TestFlight build 5 i Play internal testing 1003 rade
 privacy (https://minkefm.fifthguild.com/privacy/) su živi. App Store ID: 6827227577.
 
 ### A. Odluke pre svega (5 min)
-- [ ] **Verzija za objavu**: `0.1.0` → `1.0.0` (`version` u `src-tauri/tauri.conf.json`;
-      iOS build i Android versionCode nastavljaju da rastu: 6 / 1004).
-- [ ] **iPad**: aplikacija je sada za iPhone *i* iPad (`TARGETED_DEVICE_FAMILY = 1,2`), pa
-      App Store traži i iPad slike, a review je testira i na iPadu. Predlog: samo iPhone
-      za prvu verziju (manje posla i rizika), iPad kasnije.
-- [ ] **Web Analytics na sajtu**: uključiti u Cloudflare-u ili skloniti rečenicu sa privacy strane.
-- [ ] **Google Play nalog**: lični ili organizacioni? Za *lične* naloge napravljene posle
-      novembra 2023. Play traži **zatvoreno testiranje sa najmanje 12 testera, 14 dana**, pre
-      nego što dozvoli produkciju. Proveriti u Play Console → Dashboard ("Apply for production").
+- [x] **Verzija za objavu: 1.0.0**, prva produkcijska (odlučeno 2026-11-19). Menja se
+      `version` u `src-tauri/tauri.conf.json` i `CFBundleShortVersionString` u
+      `gen/apple/minke-fm_iOS/Info.plist` (Android versionName ide iz tauri.conf). Build
+      brojevi nastavljaju da rastu: iOS 11, Android 1009.
+- [x] **iPad**: samo iPhone za prvu verziju (`TARGETED_DEVICE_FAMILY = 1`, postavljeno
+      2026-11-19). Telefonski raspored se na iPadu razvuče; iPad i dalje instalira aplikaciju
+      u iPhone veličini. Prava iPad verzija kasnije.
+- [x] **Web Analytics na sajtu**: ne treba; rečenica sklonjena sa privacy strane.
+- [x] **Google Play nalog**: organizacioni (Fifth Guild, sa D-U-N-S brojem), pa zatvoreno
+      testiranje sa 12 testera / 14 dana **ne treba**; produkcija ide direktno.
 
 ### B. Priprema (radim ja, ti pregledaš)
 - [ ] Tekstovi za prodavnice (engleski): naziv, podnaslov (iOS, 30 znakova), kratak opis
@@ -144,8 +145,7 @@ privacy (https://minkefm.fifthguild.com/privacy/) su živi. App Store ID: 682722
        **Data safety**: ništa se ne prikuplja ni ne deli, saobraćaj je šifrovan (HTTPS gde stanica podržava).
 3. [ ] **Foreground service** deklaracija: `mediaPlayback` – opis "plays the radio station the
        user started, with controls in the notification"; možda traže kratak video (snimiću ga sa emulatora).
-4. [ ] Ako nalog traži zatvoreno testiranje: Closed testing track, 12+ testera, 14 dana, pa "Apply for production".
-5. [ ] Production → Create release → AAB 1004 (ili promote iz internal testing-a) → release notes
+4. [ ] Production → Create release → AAB 1004 (ili promote iz internal testing-a) → release notes
        → zemlje → Review and roll out.
 
 ### E. Posle odobrenja

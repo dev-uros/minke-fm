@@ -81,6 +81,9 @@ targets:
         LIBRARY_SEARCH_PATHS[arch=arm64]: $(inherited) $(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION) $(SDKROOT)/usr/lib/swift $(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME) $(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: true
         EXCLUDED_ARCHS[sdk=iphoneos*]: x86_64
+        # iPhone only for now: the phone layout stretches across an iPad's screen rather
+        # than using it. iPads still install the app, in iPhone size, from the App Store.
+        TARGETED_DEVICE_FAMILY: "1"
       configs:
         # Release only goes to the App Store, signed with a hand-made App Store
         # profile: automatic signing wants a development profile first, which

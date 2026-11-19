@@ -318,7 +318,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.fifthguild.minkefm;
 				PRODUCT_NAME = "MinkeFM";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALID_ARCHS = arm64;
 				DEVELOPMENT_TEAM = "HQA7G6K35G";
 			};
@@ -415,7 +415,7 @@
 				PRODUCT_NAME = "MinkeFM";
 				PROVISIONING_PROFILE_SPECIFIER = "MinkeFM App Store";
 				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALID_ARCHS = arm64;
 				DEVELOPMENT_TEAM = "HQA7G6K35G";
 			};

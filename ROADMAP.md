@@ -148,6 +148,32 @@ privacy (https://minkefm.fifthguild.com/privacy/) su živi. App Store ID: 682722
 4. [ ] Production → Create release → AAB 1004 (ili promote iz internal testing-a) → release notes
        → zemlje → Review and roll out.
 
+### STANJE (2026-11-19 uveče): poslato na review, čekamo
+
+| | Build | Status | Izlazak |
+|---|---|---|---|
+| App Store | 1.0.0 (11), samo iPhone | Waiting for Review | **ručno**: posle odobrenja klikni *Release this version* |
+| Google Play | 1.0.0 (1011) | Changes in review | **sam**, čim Google odobri (Managed publishing nije moglo pre prve objave) |
+
+Urađeno: B (tekstovi i slike u `store/`, `store/LISTING.md`), C i D u celosti. Tag `v1.0.0`
+je na commitu 1.0.0 (iOS 11); Android je posle toga morao na 1010 (16 KB poravnanje,
+`src-tauri/build.rs`) pa 1011 (portrait nije obavezan, AndroidManifest).
+
+**Kad stigne mail:**
+- Odbijanje ili pitanje (Apple: App Store Connect → App Review; Google: Inbox / Policy status)
+  → nalepiti tekst, rešavamo. Spremni odgovori: prava na sadržaj i napomena za recenzenta
+  (Apple), foreground service `mediaPlayback` (Google), sve u `store/LISTING.md`.
+- Odobreno → korak E ispod.
+
+**Usput, nije hitno:**
+- Ime prodavca na App Store-u je "Uro Mini" (sistem je izbacio š/ć): zatražiti od Apple
+  podrške promenu u "Uros Minic" (Contact Us → Membership and Account).
+- Android: prikaz ostane na "Connecting..." ako se webview ponovo učita dok servis već svira
+  (viđeno samo veštački, pri slikanju); proveriti posle objave.
+- Provera pre objave (skripta): poravnanje .so, manifest (portrait, AD_ID, cleartext),
+  brojevi verzija, potpis, da sledeći update prođe bez vraćanja.
+- Do aprila 2027: macOS Tahoe 26.6+ i Xcode 27 (Apple traži iOS 27 SDK).
+
 ### E. Posle odobrenja
 - [ ] Linkovi u sajtu (`site/src/constants.ts` → `STORES`): App Store
       `https://apps.apple.com/app/id6827227577`, Play

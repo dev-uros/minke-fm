@@ -34,7 +34,11 @@ android {
     compileSdk = 36
     namespace = "com.fifthguild.minkefm"
     defaultConfig {
-        manifestPlaceholders["usesCleartextTraffic"] = "false"
+        // Plain http, in every build: a large share of radio stations still stream over
+        // http (68 of Slovenia's 111), and with Tauri's default of "false" the release
+        // player refused every one of them, so they were skipped as dead. iOS allows the
+        // same through NSAllowsArbitraryLoads in Info.plist.
+        manifestPlaceholders["usesCleartextTraffic"] = "true"
         applicationId = "com.fifthguild.minkefm"
         minSdk = 24
         targetSdk = 36

@@ -3,6 +3,7 @@ import {FormattedStation} from "../types";
 import {computed, ref, watch} from "vue";
 import {useRememberedScroll} from "../services/useRememberedScroll.ts";
 import {useEscapeToClose} from "../services/useEscapeToClose.ts";
+import {genreLabel} from "../services/useGenres.ts";
 
 interface Props {
   stations: FormattedStation[]
@@ -90,7 +91,7 @@ watch(() => allStations.value.length, () => {
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
       <div class="head flex justify-between items-center">
-        <span>{{ stations[0]?.type ?? 'No' }} stations ({{ allStations.length }})</span>
+        <span>{{ stations[0] ? genreLabel(stations[0].type) : 'No' }} stations ({{ allStations.length }})</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
       <div class="search-head flex justify-between items-center">

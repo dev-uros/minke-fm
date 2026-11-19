@@ -97,7 +97,61 @@ Predlozi iz pregleda koda (2026-10-23). Poređano po odnosu korist / trud.
   - Jezik: samo engleski
   - Sajt promoviše samo iOS i Android. Desktop dolazi kasnije, kao posebna sekcija.
 
-## 4. Održavanje
+## 4. Objava u prodavnicama (produkcija)
+
+Plan od 2026-11-19. Stanje: TestFlight build 5 i Play internal testing 1003 rade; sajt i
+privacy (https://minkefm.fifthguild.com/privacy/) su živi. App Store ID: 6827227577.
+
+### A. Odluke pre svega (5 min)
+- [ ] **Verzija za objavu**: `0.1.0` → `1.0.0` (`version` u `src-tauri/tauri.conf.json`;
+      iOS build i Android versionCode nastavljaju da rastu: 6 / 1004).
+- [ ] **iPad**: aplikacija je sada za iPhone *i* iPad (`TARGETED_DEVICE_FAMILY = 1,2`), pa
+      App Store traži i iPad slike, a review je testira i na iPadu. Predlog: samo iPhone
+      za prvu verziju (manje posla i rizika), iPad kasnije.
+- [ ] **Web Analytics na sajtu**: uključiti u Cloudflare-u ili skloniti rečenicu sa privacy strane.
+- [ ] **Google Play nalog**: lični ili organizacioni? Za *lične* naloge napravljene posle
+      novembra 2023. Play traži **zatvoreno testiranje sa najmanje 12 testera, 14 dana**, pre
+      nego što dozvoli produkciju. Proveriti u Play Console → Dashboard ("Apply for production").
+
+### B. Priprema (radim ja, ti pregledaš)
+- [ ] Tekstovi za prodavnice (engleski): naziv, podnaslov (iOS, 30 znakova), kratak opis
+      (Play, 80), pun opis (do 4000), ključne reči (iOS, 100), promo tekst, "What's new".
+- [ ] Slike za App Store: iPhone 6.9" (1320×2868, iPhone 17 Pro Max simulator), 3–6 komada
+      (+ iPad 13" ako ostaje iPad).
+- [ ] Slike za Play: telefon (9:16, Android emulator), 2–8 komada; ikonica 512×512;
+      feature graphic 1024×500.
+- [ ] Verzija 1.0.0, novi iOS build (6) i AAB (1004), commit + push.
+
+### C. App Store Connect (radiš ti, idemo zajedno)
+1. [ ] App Information: kategorija **Music**, Content Rights: aplikacija pušta tuđe javne
+       radio strimove (ne snima i ne skida) → odgovor "Yes" uz kratko objašnjenje.
+2. [ ] Pricing: besplatno, sve zemlje.
+3. [ ] App Privacy: **Data Not Collected**; Privacy Policy URL = privacy strana.
+4. [ ] Age Rating upitnik (radio može da pusti pesme sa psovkama → "Infrequent/Mild").
+5. [ ] Verzija 1.0.0: slike, opis, ključne reči, Support URL (https://minkefm.fifthguild.com/),
+       kontakt za review, napomena za reviewer-a (nema naloga, sve radi bez prijave).
+6. [ ] Izabrati build 6 → **Add for Review** → Submit. Izdavanje: ručno ili automatski po odobrenju.
+       Enkripcija je već odgovorena u Info.plist (`ITSAppUsesNonExemptEncryption = false`).
+
+### D. Google Play Console (radiš ti, idemo zajedno)
+1. [ ] Store listing: naziv, kratak i pun opis, ikonica, feature graphic, slike telefona,
+       kategorija **Music & Audio**, kontakt email, website.
+2. [ ] App content: Privacy policy URL; Ads: ne; App access: sve dostupno bez prijave;
+       Content rating (IARC upitnik); Target audience: 13+ (ne deca); News app: ne;
+       **Data safety**: ništa se ne prikuplja ni ne deli, saobraćaj je šifrovan (HTTPS gde stanica podržava).
+3. [ ] **Foreground service** deklaracija: `mediaPlayback` – opis "plays the radio station the
+       user started, with controls in the notification"; možda traže kratak video (snimiću ga sa emulatora).
+4. [ ] Ako nalog traži zatvoreno testiranje: Closed testing track, 12+ testera, 14 dana, pa "Apply for production".
+5. [ ] Production → Create release → AAB 1004 (ili promote iz internal testing-a) → release notes
+       → zemlje → Review and roll out.
+
+### E. Posle odobrenja
+- [ ] Linkovi u sajtu (`site/src/constants.ts` → `STORES`): App Store
+      `https://apps.apple.com/app/id6827227577`, Play
+      `https://play.google.com/store/apps/details?id=com.fifthguild.minkefm` → push (sajt se sam deployuje).
+- [ ] Zvanični App Store / Google Play bedževi na sajtu umesto "Coming soon" dugmadi.
+
+## 5. Održavanje
 
 - [ ] **README** – zameniti Tauri šablon pravim opisom (šta je, kako se pokreće, Android build).
 - [ ] **`Cargo.toml` metapodaci** – `description = "A Tauri App"`, `authors = ["you"]`.

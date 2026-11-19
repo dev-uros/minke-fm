@@ -263,12 +263,16 @@ button {
   background: var(--m-btn-current, #252525);
 }
 
-.custom {
+/* The one highlighted button (Spin the globe, Tune into "..."): the skin's own accent with
+   text chosen for it. It used to borrow the hover colour with black text, which on the
+   darker skins was black on dark brown, green or charcoal. */
+.custom,
+.custom:hover {
   display: block;
   width: 100%;
   margin-bottom: 14px;
-  background: var(--m-btn-hover, #1ac2ff);
-  color: #000;
+  background: var(--m-spin, #1ac2ff);
+  color: var(--m-spin-fg, #000);
 }
 
 .source-tabs {

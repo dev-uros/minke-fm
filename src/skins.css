@@ -4,7 +4,8 @@
  * Two sets of variables:
  *   --s-*  the phone screen itself (MobileApp.vue): background, the display
  *          panel, the artwork sleeve, text.
- *   --m-*  the shared modals and toast. Each one reads var(--m-x, <original>),
+ *   --m-*  the shared modals and toast. (--m-spin / --m-spin-fg: the highlighted button
+ *          in the genre picker, Spin the globe.) Each one reads var(--m-x, <original>),
  *          so the desktop - which never gets a data-skin - is unchanged, and so
  *          is the cassette skin, which sets none of them.
  *
@@ -50,6 +51,8 @@ html[data-skin="radio"] {
     --m-btn: #7a4a26;
     --m-btn-fg: #f8ecd2;
     --m-btn-hover: #8f5a30;
+    --m-spin: #e0912f;
+    --m-spin-fg: #1c110a;
     --m-btn-current: #a8321e;
     --m-danger: #a8321e;
     --m-input: #fff8e8;
@@ -110,6 +113,8 @@ html[data-skin="vinyl"] {
     --m-btn: #143a2e;
     --m-btn-fg: #f3ead2;
     --m-btn-hover: #1d4a3b;
+    --m-spin: #c9a45c;
+    --m-spin-fg: #0b1f19;
     --m-btn-current: #8a6a2c;
     --m-danger: #7a2a1a;
     --m-input: #fffaf0;
@@ -172,6 +177,8 @@ html[data-skin="hifi"] {
     --m-btn: #1e2024;
     --m-btn-fg: #5ff5d2;
     --m-btn-hover: #263a36;
+    --m-spin: #5ff5d2;
+    --m-spin-fg: #03100d;
     --m-btn-current: #0a5a4b;
     --m-danger: #5a1d22;
     --m-input: #04110f;
@@ -236,6 +243,8 @@ html[data-skin="lcd"] {
     --m-btn: #4e5a3a;
     --m-btn-fg: #dfe8bd;
     --m-btn-hover: #3d482d;
+    --m-spin: #1e2416;
+    --m-spin-fg: #dfe8bd;
     --m-btn-current: #1e2416;
     --m-danger: #1e2416;
     --m-input: #dfe8bd;

@@ -17,6 +17,8 @@ const emit = defineEmits<{
 
 interface Props {
   currentGenre: Genre
+  /** How the label reads it: a country by its name. Defaults to the genre itself. */
+  genreLabel?: string
   stationCount: number,
   shuffle: boolean,
   isPlaying: boolean
@@ -148,7 +150,7 @@ const openStationListModal = () => {
         <div class="line1">
         </div>
         <div class="line2" @click="toggleSwitchGenreModal">
-          <span class="line2-text font-lofi" style="color: red" :title="currentGenre">{{ currentGenre }} ({{
+          <span class="line2-text font-lofi" style="color: red" :title="genreLabel ?? currentGenre">{{ genreLabel ?? currentGenre }} ({{
               stationCount
             }})</span>
         </div>

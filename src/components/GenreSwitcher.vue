@@ -2,6 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {Genre, GenreOption} from "../types";
 import {normalizeGenreInput, useGenres} from "../services/useGenres.ts";
+import {countryGenre, isCountryGenre, useCountries} from "../services/useCountries.ts";
 import {useRememberedScroll} from "../services/useRememberedScroll.ts";
 import {useEscapeToClose} from "../services/useEscapeToClose.ts";
 
@@ -21,16 +22,43 @@ useEscapeToClose(closeModal);
 const setGenre = (genre: Genre) => emit('setGenre', genre);
 
 const {genres, loadCounts} = useGenres();
-const {container, restore} = useRememberedScroll(() => 'genres');
+const {countries, loading: countriesLoading, failed: countriesFailed, loadCountries, spin} = useCountries();
+
+/** Genres or countries; opens on whichever is playing now. */
+const tab = ref<'genres' | 'countries'>(isCountryGenre(props.current) ? 'countries' : 'genres');
+const {container, restore} = useRememberedScroll(() => tab.value);
 
 onMounted(async () => {
-  await loadCounts();
+  if (tab.value === 'countries') await loadCountries();
+  else await loadCounts();
   // Counts re-sort the list, which moves everything under the restored offset,
   // so the position has to be put back once the final order is in.
   restore();
 });
 
+const showTab = async (next: 'genres' | 'countries') => {
+  if (tab.value === next) return;
+  tab.value = next;
+  search.value = '';
+  if (next === 'countries') await loadCountries();
+  else await loadCounts();
+  restore();
+};
+
+/** "Spin the globe": somewhere at random, with enough stations to be worth the trip. */
+const spinGlobe = () => {
+  const country = spin(props.current);
+  if (country) setGenre(countryGenre(country.code));
+};
+
 const search = ref('');
+
+const countryMatches = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  if (!query) return countries.value;
+  return countries.value.filter(option =>
+      option.name.toLowerCase().includes(query) || option.code.toLowerCase() === query);
+});
 
 const matches = computed(() => {
   const query = normalizeGenreInput(search.value);
@@ -67,21 +95,49 @@ const grouped = computed(() => {
   <div class="modal-backdrop" @click="closeModal">
     <div class="card" @click.stop>
       <div class="head flex justify-between items-center">
-        <span>Switch genre</span>
+        <span>{{ tab === 'countries' ? 'Tune around the world' : 'Switch genre' }}</span>
         <button @click="closeModal" class="btn btn-ghost btn-error btn-xs">X</button>
       </div>
 
       <div class="search-head">
+        <div class="source-tabs" role="tablist">
+          <button role="tab" class="source-tab" :aria-selected="tab === 'genres'" @click="showTab('genres')">Genres</button>
+          <button role="tab" class="source-tab" :aria-selected="tab === 'countries'" @click="showTab('countries')">Countries</button>
+        </div>
         <input
             v-model="search"
             class="fancy-input"
             type="text"
-            placeholder="Search or type any genre..."
+            :placeholder="tab === 'countries' ? 'Search a country...' : 'Search or type any genre...'"
             @click.stop
         />
       </div>
 
-      <div class="content" ref="container">
+      <div v-if="tab === 'countries'" class="content" ref="container">
+        <button class="button custom spin" :disabled="!countries.length" @click="spinGlobe">
+          <svg class="globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
+          Spin the globe
+        </button>
+        <p v-if="countriesLoading" class="family-name">Loading countries...</p>
+        <p v-else-if="countriesFailed" class="family-name">
+          The station directory is not answering. <a class="retry" @click="loadCountries">Try again</a>
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <button
+              v-for="option in countryMatches"
+              :key="option.code"
+              class="button"
+              :class="{ 'button-current': countryGenre(option.code) === props.current }"
+              :title="option.name"
+              @click="setGenre(countryGenre(option.code))"
+          >
+            <span class="code" aria-hidden="true">{{ option.code }}</span>{{ option.name }}<span class="count">{{ option.stationCount }}</span>
+          </button>
+        </div>
+        <p v-if="!countriesLoading && !countriesFailed && !countryMatches.length" class="family-name">No countries match</p>
+      </div>
+
+      <div v-else class="content" ref="container">
         <button v-if="custom" class="button custom" @click="setGenre(custom)">
           Tune into &ldquo;{{ custom }}&rdquo;
         </button>
@@ -108,6 +164,13 @@ const grouped = computed(() => {
 </template>
 
 <style scoped>
+/* A long press on a button is a slow tap, not a request to select its words. */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -206,6 +269,73 @@ const grouped = computed(() => {
   margin-bottom: 14px;
   background: var(--m-btn-hover, #1ac2ff);
   color: #000;
+}
+
+.source-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.source-tab {
+  flex: 1;
+  padding: 6px 10px;
+  border: var(--m-bw, 3px) solid var(--m-line, #000);
+  border-radius: var(--m-radius-sm, 0);
+  background: transparent;
+  color: var(--m-head-fg, #000);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.source-tab[aria-selected="true"] {
+  background: var(--m-btn, rgb(241, 90, 37));
+  color: var(--m-btn-fg, white);
+  box-shadow: var(--m-shadow-sm, 3px 3px 0 #000);
+}
+
+.spin:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.retry {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The country's code in a little box, as on a tuner's preset: flags are emoji, which
+   Windows draws as two letters anyway and some webviews not at all. */
+.code {
+  display: inline-block;
+  min-width: 2.4em;
+  margin-right: 7px;
+  padding: 0 3px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.spin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.globe {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
 }
 
 .count {

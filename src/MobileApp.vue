@@ -38,6 +38,7 @@ const {
   lyrics,
   currentlyPlaying,
   currentGenre,
+  currentGenreLabel,
   genreLoading,
   genreEmpty,
   genreUnreachable,
@@ -288,12 +289,12 @@ const reset = () => void resetAll();
         </p>
         <p v-if="nowPlaying?.album" class="album">{{ nowPlaying.album }}</p>
         <p v-else-if="!nowPlaying" class="album">
-          {{ currentlyPlaying.country || currentGenre }}
+          {{ currentlyPlaying.country || currentGenreLabel }}
         </p>
       </template>
 
-      <p v-if="genreLoading" class="album">Loading {{ currentGenre }}...</p>
-      <p v-if="genreEmpty" class="warn">Nothing playable under &ldquo;{{ currentGenre }}&rdquo;</p>
+      <p v-if="genreLoading" class="album">Loading {{ currentGenreLabel }}...</p>
+      <p v-if="genreEmpty" class="warn">Nothing playable under &ldquo;{{ currentGenreLabel }}&rdquo;</p>
       <p v-if="genreUnreachable" class="warn" @click="changeGenre(currentGenre)">
         Station directory not answering &mdash; tap to retry
       </p>
@@ -309,7 +310,7 @@ const reset = () => void resetAll();
       <component
           v-if="skinnedPlayer"
           :is="skinnedPlayer"
-          :current-genre="currentGenre"
+          :current-genre="currentGenreLabel"
           :station-count="stationsCount"
           :shuffle="shuffle"
           :is-playing="isPlaying"
@@ -326,6 +327,7 @@ const reset = () => void resetAll();
       <Cassete
           v-else
           :current-genre="currentGenre"
+          :genre-label="currentGenreLabel"
           :station-count="stationsCount"
           :shuffle="shuffle"
           :is-playing="isPlaying"
@@ -646,5 +648,24 @@ const reset = () => void resetAll();
   box-sizing: border-box;
   padding-bottom: var(--keyboard, 0px);
   transition: padding-bottom 160ms ease-out;
+}
+
+/*
+ * A phone app, not a page: a long press on a button or a station name is a slow tap,
+ * and selecting its words (with the Copy / Look Up bar over the deck) only gets in the
+ * way. Fields stay selectable, so a link can still be pasted and copied. Keyed on
+ * data-skin, which only the phone ever sets: this sheet loads on the desktop too.
+ */
+html[data-skin] body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+html[data-skin] input,
+html[data-skin] textarea {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 </style>

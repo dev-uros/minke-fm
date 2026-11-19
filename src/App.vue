@@ -22,6 +22,7 @@ const {
   lyrics,
   currentlyPlaying,
   currentGenre,
+  currentGenreLabel,
   genreLoading,
   genreEmpty,
   genreUnreachable,
@@ -300,7 +301,7 @@ useTray(
       artist: nowPlaying.value?.artist ?? null,
       song: nowPlaying.value?.song ?? null,
       artwork: nowPlaying.value?.artwork ?? null,
-      genre: currentGenre.value,
+      genre: currentGenreLabel.value,
       // Not isPlaying: while connecting or reconnecting the player is already
       // trying to play, so the menu must offer "Pause". Labelling that "Play"
       // would hand the user a button that does the opposite of what it says.
@@ -321,7 +322,7 @@ useTray(
 useMediaSession(
     () => ({
       station: currentlyPlaying.value?.name ?? null,
-      genre: currentGenre.value,
+      genre: currentGenreLabel.value,
       artist: nowPlaying.value?.artist ?? null,
       song: nowPlaying.value?.song ?? null,
       album: nowPlaying.value?.album ?? null,
@@ -390,18 +391,18 @@ useMediaSession(
           Signal lost - reconnecting (attempt {{ reconnectAttempt }})...
         </h2>
         <h2 v-if="genreEmpty" class="text-red-400">
-          Nothing playable under &ldquo;{{ currentGenre }}&rdquo; &mdash; try another genre.
+          Nothing playable under &ldquo;{{ currentGenreLabel }}&rdquo; &mdash; try another genre.
         </h2>
         <h2 v-if="genreUnreachable" class="text-red-400">
           The station directory is not answering right now &mdash;
           <a class="underline cursor-pointer" @click="changeGenre(currentGenre)">try again</a>.
         </h2>
         <h2 v-if="genreFallback" class="text-yellow-300">
-          The station directory is not answering &mdash; playing saved {{ currentGenre }} stations.
+          The station directory is not answering &mdash; playing saved {{ currentGenreLabel }} stations.
           <a class="underline cursor-pointer" @click="retryGenre">Try again</a>
         </h2>
         <h2 v-if="genreLoading" class="text-yellow-300">
-          Loading {{ currentGenre }} stations...
+          Loading {{ currentGenreLabel }} stations...
         </h2>
         <h2 v-if="stationsLoadingError" class="text-red-400">
           Could not load the station list. Check your connection and hit reload.
@@ -432,7 +433,7 @@ useMediaSession(
           @reset-all="resetEverything"
           @toggle-favorites-modal="favoritesModalShown = true" @play-next="playNextStation"
           @play-previous="playPreviousStation" @toggle-shuffle="toggleShuffle" @set-genre="setGenre"
-          :shuffle="shuffle" :station-count="stationsCount" :current-genre="currentGenre"
+          :shuffle="shuffle" :station-count="stationsCount" :current-genre="currentGenre" :genre-label="currentGenreLabel"
           :is-playing="isPlaying" @toggle-player="togglePlayer"/>
     </div>
     <!-- The audible level, so the sleep timer's fade shows here too. -->

@@ -6,7 +6,7 @@ interface Props {
   favoriteStations: FormattedStation[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<{
   closeModal: [],
   setStation: [station: FormattedStation],
@@ -56,12 +56,22 @@ const removeStation = (station: FormattedStation) => {
             ✕
           </button>
         </div>
+        <p v-if="!props.favoriteStations.length" class="empty">
+          No favourites yet. Tap the star next to a station's name to keep it here.
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+/* A long press on a button is a slow tap, not a request to select its words. */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0; /* top:0; right:0; bottom:0; left:0 */
@@ -74,6 +84,9 @@ const removeStation = (station: FormattedStation) => {
 
 .card {
   font-family: var(--m-font, Montserrat, sans-serif);
+  /* A station called "IBIZA CHILLOUT LOUNGE - Ambient, Deep House, Balearic, ..." must not
+     widen the card past the screen: the names are cut short instead. */
+  width: min(460px, 92vw);
   translate: -6px -6px;
   background: var(--m-card, rgb(242, 188, 0));
   border: var(--m-bw, 3px) solid var(--m-line, #000);
@@ -106,6 +119,10 @@ const removeStation = (station: FormattedStation) => {
 }
 
 .button {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   padding: 5px 10px;
   margin-top: 10px;
   border: var(--m-bw, 3px) solid var(--m-line, #000);
@@ -132,6 +149,13 @@ const removeStation = (station: FormattedStation) => {
 .card:hover {
   translate: -6px;
 }
+
+.empty {
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--m-ink, #000);
+}
+
 
 .delete-button {
   padding: 5px 10px;

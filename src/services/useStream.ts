@@ -6,7 +6,7 @@ import {useConnectivity} from "./useConnectivity.ts";
 import {AudioEngine, useAudioEngine} from "./useAudioEngine.ts";
 import {useNativePlayer} from "./useNativePlayer.ts";
 import {useNowPlaying} from "./useNowPlaying.ts";
-import {DEFAULT_GENRE} from "./useGenres.ts";
+import {DEFAULT_GENRE, genreLabel} from "./useGenres.ts";
 import {clearStationCache, fetchGenre, loadCachedGenre} from "./useStationsApi.ts";
 import {fallbackStations} from "./useFallbackStations.ts";
 import {loadLastStation, loadLastVolume, saveLastStation, saveLastVolume} from "./useLastSession.ts";
@@ -44,6 +44,8 @@ export function useStream(mobile = false) {
 
     const stationListByGenre = computed(() => genreList(currentGenre.value));
     const stationsCount = computed(() => stationListByGenre.value.length);
+    /** The genre as the deck shows it: a country by its name, not its key. */
+    const currentGenreLabel = computed(() => genreLabel(currentGenre.value));
 
     // Same interface either way. On Android playback lives in a Kotlin service
     // so it survives the screen locking; on desktop it is a webview <audio>.
@@ -130,7 +132,7 @@ export function useStream(mobile = false) {
             url,
             // Ignored by the desktop engine; this is what a lock screen shows.
             title: station.name,
-            artist: station.type
+            artist: genreLabel(station.type)
         });
     };
 
@@ -415,7 +417,7 @@ export function useStream(mobile = false) {
         engine.setMetadata(
             track
                 ? {title: track.song, artist: track.artist, artwork: track.artwork}
-                : {title: currentlyPlaying.value?.name, artist: currentGenre.value}
+                : {title: currentlyPlaying.value?.name, artist: genreLabel(currentGenre.value)}
         );
     });
 
@@ -432,6 +434,7 @@ export function useStream(mobile = false) {
         stationHasMetadata,
         currentlyPlaying,
         currentGenre,
+        currentGenreLabel,
         genreLoading,
         genreEmpty,
         genreUnreachable,

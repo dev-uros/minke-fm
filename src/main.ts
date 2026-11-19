@@ -1,6 +1,7 @@
 import {createApp} from "vue";
 import {invoke} from "@tauri-apps/api/core";
 import {getCurrentWindow} from "@tauri-apps/api/window";
+import './fonts'
 import './style.css'
 import App from "./App.vue";
 import TrayPanel from "./TrayPanel.vue";

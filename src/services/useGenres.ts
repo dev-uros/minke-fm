@@ -1,5 +1,6 @@
 import {ref, type Ref} from "vue";
 import type {Genre, GenreOption} from "../types";
+import {countryCodeOf, countryName, isCountryGenre} from "./useCountries.ts";
 
 /**
  * The browsable genre catalogue.
@@ -105,6 +106,14 @@ const LABELS: Record<string, string> = {
 
 const label = (name: string) =>
     LABELS[name] ?? name.replace(/\b[a-z]/g, letter => letter.toUpperCase());
+
+/**
+ * What the deck and the lock screen call the current genre. A tag is shown as it is
+ * (each deck styles it its own way); a country (useCountries.ts) by its name, "Serbia",
+ * never by its key, "country:rs".
+ */
+export const genreLabel = (genre: Genre): string =>
+    isCountryGenre(genre) ? countryName(countryCodeOf(genre)) : genre;
 
 export const GENRE_CATALOGUE: GenreOption[] = CATALOGUE.flatMap(([family, genres]) =>
     genres.map(name => ({name, label: label(name), family}))

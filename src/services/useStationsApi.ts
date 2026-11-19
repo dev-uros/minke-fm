@@ -1,6 +1,7 @@
 import {FormattedStation, Genre, Station} from "../types";
 import {formatStations} from "./useStationFormat.ts";
 import {clearGenres, readGenre, writeGenre} from "./useStationCache.ts";
+import {countryCodeOf, isCountryGenre} from "./useCountries.ts";
 
 /**
  * Station lists come from radio-browser, which is a pool of volunteer mirrors -
@@ -62,7 +63,11 @@ async function fetchFromHost(host: string, genre: Genre): Promise<FormattedStati
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
-        const url = `${host}/json/stations/bytag/${encodeURIComponent(genre)}?${query}`;
+        // A country is a "genre" too (useCountries.ts); only the list it is read from differs.
+        const list = isCountryGenre(genre)
+            ? `bycountrycodeexact/${encodeURIComponent(countryCodeOf(genre))}`
+            : `bytag/${encodeURIComponent(genre)}`;
+        const url = `${host}/json/stations/${list}?${query}`;
         const response = await fetch(url, {cache: 'no-store', signal: controller.signal});
         if (!response.ok) throw new Error(`${host} responded ${response.status}`);
 

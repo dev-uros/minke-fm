@@ -1,0 +1,86 @@
+# Linux packages: .deb, .rpm and AppImage, for x86_64 and arm64.
+#
+# Built on Ubuntu 22.04 on purpose: an AppImage only runs on systems whose glibc
+# is at least as new as the one it was built against, so the oldest supported
+# base gives the widest reach.
+#
+# Run it by hand from the Actions tab, or push a tag like `v1.0.1` (a full
+# release) or `linux-v1.0.0` (Linux only) - a tag also attaches the packages to
+# a GitHub release of that name, which is what the site's download links use.
+name: Linux packages
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*", "linux-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            arch: x86_64
+          - runner: ubuntu-22.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+            libayatana-appindicator3-dev librsvg2-dev \
+            gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-libav \
+            libfuse2 file patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - name: Rust tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: Build
+        env:
+          # linuxdeploy is itself an AppImage, and runners have no FUSE.
+          APPIMAGE_EXTRACT_AND_RUN: "1"
+          # The bad set holds the HLS and AAC pieces many stations need.
+          GSTREAMER_INCLUDE_BAD_PLUGINS: "1"
+        run: npx tauri build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: minkefm-linux-${{ matrix.arch }}
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            || gh release create "$GITHUB_REF_NAME" --title "MinkeFM $GITHUB_REF_NAME" --notes-file .github/linux-release-notes.md || true
+          gh release upload "$GITHUB_REF_NAME" --clobber \
+            src-tauri/target/release/bundle/deb/*.deb \
+            src-tauri/target/release/bundle/rpm/*.rpm \
+            src-tauri/target/release/bundle/appimage/*.AppImage

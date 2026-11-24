@@ -18,11 +18,11 @@ use serde::{Deserialize, Serialize};
 // The menu bar exists only on desktop. `TrayState` and `TrayStore` below are
 // plain data and stay available everywhere, so the commands that carry them do
 // not need a second definition for mobile.
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 use tauri::{AppHandle, Manager, Runtime, WebviewWindow};
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 use tauri_plugin_positioner::{Position, WindowExt};
 
 pub const PANEL_LABEL: &str = "tray-panel";
@@ -59,13 +59,13 @@ impl TrayStore {
     }
 }
 
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 fn panel<R: Runtime>(app: &AppHandle<R>) -> Option<WebviewWindow<R>> {
     app.get_webview_window(PANEL_LABEL)
 }
 
 /// Shows the panel under the tray icon, or hides it if it is already up.
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 fn toggle_panel<R: Runtime>(app: &AppHandle<R>) {
     let Some(window) = panel(app) else { return };
 
@@ -82,7 +82,7 @@ fn toggle_panel<R: Runtime>(app: &AppHandle<R>) {
     let _ = window.set_focus();
 }
 
-#[cfg(desktop)]
+#[cfg(all(desktop, not(target_os = "linux")))]
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
     TrayIconBuilder::with_id("minke-tray")
         .icon(tauri::image::Image::from_bytes(include_bytes!(
@@ -111,3 +111,138 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
 
     Ok(())
 }
+
+/// Linux has no panel, only a menu.
+///
+/// The tray there is a StatusNotifierItem (libayatana-appindicator), which never
+/// reports clicks or where the icon sits: a click always opens the item's menu,
+/// and only the menu. So the panel could neither be opened nor placed. The menu
+/// carries the same actions instead, sent the same way the panel sends them, so
+/// the main window stays the only player.
+#[cfg(target_os = "linux")]
+pub mod linux {
+    use super::{TrayState, PANEL_LABEL};
+    use tauri::image::Image;
+    use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
+    use tauri::tray::TrayIconBuilder;
+    use tauri::{AppHandle, Emitter, Manager, Wry};
+
+    /// The items whose text follows the player, kept so they can be relabelled.
+    pub struct TrayMenu {
+        now_playing: MenuItem<Wry>,
+        play_pause: MenuItem<Wry>,
+        favourite: MenuItem<Wry>,
+        shuffle: MenuItem<Wry>,
+    }
+
+    /// The macOS icon is a black template that the system recolours. Nothing
+    /// recolours it here, and black on a dark panel - the common case on GNOME
+    /// and KDE - is invisible. White keeps the shape and reads on both.
+    fn white_icon() -> tauri::Result<Image<'static>> {
+        let source = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
+        let mut rgba = source.rgba().to_vec();
+        for pixel in rgba.chunks_exact_mut(4) {
+            pixel[0] = 255;
+            pixel[1] = 255;
+            pixel[2] = 255;
+        }
+        Ok(Image::new_owned(rgba, source.width(), source.height()))
+    }
+
+    pub fn build(app: &AppHandle) -> tauri::Result<()> {
+        // Never shown here, so it should not sit around as a hidden webview.
+        if let Some(panel) = app.get_webview_window(PANEL_LABEL) {
+            let _ = panel.destroy();
+        }
+
+        let now_playing = MenuItem::with_id(app, "now-playing", "MinkeFM", false, None::<&str>)?;
+        let play_pause = MenuItem::with_id(app, "play-pause", "Play", true, None::<&str>)?;
+        let next = MenuItem::with_id(app, "next", "Next station", true, None::<&str>)?;
+        let previous = MenuItem::with_id(app, "previous", "Previous station", true, None::<&str>)?;
+        let favourite = MenuItem::with_id(app, "favourite", "Add to favourites", true, None::<&str>)?;
+        let shuffle = MenuItem::with_id(app, "shuffle", "Shuffle: off", true, None::<&str>)?;
+        let show = MenuItem::with_id(app, "show", "Show MinkeFM", true, None::<&str>)?;
+        let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+
+        let menu = Menu::with_items(
+            app,
+            &[
+                &now_playing,
+                &PredefinedMenuItem::separator(app)?,
+                &play_pause,
+                &next,
+                &previous,
+                &PredefinedMenuItem::separator(app)?,
+                &favourite,
+                &shuffle,
+                &PredefinedMenuItem::separator(app)?,
+                &show,
+                &quit,
+            ],
+        )?;
+
+        TrayIconBuilder::with_id("minke-tray")
+            .icon(white_icon()?)
+            .tooltip("MinkeFM")
+            .menu(&menu)
+            .on_menu_event(|app, event| match event.id().as_ref() {
+                id @ ("play-pause" | "next" | "previous" | "favourite" | "shuffle") => {
+                    let _ = app.emit_to("main", "tray:action", id);
+                }
+                "show" => {
+                    if let Some(window) = app.get_webview_window("main") {
+                        let _ = window.unminimize();
+                        let _ = window.show();
+                        let _ = window.set_focus();
+                    }
+                }
+                "quit" => app.exit(0),
+                _ => {}
+            })
+            .build(app)?;
+
+        app.manage(TrayMenu {
+            now_playing,
+            play_pause,
+            favourite,
+            shuffle,
+        });
+        Ok(())
+    }
+
+    /// Relabels the menu to match what the window reported.
+    pub fn update(app: &AppHandle, state: &TrayState) {
+        let Some(menu) = app.try_state::<TrayMenu>() else { return };
+
+        let playing = match (&state.artist, &state.song, &state.track, &state.station) {
+            (Some(artist), Some(song), _, _) => format!("{artist} - {song}"),
+            (_, _, Some(track), _) => track.clone(),
+            (_, _, _, Some(station)) => station.clone(),
+            _ => "MinkeFM".to_string(),
+        };
+        // Long titles would stretch the whole menu across the screen.
+        let playing = if playing.chars().count() > 48 {
+            format!("{}...", playing.chars().take(47).collect::<String>())
+        } else {
+            playing
+        };
+
+        let _ = menu.now_playing.set_text(playing);
+        let _ = menu
+            .play_pause
+            .set_text(if state.playing { "Pause" } else { "Play" });
+        let _ = menu.favourite.set_text(if state.favourite {
+            "Remove from favourites"
+        } else {
+            "Add to favourites"
+        });
+        let _ = menu.shuffle.set_text(if state.shuffle {
+            "Shuffle: on"
+        } else {
+            "Shuffle: off"
+        });
+    }
+}
+
+#[cfg(target_os = "linux")]
+pub use linux::build;

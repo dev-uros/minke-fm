@@ -1,0 +1,7 @@
+# A plain Ubuntu desktop-ish userland WITHOUT our build deps or GStreamer
+# plugins, so installing the .deb proves its dependency list is enough.
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb xauth dbus-x11 pulseaudio pulseaudio-utils xdotool imagemagick python3 python3-gi gir1.2-glib-2.0 playerctl ca-certificates procps \
+ && rm -rf /var/lib/apt/lists/*

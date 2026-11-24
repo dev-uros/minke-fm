@@ -68,6 +68,8 @@ fn is_mobile() -> bool {
 /// can never drift out of step with the window.
 #[tauri::command]
 fn update_tray(state: TrayState, app: tauri::AppHandle, store: tauri::State<'_, TrayStore>) {
+    #[cfg(target_os = "linux")]
+    tray::linux::update(&app, &state);
     store.set(state.clone());
     // Only an open panel cares, and it is cheap enough not to bother checking.
     let _ = app.emit_to(tray::PANEL_LABEL, "tray:state", state);
@@ -150,6 +152,7 @@ pub fn run() {
 
             #[cfg(desktop)]
             {
+                #[cfg(not(target_os = "linux"))]
                 app.handle().plugin(tauri_plugin_positioner::init())?;
                 app.manage(TrayStore::default());
                 tray::build(app.handle())?;

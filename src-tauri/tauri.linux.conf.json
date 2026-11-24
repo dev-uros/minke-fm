@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "targets": ["deb", "rpm", "appimage"],
+    "category": "Music",
+    "publisher": "Fifth Guild",
+    "homepage": "https://minkefm.fifthguild.com",
+    "shortDescription": "Internet radio by genre and country",
+    "longDescription": "MinkeFM plays internet radio stations by genre and country, with the current track, album art and lyrics where the station announces them.",
+    "linux": {
+      "deb": {
+        "section": "sound",
+        "depends": [
+          "gstreamer1.0-plugins-good",
+          "gstreamer1.0-plugins-bad"
+        ],
+        "recommends": ["gstreamer1.0-libav"]
+      },
+      "rpm": {
+        "depends": ["gstreamer1-plugins-good"],
+        "recommends": ["gstreamer1-plugins-bad-free", "gstreamer1-plugin-libav"]
+      },
+      "appimage": {
+        "bundleMediaFramework": true
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 [package]
 name = "minke-fm"
 version = "1.0.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Internet radio by genre and country"
+authors = ["Fifth Guild"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -41,8 +41,9 @@ rand = "0.9"
 [target.'cfg(any(windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = "2"
 
-[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
-# Places the tray panel under the menu bar icon.
+# Places the tray panel under the menu bar icon. Not on Linux, where the tray
+# never says where its icon is and a menu stands in for the panel.
+[target.'cfg(any(target_os = "macos", windows))'.dependencies]
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 
 # The unstripped debug library is 215MB, which makes every Android install take

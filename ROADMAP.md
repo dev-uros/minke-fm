@@ -189,6 +189,15 @@ je na commitu 1.0.0 (iOS 11); Android je posle toga morao na 1010 (16 KB poravna
       `https://play.google.com/store/apps/details?id=com.fifthguild.minkefm` → push (sajt se sam deployuje).
 - [ ] Zvanični App Store / Google Play bedževi na sajtu umesto "Coming soon" dugmadi.
 
+### F. Linux (2026-11-24)
+- [x] Tray na Linuxu je meni (appindicator ne javlja klik), GStreamer zavisnosti u .deb/.rpm,
+      AppImage nosi svoj GStreamer. Provereno u Dockeru na čistom Ubuntu 22.04 i Fedori 41,
+      x86_64 i arm64: zvuk, tray, MPRIS, single instance (`bash scripts/linux/test-linux.sh [amd64]`).
+- [x] Drugar testirao x86_64 na pravoj mašini: sve radi.
+- [x] Build: `.github/workflows/linux.yml` na tag `v*` ili `linux-v*` → GitHub Release.
+- [ ] Link "Linux" na sajtu.
+- [ ] Store: Flathub (Flatpak manifest + PR na flathub/flathub, ljudski review), možda Snap.
+
 ## 5. Održavanje
 
 - [ ] **README** – zameniti Tauri šablon pravim opisom (šta je, kako se pokreće, Android build).

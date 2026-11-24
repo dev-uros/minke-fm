@@ -1,0 +1,6 @@
+# Fedora with what any Fedora desktop already has (graphics, fonts, libgpg-error),
+# which an AppImage takes from the host by design, and none of our build deps.
+FROM fedora:41
+RUN dnf install -y --setopt=install_weak_deps=False xorg-x11-server-Xvfb xorg-x11-xauth dbus-x11 dbus-daemon pulseaudio pulseaudio-utils \
+    python3-gobject-base ImageMagick playerctl procps-ng \
+    libgpg-error libglvnd-gles libglvnd-egl mesa-dri-drivers mesa-libEGL fontconfig dejavu-sans-fonts && dnf clean all

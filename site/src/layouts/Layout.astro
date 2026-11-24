@@ -3,7 +3,7 @@ import montserrat from '@fontsource/montserrat/files/montserrat-latin-400-normal
 import montserratBold from '@fontsource/montserrat/files/montserrat-latin-700-normal.woff2?url'
 import montserratBlack from '@fontsource/montserrat/files/montserrat-latin-800-normal.woff2?url'
 import ogImage from '../assets/og.png'
-import { CONTACT, DESCRIPTION, NAME, TAGLINE } from '../constants'
+import { APP_STORE_ID, CONTACT, DESCRIPTION, NAME, STORES, TAGLINE } from '../constants'
 import { SKINS, STORAGE_KEY } from '../skins'
 import '@fontsource/montserrat/latin-400.css'
 import '@fontsource/montserrat/latin-700.css'
@@ -37,6 +37,7 @@ const app = {
   'operatingSystem': 'iOS, Android',
   'offers': { '@type': 'Offer', 'price': '0', 'priceCurrency': 'USD' },
   'publisher': { '@type': 'Organization', 'name': 'Fifth Guild', 'email': CONTACT },
+  'sameAs': Object.values(STORES).filter(Boolean),
 }
 
 // Only the ids and colours go to the browser: enough to put the saved skin on before the first paint.
@@ -60,6 +61,8 @@ const themeColors = Object.fromEntries(SKINS.map(s => [s.id, s.themeColor]))
     <link rel="preload" href={montserratBold} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={montserratBlack} as="font" type="font/woff2" crossorigin />
     <meta name="theme-color" content="#1a1a1a" />
+    <!-- Safari on iPhone shows a bar to open or get the app. -->
+    <meta name="apple-itunes-app" content={`app-id=${APP_STORE_ID}`} />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={NAME} />

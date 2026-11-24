@@ -49,6 +49,6 @@ Only the cassette's faces are preloaded; the other skins' faces download when a 
 
 `wrangler.jsonc` serves `dist/` as static assets on the custom domain. Connect the repository in Cloudflare (Workers → Create → Import a repository) with root directory `site`, build command `npm run build`, deploy command `npx wrangler deploy`. Or by hand: `npm run deploy`.
 
-When the store pages exist, fill in `STORES` in `src/constants.ts`: the "coming soon" buttons become links.
+The store links are `STORES` in `src/constants.ts`; an empty one turns its button back into "coming soon".
 
 The privacy page lists every server the app talks to. When the app starts talking to a new one, change `src/pages/privacy.astro` and its date in the same commit.

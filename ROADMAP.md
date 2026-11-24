@@ -154,6 +154,15 @@ privacy (https://minkefm.fifthguild.com/privacy/) su živi. App Store ID: 682722
 |---|---|---|---|
 | App Store | 1.0.0 (11), samo iPhone | Waiting for Review | **ručno**: posle odobrenja klikni *Release this version* |
 | Google Play | 1.0.0 (1011) | Changes in review | **sam**, čim Google odobri (Managed publishing nije moglo pre prve objave) |
+| Mac App Store | 1.0.0 (1), universal | Waiting for Review (poslato 2026-11-24) | **ručno** |
+
+**2026-11-24:** iOS 1.0.0 je odobren ("Ready for Distribution"). Mac verzija je dodata kao
+platforma u isti App Store Connect zapis: sandbox (`src-tauri/macos/Entitlements.plist`),
+build `scripts/build-mac-appstore.sh` (konfiguracija `src-tauri/tauri.appstore.conf.json`,
+build broj podići pre svakog upload-a), upload preko Transporter-a. Tekstovi i notes su u
+`store/LISTING.md`, a screenshotovi u `store/mac-app-store/`.
+Primećeno: Yurd FM (Azerbejdžan) prikazuje reklamu "Reklam — Yerləşdirmək üçün (+994) …"
+kao naslov pesme; `classifyTitle` treba da je odbije.
 
 Urađeno: B (tekstovi i slike u `store/`, `store/LISTING.md`), C i D u celosti. Tag `v1.0.0`
 je na commitu 1.0.0 (iOS 11); Android je posle toga morao na 1010 (16 KB poravnanje,

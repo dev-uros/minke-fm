@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Must match the embedded provisioning profile, or the upload is rejected. -->
+	<key>com.apple.application-identifier</key>
+	<string>HQA7G6K35G.com.fifthguild.minkefm</string>
+	<key>com.apple.developer.team-identifier</key>
+	<string>HQA7G6K35G</string>
+	<!-- The Mac App Store only takes sandboxed apps. -->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<!-- Radio streams, radio-browser.info, iTunes Search, LRCLIB. -->
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<!-- The ICY proxy listens on 127.0.0.1 (src/icy.rs); even loopback needs this. -->
+	<key>com.apple.security.network.server</key>
+	<true/>
+</dict>
+</plist>

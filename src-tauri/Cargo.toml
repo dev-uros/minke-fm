@@ -35,10 +35,13 @@ tiny_http = "0.12"
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 rand = "0.9"
 
-# Desktop only - the plugin has no Android/iOS support, and a phone has no
-# concept of launching a second copy anyway.
-[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
+# Windows and Linux only. A phone has no concept of a second copy, and on macOS
+# LaunchServices already brings the running copy forward - while the plugin's
+# /tmp socket is denied by the App Store sandbox, so it would do nothing there.
+[target.'cfg(any(windows, target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = "2"
+
+[target.'cfg(any(target_os = "macos", windows, target_os = "linux"))'.dependencies]
 # Places the tray panel under the menu bar icon.
 tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 

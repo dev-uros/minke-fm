@@ -114,7 +114,9 @@ pub fn run() {
     // has to be turned away before anything else gets a chance to start. Without
     // it a second launch would open its own window, its own ICY proxy and its
     // own stream, and the two would fight over the same cache directory.
-    #[cfg(desktop)]
+    // Not on macOS: LaunchServices already reopens the running copy, and the
+    // plugin's /tmp socket is out of reach inside the App Store sandbox.
+    #[cfg(any(windows, target_os = "linux"))]
     let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
         // The user asked for the app - show them the copy already running
         // rather than doing nothing visible.

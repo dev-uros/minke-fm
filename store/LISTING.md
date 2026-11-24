@@ -183,3 +183,102 @@ The first release of MinkeFM.
 ```
 
 **Countries:** all available
+
+---
+
+## Mac App Store (macOS 1.0.0)
+
+Same App Store Connect record as iOS (macOS platform added 2026-11-24). Name, subtitle,
+categories, privacy, age rating and price are shared with iOS; the fields below are per
+platform. The desktop app has the cassette deck only (the five decks are phone-only), with
+pixel-art backdrops, keyboard shortcuts and a menu bar panel instead.
+
+**Promotional Text** (170)
+```
+Radio from everywhere: 172 genres and nearly 200 countries on a cassette deck, with pixel-art scenes behind it. Free, with no account and no ads.
+```
+
+**Keywords** (100)
+```
+fm,stations,music,lofi,jazz,rock,classical,cassette,menu bar,pixel art,sleep timer,live,internet
+```
+
+**Description** (4000)
+```
+MinkeFM plays internet radio from all over the world, on a cassette deck that sits on your desktop.
+
+Pick a genre or a country and press play. MinkeFM finds the stations, shows what's playing and moves on by itself when a station goes quiet.
+
+172 GENRES AND NEARLY 200 COUNTRIES
+From lofi and deep house to bossa nova and black metal. Or tune into Japan, Brazil or Iceland, or tap Spin the globe and let MinkeFM choose for you.
+
+SONG TITLES YOU CAN TRUST
+When a station says what it's playing, you see the artist and the title, with the album cover when it can be matched for certain. If a station sends an ad or a slogan instead, you see the station's name rather than a wrong guess.
+
+PIXEL-ART SCENES
+Animated pixel-art backdrops play behind the deck. Change the scene whenever you like.
+
+MADE FOR YOUR MAC
+• Lives in the menu bar too: see what's playing and pause or skip without opening the window
+• Closing the window keeps the radio playing; Cmd+Q quits
+• Play/pause and skip with your keyboard's media keys and headphones
+• Keyboard shortcuts for everything: Space pauses, H and J change station, L shows lyrics, T sets the sleep timer
+
+MADE FOR LISTENING
+• Lyrics, where they exist, and a history of the songs you've heard
+• Sleep timer: 15, 30, 60 or 90 minutes, with a gentle fade at the end
+• Favourites, kept on your Mac
+• Stations that stop answering are skipped by themselves
+
+PRIVATE BY DESIGN
+No account, no ads, no tracking. Your favourites and your history never leave your Mac.
+
+Stations come from radio-browser.info, a free directory kept up by listeners. MinkeFM plays each station straight from the broadcaster's own stream.
+```
+
+**What's New in This Version**
+```
+The first Mac release of MinkeFM.
+```
+
+**Support URL / Marketing URL / Copyright:** same as iOS (see Shared).
+
+### App Review Information (macOS)
+
+**Sign-in required:** No
+
+**Notes** (same six-part shape as the iOS notes that passed review, plus the Mac specifics)
+```
+1. SCREEN RECORDING
+Attached, recorded on a Mac with the submitted build (1.0.0, build 1). It starts at app launch and shows the typical flow: playback starting, changing genre, the Countries tab and Spin the globe, the song now playing, lyrics and history, changing the backdrop, the sleep timer, favourites, the menu bar panel, and closing the window while the radio keeps playing.
+The app has no account registration, login or account deletion, no user-generated content, and no paid content or in-app purchases.
+
+2. PURPOSE AND AUDIENCE
+MinkeFM is an internet radio player for anyone who enjoys listening to radio from around the world. Finding good stations by genre or country is hard: public directories list many dead, duplicate or mislabelled streams. MinkeFM picks working stations for 172 genres and nearly 200 countries, shows the song playing only when the station reports it reliably, and skips stations that stop answering. It is free, with no ads, no account and no tracking. The same app is on the App Store for iPhone.
+
+3. HOW TO USE
+No account, login, credentials or sample files are needed; everything works as soon as the app opens. Press play on the deck (or Space) to start. Click the genre on the cassette's label to change genre, or open the Countries tab there and click Spin the globe. ☆ saves a favourite. The "?" icon on the deck lists every keyboard shortcut: H/J change station, L shows the song playing with lyrics and history, T sets a sleep timer, G changes the pixel-art backdrop. Media keys and headphone buttons play, pause and skip.
+The app also adds a menu bar icon with a small panel to see what's playing and pause or skip. Closing the window keeps the radio playing, as audio players do; clicking the Dock icon brings the window back, and Cmd+Q (or Quit in the menu bar panel) quits.
+
+4. EXTERNAL SERVICES AND SANDBOX ENTITLEMENTS
+- radio-browser.info: free public directory of radio stations (the station list).
+- The broadcasters' own public streams: audio is played from each station's stream.
+- Apple iTunes Search API: album artwork for the song playing.
+- LRCLIB (lrclib.net): song lyrics.
+- minkefm.fifthguild.com: our own website, which serves a weekly list of fallback stations.
+No authentication, payment, analytics, advertising or AI services are used.
+com.apple.security.network.client is for the services above. com.apple.security.network.server is for a small relay bound to 127.0.0.1 only, never reachable from outside the Mac: it reads a station's stream, separates the in-band song-title metadata (ICY) that the player cannot handle, and passes plain audio to the app's own player.
+
+5. REGIONAL DIFFERENCES
+The app works the same in all regions; its features and content do not change by country. A broadcaster may limit its own stream to some countries; the app then moves on to another station by itself.
+
+6. REGULATED INDUSTRY / THIRD-PARTY MATERIAL
+The app is not in a regulated industry. It is a player for radio streams that broadcasters publish openly for listening, like other radio apps. It links to those streams and does not host, record, download or rebroadcast any audio.
+```
+
+**Attachment:** the Mac screen recording (to be made with the screenshots).
+
+**App Sandbox Information:** add `com.apple.security.network.client` and `com.apple.security.network.server`; the reasons are in part 4 of the notes.
+
+### Screenshots
+`store/mac-app-store/` (2880 x 1800), uploaded in file-name order.

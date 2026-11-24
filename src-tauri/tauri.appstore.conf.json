@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "bundle": {
+    "category": "Music",
+    "macOS": {
+      "bundleVersion": "1",
+      "minimumSystemVersion": "11.0",
+      "signingIdentity": "Apple Distribution: Uro Mini (HQA7G6K35G)",
+      "entitlements": "macos/Entitlements.plist",
+      "files": {
+        "embedded.provisionprofile": "macos/embedded.provisionprofile"
+      }
+    }
+  }
+}

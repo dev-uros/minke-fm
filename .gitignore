@@ -33,3 +33,6 @@ dist-ssr
 *.keystore
 *.jks
 key.properties
+dist-appstore
+snimak.mov
+snimak-review.mp4

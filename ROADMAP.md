@@ -195,7 +195,7 @@ je na commitu 1.0.0 (iOS 11); Android je posle toga morao na 1010 (16 KB poravna
       x86_64 i arm64: zvuk, tray, MPRIS, single instance (`bash scripts/linux/test-linux.sh [amd64]`).
 - [x] Drugar testirao x86_64 na pravoj mašini: sve radi.
 - [x] Build: `.github/workflows/linux.yml` na tag `v*` ili `linux-v*` → GitHub Release.
-- [ ] Link "Linux" na sajtu.
+- [x] Link "Linux" na sajtu (`site/src/constants.ts` → `LINUX`; nova verzija = novi tag + izmena tamo).
 - [ ] Store: Flathub (Flatpak manifest + PR na flathub/flathub, ljudski review), možda Snap.
 
 ## 5. Održavanje

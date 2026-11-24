@@ -3,7 +3,7 @@
  * Where to get the app. Until a store lists it, a button says it is coming rather than
  * leading nowhere; filling in STORES (constants.ts) turns it into a link.
  */
-import { STORES } from '../constants'
+import { LINUX, STORES } from '../constants'
 
 const stores = [
   {
@@ -42,6 +42,9 @@ const stores = [
     ))
   }
 </ul>
+<p class="linux">
+  On Linux: <a href={LINUX.deb}>.deb</a> (Ubuntu, Debian) · <a href={LINUX.rpm}>.rpm</a> (Fedora) · <a href={LINUX.appImage}>AppImage</a> · <a href={LINUX.all}>all downloads</a>
+</p>
 
 <style>
   .stores {
@@ -78,6 +81,15 @@ const stores = [
   html[data-skin='radio'] .store--soon,
   html[data-skin='cassette'] .store--soon {
     border-color: var(--accent);
+  }
+  .linux {
+    margin: 12px 0 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .linux a {
+    color: inherit;
+    font-weight: 700;
   }
   .store svg {
     flex: none;
